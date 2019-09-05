@@ -1,0 +1,19 @@
+{
+	"ReplicaShardIndex": "0",
+	"MongoDBAdminUsername": "******",
+	"NodeInstanceType": "m4.large",
+	"MongoDBVersion": "3.6",
+	"VolumeType": "gp2",
+	"MongoDBAdminPassword": "******",
+	"VolumeSize": "400",
+	"QSS3BucketName": "aws-quickstart",
+	"Secondary0NodeSubnet": "subnet-9c53cdd4",
+	"KeyPairName": "test-02",
+	"PrimaryNodeSubnet": "subnet-9c53cdd4",
+	"QSS3KeyPrefix": "quickstart-mongodb/",
+	"Iops": "100",
+	"ClusterReplicaSetCount": "3",
+	"VPC": "vpc-e67fa59f",
+	"Secondary1NodeSubnet": "subnet-9c53cdd4",
+	"BastionSecurityGroupID": "sg-1bce0f50"
+}

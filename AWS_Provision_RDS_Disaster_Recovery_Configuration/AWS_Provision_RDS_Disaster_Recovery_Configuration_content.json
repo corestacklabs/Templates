@@ -1,0 +1,155 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "This template will launch MySQL RDS DB instance and enable multi availability feature in order to maintain disaster recovery.",
+    "Parameters": {
+        "DBName": {
+            "Default": "CEdatabase",
+            "Description": "The name of the database to create when the DB instance is created. If this parameter is not specified, no database is created in the DB instance.",
+            "Type": "String",
+            "MinLength": "1",
+            "MaxLength": "64"
+        },
+        "DBUsername": {
+            "NoEcho": "true",
+            "Description": "The MySQL database admin account username. MySQL DB can be managed by creating an isolated admin user in MySQL. Can specify a name for the isolated user to be created.",
+            "MinLength": "1",
+            "MaxLength": "15",
+            "Type": "String"
+        },
+        "DBPassword": {
+            "NoEcho": "true",
+            "Description": "The MySQL database admin account password. MySQL DB can be managed by creating an isolated admin user in MySQL. Can specify a password for the isolated user to be created.",
+            "MinLength": "1",
+            "MaxLength": "15",
+            "Type": "String"
+        },
+        "DBAllocatedStorage": {
+            "Default": "5",
+            "Type": "Number",
+            "MinValue": "5",
+            "MaxValue": "1024",
+            "Description": "Storage size in GB to be allocated for the RDS Instance being created. Storage size can be increased later if required."
+        },
+        "DBInstanceType": {
+            "Description": "Instance Type (Flavor) name to be used for provisioning RDS DB Instance in AWS. Instance types comprise varying combinations of CPU, memory, storage, and networking capacity.",
+            "Type": "String",
+            "Default": "db.t2.small",
+            "AllowedValues": [
+                "db.t1.micro",
+                "db.m1.small",
+                "db.m1.medium",
+                "db.m1.large",
+                "db.m1.xlarge",
+                "db.m2.xlarge",
+                "db.m2.2xlarge",
+                "db.m2.4xlarge",
+                "db.m3.medium",
+                "db.m3.large",
+                "db.m3.xlarge",
+                "db.m3.2xlarge",
+                "db.m4.large",
+                "db.m4.xlarge",
+                "db.m4.2xlarge",
+                "db.m4.4xlarge",
+                "db.m4.10xlarge",
+                "db.r3.large",
+                "db.r3.xlarge",
+                "db.r3.2xlarge",
+                "db.r3.4xlarge",
+                "db.r3.8xlarge",
+                "db.m2.xlarge",
+                "db.m2.2xlarge",
+                "db.m2.4xlarge",
+                "db.cr1.8xlarge",
+                "db.t2.micro",
+                "db.t2.small",
+                "db.t2.medium",
+                "db.t2.large"
+            ],
+            "ConstraintDescription": "Must be a valid database instance types"
+        },
+        "MultiAZs": {
+            "Description": "Flag to specify the MySQL RDS to be created in Multiple Availability Zones. This ensures high availability for RDS instance.",
+            "Type": "String",
+            "Default": "false",
+            "AllowedValues": [
+                "true",
+                "false"
+            ]
+        },
+        "DBPort": {
+            "Description": "Port to be used for connecting to MySQL RDS DB. By default it uses port 3306 and the same can be changed if required.",
+            "Default": "3306",
+            "Type": "String"
+        },
+        "DBInstanceName": {
+            "Description": "Name for the RDS Instance to be provisioned. Name is nothing but a tag to quickly identify resources in AWS. Name need not be unique and can be of user's choice.",
+            "Default": "CErds",
+            "Type": "String"
+        }
+    },
+    "Resources": {
+        "MasterDB": {
+            "Type": "AWS::RDS::DBInstance",
+            "Properties": {
+                "AllocatedStorage": {
+                    "Ref": "DBAllocatedStorage"
+                },
+                "DBInstanceClass": {
+                    "Ref": "DBInstanceType"
+                },
+                "Engine": "MySQL",
+                "EngineVersion": "5.5",
+                "MasterUsername": {
+                    "Ref": "DBUsername"
+                },
+                "MasterUserPassword": {
+                    "Ref": "DBPassword"
+                },
+                "MultiAZ": {
+                    "Ref": "MultiAZs"
+                },
+                "Port": {
+                    "Ref": "DBPort"
+                },
+                "DBName": {
+                    "Ref": "DBName"
+                },
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": {
+                            "Ref": "DBInstanceName"
+                        }
+                    }
+                ]
+            },
+            "DeletionPolicy": "Snapshot"
+        }
+    },
+    "Outputs": {
+        "MasterDatabaseEndpoint": {
+            "Description": "MasterDatabase Endpoint",
+            "Value": {
+                "Fn::Join": [
+                    "",
+                    [
+                        {
+                            "Fn::GetAtt": [
+                                "MasterDB",
+                                "Endpoint.Address"
+                            ]
+                        },
+                        ":",
+                        {
+                            "Fn::GetAtt": [
+                                "MasterDB",
+                                "Endpoint.Port"
+                            ]
+                        }
+                    ]
+                ]
+            }
+        }
+    }
+}

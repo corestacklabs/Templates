@@ -1,0 +1,10 @@
+{
+    "DBName": "CEdatabase",
+    "DBUsername": "DBUsername",
+    "DBPassword": "DBPassword",
+    "DBAllocatedStorage": 5,
+    "DBInstanceClass": "db.t2.small",
+    "MultiAZs": "false",
+    "DBPort": "3306",
+    "DBInstanceName": "DBInstanceName"
+}

@@ -1,0 +1,25 @@
+{
+	"category": "service",
+	"classification": [
+		"Provisioning"
+	],
+	"description": "Purpose: To provision an EC2 instance with a single network interface and multiple static IP addresses in an existing VPC. It assumes you have already created a VPC.",
+	"files": {},
+	"input_source": "Templates",
+	"metadata": {
+		"extension": "json",
+		"file_name": "AWS_Provision_VPC_EC2_Instance_With_Multiple_Static_IPAddresses",
+		"tags": {},
+		"operation_level": "L2",
+		"operation_time": 30
+	},
+	"name": "AWS_Provision_VPC_EC2_Instance_With_Multiple_Static_IPAddresses",
+	"resources": [],
+	"scope": "global",
+	"services": [
+		"AWS"
+	],
+	"type": [
+		"Cloud"
+	]
+}

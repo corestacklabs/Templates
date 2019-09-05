@@ -1,0 +1,6 @@
+{
+    "SSHLocation": "0.0.0.0/0",
+    "ImageID": "ami-5a9d424c",
+    "KeypairName": "my_keypair",
+    "InstanceType": "t2.micro"
+}

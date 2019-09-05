@@ -1,0 +1,13 @@
+{
+    "DBUsername": "corestack",
+    "SitePassword": "root",
+    "SiteName": "Mysite",
+    "SiteEMail": "corestack@cloudenablers.com",
+    "DBPassword": "root",
+    "DBRootPassword": "root",
+    "SSHLocation": "0.0.0.0/0",
+    "KeyName": "core_keypair",
+    "DBName": "drupaldb",
+    "SiteAdmin": "vinoth",
+    "InstanceType": "m1.small"
+}

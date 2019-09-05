@@ -1,0 +1,9 @@
+{
+    "SSHLocation": "0.0.0.0/0",
+    "ImageID": "ami-51ce5647",
+    "InstanceType": "t2.micro",
+    "KeypairName": "my_keypair",
+    "InstanceName": "my_instance",
+    "VPCCidr": "65.0.0.0/16",
+    "PublicSubnetCIDR": "65.0.0.0/24"
+}

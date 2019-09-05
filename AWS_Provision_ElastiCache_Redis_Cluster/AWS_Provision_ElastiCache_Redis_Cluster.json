@@ -1,0 +1,25 @@
+{
+	"category": "service",
+	"classification": [
+		"Provisioning"
+	],
+	"description": "This template creates an Amazon EC2 Instance and an Amazon ElastiCache Cluster.",
+	"files": {},
+	"input_source": "Templates",
+	"metadata": {
+		"extension": "json",
+		"file_name": "AWS_Provision_ElastiCache_Redis_Cluster",
+		"tags": {},
+		"operation_level": "L2",
+		"operation_time": 120
+	},
+	"name": "AWS_Provision_ElastiCache_Redis_Cluster",
+	"resources": [],
+	"scope": "global",
+	"services": [
+		"AWS"
+	],
+	"type": [
+		"Cloud"
+	]
+}

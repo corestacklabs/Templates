@@ -1,0 +1,10 @@
+{
+    "ImageID": "ami-51ce5647",
+    "SSHLocation": "0.0.0.0/0",
+    "InstanceType": "t2.micro",
+    "KeypairName": "my_keypair",
+    "VolumeSize": 100,
+    "VolumeType": "io1",
+    "InstanceName": "my_instance",
+    "VolumeIOPS": 100
+}

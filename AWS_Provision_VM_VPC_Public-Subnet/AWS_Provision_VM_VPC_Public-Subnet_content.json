@@ -1,0 +1,265 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "This template will create VPC, PublicSubnet, and launch the instance in that subnet.",
+    "Parameters": {
+        "SSHLocation": {
+            "Description": "An individual IPv4/IPv6 address (or) A range of IPv4/IPv6 addresses can be specified. These IP addresses specified will be allowed to SSH the EC2 instance.",
+            "Default": "0.0.0.0/0",
+            "Type": "String",
+            "MinLength": "9",
+            "MaxLength": "18",
+            "ConstraintDescription": "Must be a valid CIDR range x.x.x.x/x.",
+            "AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})"
+        },
+        "ImageID": {
+            "Description": "Image ID (AMI) to be used for provisioning instance in AWS. AMI provides the information required to launch an instance, which is a virtual server in the cloud.",
+            "Type": "String",
+            "source": "image.list_image"
+        },
+        "InstanceType": {
+            "Description": "Instance Type (Flavor) name to be used for provisioning instance in AWS. Instance types comprise varying combinations of CPU, memory, storage, and networking capacity.",
+            "Default": "t2.micro",
+            "Type": "String",
+            "AllowedValues": [
+                "t2.small",
+                "t2.micro",
+                "t2.medium",
+                "t2.large",
+                "m1.small",
+                "m1.medium",
+                "m1.large"
+            ]
+        },
+        "KeypairName": {
+            "Description": "Existing Keypair name to be used for provisioning instance in AWS. Amazon EC2 uses public-key cryptography to encrypt piece of data using public keys and decrypt the same using private keys. Public & Private keys known as Keypair.",
+            "Type": "String",
+            "source": "keypair.list_keypair"
+        },
+        "InstanceName": {
+            "Description": "Name for the Instance to be provisioned. Name is nothing but a tag to quickly identify resources in AWS. Name need not be unique and can be of user choice.",
+            "Default": "my_instance",
+            "Type": "String"
+        },
+        "VPCCidr": {
+            "Description": "CIDR range for the VPC being created. Range of IPv4 addresses for the VPC in the form of a Classless Inter-Domain Routing (CIDR) block; for example, 10.0.0.0/16.",
+            "Default": "65.0.0.0/16",
+            "MinLength": "9",
+            "MaxLength": "18",
+            "Type": "String",
+            "ConstraintDescription": "Must be a valid CIDR range x.x.x.x/x.",
+            "AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})"
+        },
+        "PublicSubnetCIDR": {
+            "Description": "CIDR range for the Public DMZ Subnet being created. Range of IPv4 addresses for the VPC in the form of a Classless Inter-Domain Routing (CIDR) block; for example, 10.0.0.0/16.",
+            "Default": "65.0.0.0/24",
+            "MinLength": "9",
+            "MaxLength": "18",
+            "Type": "String",
+            "ConstraintDescription": "Must be a valid CIDR range x.x.x.x/x.",
+            "AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})"
+        }
+    },
+    "Resources": {
+        "VPC": {
+            "Type": "AWS::EC2::VPC",
+            "Properties": {
+                "CidrBlock": {
+                    "Ref": "VPCCidr"
+                },
+                "EnableDnsHostnames": true,
+                "EnableDnsSupport": true,
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": {
+                            "Ref": "InstanceName"
+                        }
+                    }
+                ]
+            }
+        },
+        "InternetGateway": {
+            "Type": "AWS::EC2::InternetGateway",
+            "Properties": {
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": {
+                            "Ref": "InstanceName"
+                        }
+                    }
+                ]
+            }
+        },
+        "VpcGatewayAttachment": {
+            "DependsOn": [
+                "VPC",
+                "InternetGateway"
+            ],
+            "Type": "AWS::EC2::VPCGatewayAttachment",
+            "Properties": {
+                "VpcId": {
+                    "Ref": "VPC"
+                },
+                "InternetGatewayId": {
+                    "Ref": "InternetGateway"
+                }
+            }
+        },
+        "Subnet": {
+            "Type": "AWS::EC2::Subnet",
+            "Properties": {
+                "VpcId": {
+                    "Ref": "VPC"
+                },
+                "CidrBlock": {
+                    "Ref": "PublicSubnetCIDR"
+                },
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": {
+                            "Ref": "InstanceName"
+                        }
+                    }
+                ]
+            }
+        },
+        "PublicRouteTable": {
+            "Type": "AWS::EC2::RouteTable",
+            "Properties": {
+                "VpcId": {
+                    "Ref": "VPC"
+                },
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": {
+                            "Ref": "InstanceName"
+                        }
+                    }
+                ]
+            }
+        },
+        "PublicRoute": {
+            "Type": "AWS::EC2::Route",
+            "Properties": {
+                "GatewayId": {
+                    "Ref": "InternetGateway"
+                },
+                "RouteTableId": {
+                    "Ref": "PublicRouteTable"
+                },
+                "DestinationCidrBlock": "0.0.0.0/0"
+            }
+        },
+        "SubnetRouteTableAssociation": {
+            "Type": "AWS::EC2::SubnetRouteTableAssociation",
+            "Properties": {
+                "SubnetId": {
+                    "Ref": "Subnet"
+                },
+                "RouteTableId": {
+                    "Ref": "PublicRouteTable"
+                }
+            }
+        },
+        "NetworkAcl": {
+            "Type": "AWS::EC2::NetworkAcl",
+            "Properties": {
+                "VpcId": {
+                    "Ref": "VPC"
+                },
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": {
+                            "Ref": "InstanceName"
+                        }
+                    }
+                ]
+            }
+        },
+        "SubnetNetworkAclAssociation": {
+            "Type": "AWS::EC2::SubnetNetworkAclAssociation",
+            "Properties": {
+                "NetworkAclId": {
+                    "Ref": "NetworkAcl"
+                },
+                "SubnetId": {
+                    "Ref": "Subnet"
+                }
+            }
+        },
+        "InstanceCreate": {
+            "Type": "AWS::EC2::Instance",
+            "Properties": {
+                "KeyName": {
+                    "Ref": "KeypairName"
+                },
+                "InstanceType": {
+                    "Ref": "InstanceType"
+                },
+                "ImageId": {
+                    "Ref": "ImageID"
+                },
+                "SecurityGroups": [
+                    {
+                        "Ref": "SGBaseIngress"
+                    }
+                ],
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": {
+                            "Ref": "InstanceName"
+                        }
+                    }
+                ]
+            }
+        },
+        "SGBaseIngress": {
+            "Type": "AWS::EC2::SecurityGroup",
+            "Properties": {
+                "GroupDescription": "Allow SSH Port only for SSH location",
+                "SecurityGroupIngress": {
+                    "IpProtocol": "tcp",
+                    "FromPort": "22",
+                    "ToPort": "22",
+                    "CidrIp": {
+                        "Ref": "SSHLocation"
+                    }
+                },
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "InstanceName"
+                    }
+                ]
+            }
+        }
+    },
+    "Outputs": {
+        "VpcId": {
+            "Description": "VPC",
+            "Value": {
+                "Ref": "VPC"
+            }
+        },
+        "PublicSubnet": {
+            "Description": "Public Subnet",
+            "Value": {
+                "Ref": "Subnet"
+            }
+        },
+        "ServerIP": {
+            "Description": "PublicIpAddress",
+            "Value": {
+                "Fn::GetAtt": [
+                    "InstanceCreate",
+                    "PublicIp"
+                ]
+            }
+        }
+    }
+}

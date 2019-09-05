@@ -1,0 +1,5 @@
+{
+    "KeyName": "kp005",
+    "InstanceType": "t2.small",
+    "SSHLocation": "0.0.0.0/0"
+}

@@ -1,0 +1,11 @@
+{
+  "VPCCIDR": "10.0.0.0/16",
+  "PublicSubnetCIDR": "10.0.2.0/24",
+  "PrivateSubnetCIDR": "10.0.1.0/24",
+  "RemoteAccessCIDR": "0.0.0.0/0",
+  "KeypairName": "mykeypair",
+  "BuildBucketPath": "quickstart-reference/cloudera/hadoop/latest",
+  "NATInstanceType": "m3.medium",
+  "AvailabilityZone": "us-east-1a",
+  "ClusterInstanceType": "m3.large"
+}

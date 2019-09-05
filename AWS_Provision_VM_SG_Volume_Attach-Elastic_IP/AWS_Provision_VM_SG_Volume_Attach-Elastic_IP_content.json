@@ -1,0 +1,136 @@
+{
+  "AWSTemplateFormatVersion" : "2010-09-09",
+  "Description" : "Create and Attach the Volume to an Instances. Only allowed volume type is Io1",
+  "Parameters" : {
+    "ImageID" : {
+      "Description" : "Image ID (AMI) to be used for provisioning instance in AWS. AMI provides the information required to launch an instance, which is a virtual server in the cloud.",
+      "Type" : "String",
+      "source": "image.list_image"
+    },
+    "SSHLocation": {
+      "Description": "An individual IPv4/IPv6 address (or) A range of IPv4/IPv6 addresses can be specified. These IP addresses specified will be allowed to SSH the EC2 instance.",
+      "Type": "String",
+      "MinLength": "9",
+      "MaxLength": "18",
+      "Default": "0.0.0.0/0",
+      "AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
+      "ConstraintDescription": "must be a valid IP CIDR range of the form x.x.x.x/x."
+    },
+    "InstanceName" : {
+      "Description" : "Name for the Instance to be provisioned. Name is nothing but a tag to quickly identify resources in AWS. Name need not be unique and can be of user choice. Same name will be used for Security Group and Volume Storage as well.",
+      "Default" : "my_instance",
+      "Type" : "String"
+    },
+    "InstanceType" : {
+      "Description": "Instance Type (Flavor) name to be used for provisioning instance in AWS. Instance types comprise varying combinations of CPU, memory, storage, and networking capacity.",
+      "Default" : "t2.micro",
+      "Type" : "String",
+      "AllowedValues" : [
+        "t2.small",
+        "t2.micro",
+        "t2.medium",
+        "t2.large",
+        "m1.small",
+        "m1.medium",
+        "m1.large"
+      ]
+    },
+    "KeypairName" : {
+      "Description" : "Existing Keypair name to be used for provisioning instance in AWS. Amazon EC2 uses public-key cryptography to encrypt piece of data using public keys and decrypt the same using private keys. Public & Private keys known as Keypair.",
+      "Type" : "String",
+      "source": "keypair.list_keypair"
+    },
+    "VolumeSize" : {
+      "Type" : "Number",
+      "Default" : "100",
+      "Description" : "The Size of the volume storage in GigaBytes (GBs)."
+    },
+    "VolumeType" : {
+      "Type" : "String",
+      "Description" : "The type of volume to be created. The only supported value is 'io1' for now. This means 'EBS Provisioned IOPS SSD' volume type.",
+      "Default" : "io1",
+      "AllowedValues" : [
+        "io1"
+      ]
+    },
+    "VolumeIOPS" : {
+      "Type" : "Number",
+      "Description" : "The number of I/O operations should the volume storage support. Default value is '100'. Max IOPS for volume type 'io1' is '20,000'.",
+      "Default" : "100"
+    }
+  },
+  "Resources" : {
+    "ElasticIP" : {
+      "Type" : "AWS::EC2::EIP",
+      "Properties" : {
+        "InstanceId" : { "Ref" : "CAInstance" }
+      }
+    },
+    "CAInstance" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "ImageId" : { "Ref" : "ImageID" },
+        "InstanceType" : { "Ref" : "InstanceType"},
+        "KeyName" : { "Ref" : "KeypairName"},
+        "SecurityGroups" : [{ "Ref" : "SGBaseIngress" }],
+        "Tags" : [ {
+          "Key" : "Name",
+          "Value" : { "Ref" : "InstanceName" }
+        }]
+      }
+    },
+    "SGBaseIngress" : {
+      "Type" : "AWS::EC2::SecurityGroup",
+      "Properties" : {
+        "GroupDescription" : "Allow SSH port only allowed SSH location",
+        "SecurityGroupIngress" : {
+          "IpProtocol" : "tcp",
+          "FromPort" : "22",
+          "ToPort" : "22",
+          "CidrIp" : { "Ref" : "SSHLocation" }
+        },
+        "Tags" : [ {
+          "Key" : "Name",
+          "Value" : { "Ref" : "InstanceName" }
+        }]
+      }
+    },
+    "CAVolume" : {
+      "Type" : "AWS::EC2::Volume",
+      "Properties" : {
+        "AutoEnableIO" : "true",
+        "Size" : { "Ref" : "VolumeSize" },
+        "VolumeType" : { "Ref" : "VolumeType" },
+        "Iops" : { "Ref" : "VolumeIOPS" },
+        "AvailabilityZone" : { "Fn::GetAtt" : ["CAInstance", "AvailabilityZone" ] },
+        "Tags" : [ {
+          "Key" : "Name",
+          "Value" : { "Ref" : "InstanceName" }
+        }]
+      },
+      "DeletionPolicy" : "Snapshot"
+    },
+    "MountPoint" : {
+      "Type" : "AWS::EC2::VolumeAttachment",
+      "Properties" : {
+        "InstanceId" : { "Ref" : "CAInstance" },
+        "VolumeId" : { "Ref" : "CAVolume" },
+        "Device" : "/dev/sdh"
+      }
+    }
+  },
+  "Outputs" : {
+    "InstanceId" : {
+      "Description" : "The InstanceId",
+      "Value" : { "Ref" : "CAInstance" }
+    },
+    "InstanceElasticIpAddress" : {
+      "Description" : "Elastic IP address of that instance",
+      "Value" : { "Fn::GetAtt" : [ "CAInstance", "PublicIp"] }
+    },
+    "VolumeId" : {
+      "Description" : "The VolumeId",
+      "Value" : { "Ref" : "CAVolume" }
+    }
+  }
+}

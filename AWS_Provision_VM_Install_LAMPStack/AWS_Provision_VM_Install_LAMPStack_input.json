@@ -1,0 +1,17 @@
+{
+    "SecurityGroup": "test",
+    "InstanceType": "m1.small",
+    "KeyName": "core-secret",
+    "UserData": [
+        "#!/bin/bash -xe\n",
+        "sudo apt-get -y update\n",
+        "echo 'mysql-server mysql-server/root_password password root' | debconf-set-selections\n",
+        "echo 'mysql-server mysql-server/root_password_again password root' | debconf-set-selections\n",
+        "sudo apt-get -y install mysql-server-5.5\n",
+        "sudo apt-get -y install apache2\n",
+        "mysql -u root -proot -e 'create database wordpress' \n",
+        "sudo apt-get -y install mysql-server libapache2-mod-auth-mysql php5-mysql\n",
+        "apt-get -y install php5 libapache2-mod-php5 php5-mcrypt\n",
+        "service apache2 restart\n"
+    ]
+}
