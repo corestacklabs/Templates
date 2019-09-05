@@ -1,0 +1,25 @@
+{
+  "category": "service",
+  "classification": [
+    "Provisioning"
+  ],
+  "description": "AWS Lambda is a serverless compute service that runs your code in response to events and automatically manages for you. AWS Lambda executes your code only when needed and scales automatically, from a few requests per day to thousands per second. You pay only for the compute time consumed - there is no charge when your lambda function is not executed.",
+  "files": {},
+  "input_source": "Templates",
+  "metadata": {
+    "extension": "json",
+    "file_name": "AWS_Create_Lambda_Function_CFN",
+    "tags": {},
+    "operation_level": "L1",
+    "operation_time": 15
+  },
+  "name": "AWS_Create_Lambda_Function_CFN",
+  "resources": [],
+  "scope": "global",
+  "services": [
+    "AWS"
+  ],
+  "type": [
+    "Cloud"
+  ]
+}
