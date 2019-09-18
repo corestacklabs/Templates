@@ -20,9 +20,9 @@ Please read [CONTRIBUTING.md](https://gist.github.com/PurpleBooth/b24679402957c6
 
 ## Authors
 
-* **Billie Thompson** - *Initial work* - [PurpleBooth](https://github.com/PurpleBooth)
+* **Karthick K** - *Initial work* - [karthickk](https://github.com/karthick-kk)
 
-See also the list of [contributors](https://github.com/your/project/contributors) who participated in this project.
+See also the list of [contributors](https://github.com/orgs/corestacklabs/people) who participated in this project.
 
 ## License
 
