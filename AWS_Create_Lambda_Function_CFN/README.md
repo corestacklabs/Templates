@@ -11,7 +11,7 @@ AWS account
 
 Import the CFN template on to the AWS CloudFormation or click below to deploy to the corestack product 
 
-[![Deploy to Azure](http://img4.imagetitan.com/img4/small/20/20_deploynew.png)](http://qa.corestack.io/heatstack/templates?repositories=github&url=https://raw.githubusercontent.com/corestacklabs/Templates/master/AWS_Create_Lambda_Function_CFN/AWS_Create_Lambda_Function_CFN_content.json&engine=mistral&type[0]=Cloud&type[1]=Monitoring&classification[0]=Provisioning&classification[1]=Configure&scope=tenant#/mytemplates)
+[![Deploy to Azure](http://img4.imagetitan.com/img.php?image=20_deploy-to-corestack.png)](http://qa.corestack.io/heatstack/templates?repositories=github&url=https://raw.githubusercontent.com/corestacklabs/Templates/master/AWS_Create_Lambda_Function_CFN/AWS_Create_Lambda_Function_CFN_content.json&engine=mistral&type[0]=Cloud&type[1]=Monitoring&classification[0]=Provisioning&classification[1]=Configure&scope=tenant#/mytemplates)
 
 ## Contributing
 
