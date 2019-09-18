@@ -1,9 +1,0 @@
-{
-	"SSHLocation": "0.0.0.0/0",
-	"KeyName": "test-02",
-	"VpcId": "vpc-e67fa59f",
-	"SubnetId": "subnet-9c53cdd4",
-	"SecondaryIPAddress": "10.0.0.67",
-	"InstanceType": "m1.small",
-	"PrimaryIPAddress": "10.0.0.77"
-}

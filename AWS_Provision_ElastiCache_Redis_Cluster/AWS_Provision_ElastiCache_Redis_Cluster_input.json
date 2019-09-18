@@ -1,6 +1,0 @@
-{
-	"SSHLocation": "0.0.0.0/0",
-	"KeyName": "test-02",
-	"ClusterNodeType": "cache.m1.small",
-	"InstanceType": "m1.small"
-}
