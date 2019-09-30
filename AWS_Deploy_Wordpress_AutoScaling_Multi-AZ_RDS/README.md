@@ -11,7 +11,7 @@ AWS account
 
 Import the CFN template on to the AWS CloudFormation or click below to deploy to the corestack product 
 
-[![Deploy to Azure](https://docs.corestack.io/wp-content/uploads/2019/09/deploy-to-corestack-new.svg)](http://192.168.2.201/heatstack/templates?repositories=github&url=https://raw.githubusercontent.com/corestacklabs/Templates/master/AWS_Deploy_Wordpress_AutoScaling_Multi-AZ_RDS/AWS_Deploy_Wordpress_AutoScaling_Multi-AZ_RDS_content.json&engine=Cfn&type[0]=Cloud&type[1]=Monitoring&classification[0]=Provisioning&classification[1]=Configure&scope=tenant#/mytemplates)
+[![Deploy to Azure](https://docs.corestack.io/wp-content/uploads/2019/09/deploy-to-corestack-new.svg)](http://192.168.2.201/heatstack/templates?repositories=github&url=https://raw.githubusercontent.com/corestacklabs/Templates/master/AWS_Deploy_Wordpress_AutoScaling_Multi-AZ_RDS/AWS_Deploy_Wordpress_AutoScaling_Multi-AZ_RDS_content.json&engine=Cfn&type[0]=Cloud&classification[0]=Provisioning&scope=tenant#/mytemplates)
 
 ## Contributing
 
