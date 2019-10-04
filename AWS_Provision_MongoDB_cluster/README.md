@@ -11,7 +11,7 @@ AWS account
 
 Import the CFN template on to the AWS CloudFormation or click below to deploy to the corestack product 
 
-[![Deploy to Azure](https://docs.corestack.io/wp-content/uploads/2019/09/deploy-to-corestack.svg)](http://192.168.2.201/heatstack/templates?repositories=github&url=https://raw.githubusercontent.com/corestacklabs/Templates/master/AWS_Provision_MongoDB_cluster/AWS_Provision_MongoDB_cluster_content.json&engine=cfn&type[0]=Cloud&classification[0]=Provisioning&scope=tenant#/mytemplates)
+[![Deploy to Azure](https://docs.corestack.io/wp-content/uploads/2019/09/deploy-to-corestack.svg)](http://qa.corestack.io/heatstack/templates?repositories=github&external_redirect=true&name=AWS_Provision_MongoDB_cluster&url=https://raw.githubusercontent.com/corestacklabs/Templates/master/AWS_Provision_MongoDB_cluster/AWS_Provision_MongoDB_cluster_content.json&engine=cfn&type[0]=Cloud&classification[0]=Provisioning&scope=tenant#/mytemplates)
 
 ## Contributing
 
