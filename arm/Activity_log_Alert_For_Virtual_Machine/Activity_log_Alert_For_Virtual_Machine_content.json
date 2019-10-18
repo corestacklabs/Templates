@@ -1,0 +1,121 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "activityLogAlertName": {
+      "type": "string",
+      "metadata": {
+        "description": "Unique name (within the Resource Group) for the Activity log alert."
+      }
+    },
+    "webhookURL": {
+      "type": "string",
+      "maxLength": 300,
+      "metadata": {
+        "description": "The webhook url which has to be configured with the action group to call back when there is an activity happened for the configured activity log alert."
+      }
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Insights/actionGroups",
+      "apiVersion": "2018-03-01",
+      "name": "CS-Activity-ActionGroup-Ondemand",
+      "location": "Global",
+      "properties": {
+        "groupShortName": "simulation",
+        "enabled": true,
+        "webhookReceivers": [
+          {
+            "name": "activity_webhook",
+            "serviceUri": "[parameters('webhookURL')]"
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.Insights/activityLogAlerts",
+      "apiVersion": "2017-04-01",
+      "name": "[concat(parameters('activityLogAlertName') ,'-delete')]",
+      "location": "Global",
+      "properties": {
+        "enabled": true,
+        "scopes": [
+          "[subscription().id]"
+        ],
+        "condition": {
+          "allOf": [
+            {
+              "field": "category",
+              "equals": "Administrative"
+            },
+            {
+              "field": "resourceType",
+              "equals": "[parameters('resourceType')]"
+            },
+            {
+              "field": "operationName",
+              "equals": "Microsoft.Compute/virtualMachines/delete"
+            }
+          ]
+        },
+        "actions": {
+          "actionGroups": [
+            {
+              "actionGroupId": "[resourceId('Microsoft.Insights/actionGroups', 'CS-Activity-ActionGroup-Ondemand')]"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Insights/activityLogAlerts",
+      "apiVersion": "2017-04-01",
+      "name": "[concat(parameters('activityLogAlertName') ,'-create')]",
+      "location": "Global",
+      "properties": {
+        "enabled": true,
+        "scopes": [
+          "[subscription().id]"
+        ],
+        "condition": {
+          "allOf": [
+            {
+              "field": "category",
+              "equals": "Administrative"
+            },
+            {
+              "field": "resourceType",
+              "equals": "[parameters('resourceType')]"
+            },
+            {
+              "field": "operationName",
+              "equals": "Microsoft.Compute/virtualMachines/write"
+            }
+          ]
+        },
+        "actions": {
+          "actionGroups": [
+            {
+              "actionGroupId": "[resourceId('Microsoft.Insights/actionGroups', 'CS-Activity-ActionGroup-Ondemand')]"
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "outputs": {
+    "actionGroupId": {
+      "type": "string",
+      "value": "[resourceId('Microsoft.Insights/actionGroups','CS-Activity-ActionGroup-Ondemand')]"
+    },
+    "createActivityLogId": {
+      "type": "string",
+      "value": "[resourceId('Microsoft.Insights/activityLogAlerts',concat(parameters('activityLogAlertName') ,'-create'))]"
+    },
+    "deleteActivityLogId": {
+      "type": "string",
+      "value": "[resourceId('Microsoft.Insights/activityLogAlerts',concat(parameters('activityLogAlertName') ,'-delete'))]"
+    }
+  }
+}

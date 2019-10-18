@@ -1,0 +1,132 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "FunctionAppName": {
+            "type": "String",
+            "metadata": {
+                "description": "The name of the function app to be created."
+            }
+        },
+        "StorageAccountType": {
+            "defaultValue": "Standard_LRS",
+            "allowedValues": [
+                "Standard_LRS",
+                "Standard_GRS",
+                "Standard_RAGRS"
+            ],
+            "type": "String",
+            "metadata": {
+                "description": "Type of the Storage Account"
+            }
+        },
+        "StorageAccountName": {
+            "type": "String",
+            "metadata": {
+                "description": "Name of the storage account to be created"
+            }
+        },
+        "SkuName": {
+            "allowedValues": [
+                "B1",
+                "B2",
+                "B3",
+                "S1",
+                "S2",
+                "S3",
+                "P1",
+                "P2",
+                "P3",
+                "I1",
+                "I2",
+                "I3"
+            ],
+            "type": "String",
+            "metadata": {
+               "description": "Sku of the app service plan"
+            }
+        },
+        "SkuTier": {
+            "allowedValues": [
+                "Basic",
+                "Standard",
+                "Premium",
+                "Isolated"
+            ],
+            "type": "String",
+            "metadata": {
+               "description": "SkuTier of the app service plan"
+            }
+        },
+        "SkuCapacity": {
+            "allowedValues": [
+              1,
+              2,
+              3
+            ],
+            "type": "int",
+            "metadata": {
+               "description": "SkuCapacity of the app service plan"
+            }
+        },
+        "Location": {
+            "defaultValue": "[resourceGroup().location]",
+            "type": "String",
+            "metadata": {
+                "description": "Location for all resources."
+            }
+        },
+        "Kind": {
+            "allowedValues": [
+                "linux",
+                "windows"
+            ],
+            "type": "String",
+            "metadata": {
+               "description": "Kind of the function app to be created"
+            }
+        }
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Storage/storageAccounts",
+            "sku": {
+                "name": "[parameters('StorageAccountType')]"
+            },
+            "kind": "Storage",
+            "name": "[parameters('StorageAccountName')]",
+            "apiVersion": "2016-12-01",
+            "location": "[parameters('Location')]"
+        },
+        {
+            "type": "Microsoft.Web/serverfarms",
+            "sku": {
+                "name": "[parameters('SkuName')]",
+                "tier": "[parameters('SkuTier')]",
+                "size": "[parameters('SkuName')]",
+                "capacity": "[parameters('SkuCapacity')]"
+            },
+            "kind": "[if(equals(parameters('Kind'),'linux'), 'linux','functionapp')]",
+            "name": "[parameters('FunctionAppName')]",
+            "apiVersion": "2015-08-01",
+            "location": "[parameters('Location')]",
+            "properties": {
+                "name": "[parameters('FunctionAppName')]"
+            }
+        },
+        {
+            "type": "Microsoft.Web/sites",
+            "kind": "functionapp",
+            "name": "[parameters('FunctionAppName')]",
+            "apiVersion": "2015-08-01",
+            "location": "[parameters('Location')]",
+            "properties": {
+                "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', parameters('FunctionAppName'))]"
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/serverfarms', parameters('FunctionAppName'))]",
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName'))]"
+            ]
+        }
+    ]
+}

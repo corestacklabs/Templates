@@ -1,0 +1,54 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "ADAdminLogin": {
+            "type": "String",
+            "metadata": {
+                "description": "Currently, Microsoft accounts (like live.com, outlook.com) cannot be set as admin. Only users and security groups within your organization can be set as admin. User should be Active directory user."
+            }
+        },
+        "ADAdminObjectID": {
+            "type": "String",
+            "metadata": {
+                "description": "Object Id of the User, which is available in user properties."
+            }
+        },
+        "ADTenantId": {
+            "type": "String",
+            "metadata": {
+                "description": "Tenant Id is same as Directory id available in AD properties section."
+            }
+        },
+        "SqlServerName": {
+            "type": "String",
+            "source": "sql_server.list_server",
+            "metadata": {
+                "description": "SQL Server name to configure the AD admin."
+            }
+        }
+    },
+    "resources": [
+        {
+          "type": "Microsoft.Sql/servers/administrators",
+          "name": "[concat(parameters('SqlServerName'), '/', 'activeDirectory' )]",
+          "apiVersion": "2014-04-01-preview",
+          "properties": {
+            "administratorType": "ActiveDirectory",
+            "login": "[parameters('ADAdminLogin')]",
+            "sid": "[parameters('ADAdminObjectID')]",
+            "tenantId": "[parameters('ADTenantID')]"
+          }
+        }
+    ],
+    "outputs": {
+        "adAdminLogin": {
+            "type": "String",
+            "value": "[parameters('ADAdminLogin')]"
+        },
+        "sqlServerName": {
+            "type": "String",
+            "value": "[parameters('SqlServerName')]"
+        }
+    }
+}

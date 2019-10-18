@@ -1,0 +1,56 @@
+{
+    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "sqlServerName": {
+            "type": "String",
+            "source": "sql_server.list_server",
+            "metadata": {
+              "description": "SQL server name."
+            }
+        },
+        "databaseNames": {
+            "type": "Array",
+            "source": "sql_database.list_database",
+            "metadata": {
+              "description": "SQL database names."
+            }
+        },
+        "storageAccountId": {
+            "type": "String",
+            "maxLength": 4096,
+            "source": "storage_account.list_storage_account_by_id",
+            "metadata": {
+              "description": "Id of Storage account."
+            }
+        }
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Sql/servers/databases/auditingSettings",
+            "apiVersion": "2017-03-01-preview",
+            "name": "[concat(parameters('sqlServerName'), '/', parameters('databaseNames')[copyIndex()], '/', 'auditingSettings')]",
+            "properties": {
+                "state": "Enabled",
+                "storageEndpoint": "[reference(parameters('storageAccountId'), '2018-03-01-preview').PrimaryEndpoints.Blob]",
+                "storageAccountAccessKey": "[listKeys(parameters('storageAccountId'), '2018-03-01-preview').keys[0].value]",
+                "storageAccountSubscriptionId": "[subscription().subscriptionId]",
+                "isStorageSecondaryKeyInUse": false
+            },
+            "copy": {
+                "name": "encryption",
+                "count": "[length(parameters('databaseNames'))]"
+            }
+        }
+    ],
+    "outputs": {
+        "sqlServerName": {
+          "type": "String",
+          "value": "[parameters('sqlServerName')]"
+        },
+        "status": {
+          "type": "String",
+          "value": "Completed"
+        }
+    }
+}

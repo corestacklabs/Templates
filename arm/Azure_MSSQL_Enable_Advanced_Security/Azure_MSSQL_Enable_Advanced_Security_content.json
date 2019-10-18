@@ -1,0 +1,72 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "sqlServerName": {
+      "type": "string",
+      "source": "sql_server.list_server",
+      "metadata": {
+        "description": "Name for the SQL server"
+      }
+    },
+    "enableADS": {
+      "defaultValue": false,
+      "type": "Bool"
+    },
+    "storageAccountId": {
+      "type": "String",
+      "maxLength": 4096,
+      "source": "storage_account.list_storage_account_by_id",
+      "metadata": {
+        "description": "Id of Storage account."
+      }
+    },
+    "emailIDs": {
+      "type": "Array",
+      "metadata": {
+        "description": "Specify the email ID's."
+      }
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Sql/servers/vulnerabilityAssessments",
+      "apiVersion": "2018-06-01-preview",
+      "name": "[concat(parameters('sqlServerName'), '/', 'vulnerabilityAssessments')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Sql/servers/securityAlertPolicies', parameters('sqlServerName'), 'securityAlertPolicies')]"
+      ],
+      "properties": {
+        "storageContainerPath": "[reference(parameters('storageAccountId'), '2018-03-01-preview').PrimaryEndpoints.Blob]",
+        "recurringScans": {
+          "isEnabled": true,
+          "emailSubscriptionAdmins": false,
+          "emails": "[parameters('emailIDs')]"
+        }
+      },
+      "condition": "[parameters('enableADS')]"
+    },
+    {
+      "type": "Microsoft.Sql/servers/securityAlertPolicies",
+      "apiVersion": "2017-03-01-preview",
+      "name": "[concat(parameters('sqlServerName'), '/', 'securityAlertPolicies')]",
+      "properties": {
+        "state": "Enabled",
+        "disabledAlerts": [],
+        "emailAddresses": "[parameters('emailIDs')]",
+        "emailAccountAdmins": false
+      },
+      "condition": "[parameters('enableADS')]"
+    }
+  ],
+  "outputs": {
+    "sqlServerName": {
+      "type": "String",
+      "value": "[parameters('sqlServerName')]"
+    },
+    "status": {
+      "type": "String",
+      "value": "Completed"
+    }
+  }
+}

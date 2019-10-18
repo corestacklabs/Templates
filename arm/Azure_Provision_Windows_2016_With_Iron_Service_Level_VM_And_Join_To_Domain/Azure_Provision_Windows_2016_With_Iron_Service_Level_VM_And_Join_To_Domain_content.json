@@ -1,0 +1,258 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "location": {
+      "type": "string",
+      "metadata": {
+        "description": "Pick the same Location in which Azure AD Domain Service is deployed."
+      },
+      "allowedValues": [
+        "westus",
+        "westus2",
+        "eastus",
+        "eastus2",
+        "australiaeast",
+        "australiasoutheast",
+        "brazilsouth",
+        "canadacentral",
+        "canadaeast",
+        "centralindia",
+        "centralus",
+        "eastasia",
+        "francecentral",
+        "japaneast",
+        "japanwest",
+        "koreacentral",
+        "koreasouth",
+        "northcentralus",
+        "northeurope",
+        "southcentralus",
+        "southindia",
+        "southeastasia",
+        "uksouth",
+        "ukwest",
+        "westcentralus",
+        "westeurope",
+        "westindia"
+      ]
+    },
+    "virtualmachine_name": {
+      "type": "string",
+      "metadata": {
+        "description": "Name for the VirtualMachine to be provisioned. VM name is case-insensitive. Alphanumeric and hyphen are valid characters."
+      },
+      "minLength": 1,
+      "maxLength": 15
+    },
+    "virtualmachine_size": {
+      "type": "string",
+      "metadata": {
+        "description": "The size of the VirtualMachine"
+      },
+      "source": "instance_size.list_instance_size"
+    },
+    "existing_subnet_name": {
+      "type": "string",
+      "metadata": {
+        "description": "Specify the subnet name within the virtual network where you would like to deploy this virtual machine. Do not select the gateway subnet in the virtual network. Also, do not select the dedicated subnet in which your managed domain is deployed."
+      },
+      "source": "virtual_network.list_all_subnet"
+    },
+    "vm_admin_username": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the administrator of the new VM and the domain. Exclusion list: 'admin','administrator"
+      },
+      "minLength": 1,
+      "maxLength": 32
+    },
+    "vm_admin_password": {
+      "type": "securestring",
+      "metadata": {
+        "description": "The password for the administrator account of the new VM and the domain"
+      },
+       "minLength": 12,
+      "maxLength": 72
+    },
+    "tags": {
+      "type": "object",
+      "defaultValue": {},
+      "metadata": {
+        "description": "Tags to assign all resources.This is JSON param,Sample: <br/>{<br/>\"key1\":\"value1\"<br/>}"
+      }
+    },
+    "enable_domain_join": {
+      "type": "string",
+      "metadata": {
+        "description": "Key to check whether domain join can be enabled or not"
+      },
+      "allowedValues": [
+        "Yes",
+        "No"
+      ]
+    },
+    "domain_to_join": {
+      "type": "string",
+      "metadata": {
+        "description": "Specify the DNS domain name of your managed domain."
+      }
+    },
+    "domain_username": {
+      "type": "string",
+      "metadata": {
+        "description": "Specify the user account name on your managed domain that should be used to join the VM to the managed domain. Eg: 'developer'."
+      }
+    },
+    "domain_password": {
+      "type": "securestring",
+      "metadata": {
+        "description": "Specify the password of the domain user account referred to by the 'DomainUsername' parameter"
+      }
+    }
+  },
+  "variables": {
+    "location_name": "[parameters('location')]",
+    "networkinterface_name": "[concat(parameters('virtualmachine_name'), '-nc01')]"
+  },
+  "resources": [
+    {
+      "apiVersion": "2015-06-15",
+      "type": "Microsoft.Network/networkInterfaces",
+      "name": "[variables('networkinterface_name')]",
+      "location": "[variables('location_name')]",
+      "tags": "[parameters('tags')]",
+      "dependsOn": [
+      ],
+      "properties": {
+        "ipConfigurations": [
+          {
+            "name": "ipconfig",
+            "properties": {
+              "privateIPAllocationMethod": "Dynamic",
+              "subnet": {
+                "id": "[parameters('existing_subnet_name')]"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "apiVersion": "2018-06-01",
+      "type": "Microsoft.Compute/virtualMachines",
+      "name": "[parameters('virtualmachine_name')]",
+      "location": "[variables('location_name')]",
+      "tags": "[parameters('tags')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/networkInterfaces', variables('networkinterface_name'))]"
+      ],
+      "properties": {
+        "hardwareProfile": {
+          "vmSize": "[parameters('virtualmachine_size')]"
+        },
+        "osProfile": {
+          "computerName": "[parameters('virtualmachine_name')]",
+          "adminUsername": "[parameters('vm_admin_username')]",
+          "adminPassword": "[parameters('vm_admin_password')]"
+        },
+        "storageProfile": {
+          "imageReference": {
+            "publisher": "MicrosoftWindowsServer",
+            "offer": "WindowsServer",
+            "sku": "2016-Datacenter",
+            "version": "2016.127.20190416"
+          },
+          "osDisk": {
+            "createOption": "fromImage",
+            "managedDisk": {
+              "storageAccountType": "Standard_LRS"
+            }
+          }
+        },
+        "networkProfile": {
+          "networkInterfaces": [
+            {
+              "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('networkinterface_name'))]"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "condition": "[equals(parameters('enable_domain_join'),'Yes')]",
+      "apiVersion": "2015-06-15",
+      "type": "Microsoft.Compute/virtualMachines/extensions",
+      "name": "[concat(parameters('virtualmachine_name'),'/joindomain')]",
+      "location": "[variables('location_name')]",
+      "dependsOn": [
+        "[concat('Microsoft.Compute/virtualMachines/', parameters('virtualmachine_name'))]"
+      ],
+      "properties": {
+        "publisher": "Microsoft.Compute",
+        "type": "JsonADDomainExtension",
+        "typeHandlerVersion": "1.3",
+        "autoUpgradeMinorVersion": true,
+        "settings": {
+          "Name": "[toUpper(parameters('domain_to_join'))]",
+          "User": "[concat(toUpper(parameters('domain_to_join')), '\\', parameters('domain_username'))]",
+          "Restart": "true",
+          "Options": 3
+        },
+        "protectedSettings": {
+          "Password": "[parameters('domain_password')]"
+        }
+      }
+    }
+  ],
+  "outputs": {
+    "domain_username": {
+      "type": "string",
+      "value": "[parameters('domain_username')]"
+    },
+    "root_username": {
+      "type": "string",
+      "value": "[parameters('vm_admin_username')]"
+    },
+    "computer_name": {
+      "type": "string",
+      "value": "[parameters('virtualmachine_name')]"
+    },
+    "vm_status": {
+      "type": "string",
+      "value": "Running"
+    },
+    "root_password": {
+      "type": "string",
+      "value": "[parameters('vm_admin_password')]"
+    },
+    "domain_password": {
+      "type": "string",
+      "value": "[parameters('domain_password')]"
+    },
+    "subnet_name": {
+      "type": "string",
+      "value": "[split(parameters('existing_subnet_name'),'/')[10]]"
+    },
+    "subnet_id": {
+      "type": "string",
+      "value": "[parameters('existing_subnet_name')]"
+    },
+    "virtual_network": {
+      "type": "string",
+      "value": "[split(parameters('existing_subnet_name'),'/')[8]]"
+    },
+    "id": {
+      "type": "string",
+      "value": "[resourceId(resourcegroup().name,'Microsoft.Compute/virtualMachines', parameters('virtualmachine_name'))]"
+    },
+    "nic_name": {
+      "type": "string",
+      "value": "[variables('networkinterface_name')]"
+    },
+    "vmId": {
+      "type": "string",
+      "value": "[reference(concat('Microsoft.Compute/virtualMachines/', parameters('virtualmachine_name')), '2018-06-01', 'Full').properties.vmId]"
+    }
+  }
+}

@@ -1,0 +1,88 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "location": {
+      "type": "string",
+      "metadata": {
+        "description": "Pick the location of the VirtualMachine."
+      },
+      "allowedValues": [
+        "westus",
+        "westus2",
+        "eastus",
+        "eastus2",
+        "australiaeast",
+        "australiasoutheast",
+        "brazilsouth",
+        "canadacentral",
+        "canadaeast",
+        "centralindia",
+        "centralus",
+        "eastasia",
+        "francecentral",
+        "japaneast",
+        "japanwest",
+        "koreacentral",
+        "koreasouth",
+        "northcentralus",
+        "northeurope",
+        "southcentralus",
+        "southindia",
+        "southeastasia",
+        "uksouth",
+        "ukwest",
+        "westcentralus",
+        "westeurope",
+        "westindia"
+      ]
+    },
+    "vm_name": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of the Virtual Machine to which the SSH Key need to be reset."
+      },
+      "minLength": 1,
+      "maxLength": 64
+    },
+    "ssh_username": {
+      "type": "string",
+      "metadata": {
+        "description": "SSH Username"
+      }
+    },
+    "recipient_mail_ids": {
+      "type": "string",
+      "defaultValue": "xxxxx@yyyy.com",
+      "metadata": {
+        "description": "Enter recipient email-ids to email the newly created SSH Keypair.If you want to send email to more than one recipient, enter the email-id in a comma separated format. Example: 'support@corestack.io, customer-success@corestack.io'."
+      }
+    }
+  },
+  "resources": [{
+      "name": "[concat(parameters('vm_name'), '/sshkey_extension')]",
+      "type": "Microsoft.Compute/virtualMachines/extensions",
+      "location": "[parameters('location')]",
+      "apiVersion": "2015-06-15",
+      "properties": {
+        "publisher": "Microsoft.Azure.Extensions",
+        "type": "CustomScript",
+        "typeHandlerVersion": "2.0",
+        "autoUpgradeMinorVersion": true,
+        "settings": {},
+        "protectedSettings": {
+          "fileUris": [
+            "https://dndcorestackscripts.blob.core.windows.net/corestackscripts/sshkey_new.sh"
+          ],
+          "commandToExecute": "[concat('sh sshkey_new.sh', ' ', parameters('vm_name'), ' ', parameters('ssh_username'), ' ', parameters('recipient_mail_ids'))]"
+        }
+      }
+    }
+  ],
+  "outputs": {
+    "ssh_key": {
+      "type": "object",
+      "value": "[reference('sshkey_extension').instanceView]"
+    }
+  }
+}

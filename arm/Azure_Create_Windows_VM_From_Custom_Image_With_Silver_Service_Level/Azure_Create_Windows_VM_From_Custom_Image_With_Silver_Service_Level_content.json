@@ -1,0 +1,317 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "location": {
+      "type": "string",
+      "metadata": {
+        "description": "Pick the same Location in which Azure AD Domain Service is deployed"
+      },
+      "allowedValues": [
+        "West US",
+        "West Central US",
+        "East US",
+        "East US 2",
+        "Australia East",
+        "Australia Southeast",
+        "Brazil South",
+        "Canada Central",
+        "Canada East",
+        "Central India",
+        "Central US",
+        "East Asia",
+        "France Central",
+        "Japan East ",
+        "Japan West",
+        "Korea Central",
+        "Korea South",
+        "North Central US",
+        "North Europe",
+        "South Central US",
+        "South India",
+        "Southeast Asia",
+        "UK South",
+        "UK West",
+        "West Central US",
+        "West Europe",
+        "West India"
+      ]
+    },
+    "virtualmachine_name": {
+      "type": "string",
+      "metadata": {
+        "description": "Name for the Virtual Machine to be provisioned. VM name is case-insensitive. Alphanumeric and hyphen are valid characters."
+      },
+      "minLength": 1,
+      "maxLength": 15
+    },
+    "virtualmachine_size": {
+      "type": "string",
+      "source": "instance_size.list_instance_size",
+      "metadata": {
+        "description": "The size of the virtual machine."
+      }
+    },
+    "vm_admin_username": {
+      "type": "string",
+      "metadata": {
+        "description": "Username of the administrator account in the Virtual Machine. Username will be used to remote connect (login) to the VM when it is created. Username must only contain letters, numbers, underscores, hyphens and may not start with a hyphen or number"
+      },
+      "minLength": 1,
+      "maxLength": 32
+    },
+    "vm_admin_password": {
+      "type": "securestring",
+      "metadata": {
+        "description": "Password of the administrator account in the Virtual Machine. Password must have 3 of the following: 1 lowercase character, 1 uppercase character, 1 number and  1 special character that is not - "
+      },
+      "minLength": 12,
+      "maxLength": 72
+    },
+    "existing_subnet_name": {
+      "type": "string",
+      "metadata": {
+        "description": "Specify the subnet within the virtual network where you would like to deploy this virtual machine. Do not select the gateway subnet in the virtual network. Also, do not select the dedicated subnet in which your managed domain is deployed."
+      },
+      "source": "virtual_network.list_all_subnet"
+    },
+    "image_id": {
+      "type": "string",
+      "metadata": {
+        "description": "The id of the image from which the image will be provisioned"
+      },
+      "minLength": 1,
+      "maxLength": 500
+    },
+    "os_disk_type": {
+      "type": "string",
+      "metadata": {
+        "description": "The disk Type for the OS"
+      },
+      "allowedValues": [
+        "Premium_LRS",
+        "StandardSSD_LRS"
+      ],
+      "defaultValue": "Premium_LRS"
+    },
+    "additional_disks": {
+      "type": "string",
+      "metadata": {
+        "description": "Key to check whether any data disks has to be added or not"
+      },
+      "allowedValues": [
+        "True",
+        "False"
+      ],
+      "defaultValue": "False"
+    },
+    "number_of_data_disks": {
+      "type": "int",
+      "metadata": {
+        "description": "Number of data disks that has to be created and attached."
+      },
+      "defaultValue": 0,
+      "minValue": 0,
+      "maxValue": 8
+    },
+    "disk_sizes": {
+      "type": "array",
+      "defaultValue": [],
+      "metadata": {
+        "description": "Size for the each data disks."
+      }
+    },
+    "enable_domain_join": {
+      "type": "string",
+      "metadata": {
+        "description": "Key to check whether domain join can be enabled or not"
+      },
+      "allowedValues": [
+        "Yes",
+        "No"
+      ],
+      "defaultValue": "No"
+    },
+    "domain_to_join": {
+      "type": "string",
+      "metadata": {
+        "description": "Specify the DNS domain name of your managed domain."
+      },
+      "defaultValue": ""
+    },
+    "domain_username": {
+      "type": "string",
+      "metadata": {
+        "description": "Specify the user account name on your managed domain that should be used to join the VM to the managed domain. Eg: 'developer'."
+      }
+    },
+    "domain_password": {
+      "type": "securestring",
+      "metadata": {
+        "description": "Specify the password of the domain user account referred to by the 'DomainUsername' parameter"
+      }
+    },
+    "tags": {
+      "type": "object",
+      "defaultValue": {},
+      "metadata": {
+        "description": "Tags to assign all resources.This is JSON param,Sample: <br/>{<br/>\"key1\":\"value1\"<br/>}"
+      }
+    },
+    "availability_set": {
+      "type": "string",
+      "metadata": {
+        "description": "Availability set needed"
+      },
+      "allowedValues": [
+        "Yes",
+        "No"
+      ],
+      "defaultValue": "No"
+    }
+  },
+  "variables": {
+    "networkinterface_name": "[concat(parameters('virtualmachine_name'), '-nc01')]",
+    "disk_name": "[concat(parameters('virtualmachine_name'), 'd01')]",
+    "disk-array": {
+      "copy": [
+        {
+          "count": "[parameters('number_of_data_disks')]",
+          "input": {
+            "caching": "ReadOnly",
+            "createOption": "Attach",
+            "lun": "[copyIndex('disks')]",
+            "managedDisk": {
+              "id": "[resourceId('Microsoft.Compute/disks',concat(parameters('virtualmachine_name'), 'd0', copyIndex('disks', 2)))]"
+            }
+          },
+          "name": "disks"
+        }
+      ]
+    }
+  },
+  "resources": [
+    {
+      "name": "[parameters('virtualmachine_name')]",
+      "type": "Microsoft.Compute/virtualMachines",
+      "apiVersion": "2018-06-01",
+      "location": "[parameters('location')]",
+      "tags": "[parameters('tags')]",
+      "dependsOn": [
+        "[concat('Microsoft.Network/networkInterfaces/', variables('networkinterface_name'))]",
+        "datadiskcreations"
+      ],
+      "properties": {
+        "osProfile": {
+          "computerName": "[parameters('virtualmachine_name')]",
+          "adminUsername": "[parameters('vm_admin_username')]",
+          "adminPassword": "[parameters('vm_admin_password')]"
+        },
+        "hardwareProfile": {
+          "vmSize": "[parameters('virtualmachine_size')]"
+        },
+        "storageProfile": {
+          "osDisk": {
+            "name": "[variables('disk_name')]",
+            "createOption": "fromImage",
+            "managedDisk": {
+              "storageAccountType": "[parameters('os_disk_type')]"
+            }
+          },
+          "imageReference": {
+            "id": "[parameters('image_id')]"
+          },
+          "dataDisks": "[if(equals(parameters('additional_disks'),'True'), variables('disk-array').disks, json('null'))]"
+        },
+        "networkProfile": {
+          "networkInterfaces": [
+            {
+              "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('networkinterface_name'))]"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "condition": "[equals(parameters('additional_disks'),'True')]",
+      "name": "[concat(parameters('virtualmachine_name'), 'd0', copyIndex(2))]",
+      "type": "Microsoft.Compute/disks",
+      "apiVersion": "2019-03-01",
+      "location": "[parameters('location')]",
+      "properties": {
+        "creationData": {
+          "createOption": "Empty"
+        },
+        "diskSizeGB": "[parameters('disk_sizes')[copyIndex()]]",
+        "osType": "Windows"
+      },
+      "sku": {
+        "name": "StandardSSD_LRS"
+      },
+      "copy": {
+        "name": "datadiskcreations",
+        "count": "[parameters('number_of_data_disks')]"
+      }
+    },
+    {
+      "name": "[variables('networkinterface_name')]",
+      "type": "Microsoft.Network/networkInterfaces",
+      "apiVersion": "2018-04-01",
+      "tags": "[parameters('tags')]",
+      "location": "[parameters('location')]",
+      "properties": {
+        "ipConfigurations": [
+          {
+            "name": "ipconfig1",
+            "properties": {
+              "subnet": {
+                "id": "[parameters('existing_subnet_name')]"
+              },
+              "privateIPAllocationMethod": "Dynamic"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "condition": "[equals(parameters('enable_domain_join'),'Yes')]",
+      "apiVersion": "2015-06-15",
+      "type": "Microsoft.Compute/virtualMachines/extensions",
+      "name": "[concat(parameters('virtualmachine_name'),'/joindomain')]",
+      "location": "[parameters('location')]",
+      "dependsOn": [
+        "[concat('Microsoft.Compute/virtualMachines/', parameters('virtualmachine_name'))]"
+      ],
+      "properties": {
+        "publisher": "Microsoft.Compute",
+        "type": "JsonADDomainExtension",
+        "typeHandlerVersion": "1.3",
+        "autoUpgradeMinorVersion": true,
+        "settings": {
+          "Name": "[toUpper(parameters('domain_to_join'))]",
+          "ouPath": "OU=CLOUD;OU=Servers;OU=WINSRV;OU=CS;DC=leo-internal;DC=net",
+          "User": "[concat(toUpper(parameters('domain_to_join')), '\\', parameters('domain_username'))]",
+          "Restart": "true",
+          "Options": 3
+        },
+        "protectedSettings": {
+          "Password": "[parameters('domain_password')]"
+        }
+      }
+    }
+  ],
+  "outputs": {
+    "virtualMachine_name": {
+      "type": "string",
+      "value": "[parameters('virtualmachine_name')]"
+    },
+    "subnet_id": {
+      "type": "string",
+      "value": "[parameters('existing_subnet_name')]"
+    },
+    "vmId": {
+      "type": "string",
+      "value": "[reference(concat('Microsoft.Compute/virtualMachines/', parameters('virtualmachine_name')), '2018-06-01', 'Full').properties.vmId]"
+    }
+  }
+}
