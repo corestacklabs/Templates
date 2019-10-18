@@ -1,0 +1,136 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "SQL_Database_Name": {
+      "type": "string",
+      "source": "sql_database.list_database_by_id",
+      "metadata": {
+        "description": "Name of the SQL Database to configure the alert"
+      }
+    },
+    "Alert_Name": {
+      "type": "string",
+      "minLength": 1,
+      "metadata": {
+        "description": "Name of the alert to be created"
+      }
+    },
+    "Alert_Description": {
+      "type": "string",
+      "defaultValue": "This is a SQL metric alert for CPU percentage",
+      "metadata": {
+        "description": "Description of alert"
+      }
+    },
+    "Alert_Severity": {
+      "type": "int",
+      "defaultValue": 3,
+      "allowedValues": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "metadata": {
+        "description": "Severity of alert {0,1,2,3,4}"
+      }
+    },
+    "Operator": {
+      "type": "string",
+      "defaultValue": "GreaterThan",
+      "allowedValues": [
+        "Equals",
+        "NotEquals",
+        "GreaterThan",
+        "GreaterThanOrEqual",
+        "LessThan",
+        "LessThanOrEqual"
+      ],
+      "metadata": {
+        "description": "Operator comparing the current value with the threshold value."
+      }
+    },
+    "Threshold": {
+      "type": "string",
+      "defaultValue": "80",
+      "metadata": {
+        "description": "The threshold value at which the alert is activated."
+      }
+    },
+    "Time_Aggregation": {
+      "type": "string",
+      "defaultValue": "Average",
+      "allowedValues": [
+        "Average",
+        "Minimum",
+        "Maximum",
+        "Total",
+        "Count"
+      ],
+      "metadata": {
+        "description": "How the data that is collected should be combined over time."
+      }
+    },
+    "Evaluation_Frequency": {
+      "type": "string",
+      "allowedValues": [
+        "PT1H",
+        "PT6H",
+        "PT12H",
+        "P1D"
+      ],
+      "metadata": {
+        "description": "How often the metric alert is evaluated represented in ISO 8601 duration format."
+      }
+    },
+    "Window_Size": {
+      "type": "string",
+      "allowedValues": [
+        "PT1H",
+        "PT6H",
+        "PT12H",
+        "P1D"
+      ],
+      "metadata": {
+        "description": "The period of time (in ISO 8601 duration format) that is used to monitor alert activity based on the threshold."
+      }
+    }
+  },
+  "variables": {
+  },
+  "resources": [
+    {
+      "name": "[parameters('Alert_Name')]",
+      "type": "Microsoft.Insights/metricAlerts",
+      "location": "global",
+      "apiVersion": "2018-03-01",
+      "tags": {},
+      "properties": {
+        "description": "[parameters('Alert_Description')]",
+        "severity": "[parameters('Alert_Severity')]",
+        "enabled": true,
+        "scopes": [
+          "[parameters('SQL_Database_Name')]"
+        ],
+        "targetResourceType": "Microsoft.Sql/servers",
+        "evaluationFrequency": "[parameters('Evaluation_Frequency')]",
+        "windowSize": "[parameters('Window_Size')]",
+        "criteria": {
+          "odata.type": "Microsoft.Azure.Monitor.SingleResourceMultipleMetricCriteria",
+          "allOf": [
+            {
+              "name": "CPU Percent",
+              "metricName": "cpu_percent",
+              "dimensions": [],
+              "operator": "[parameters('Operator')]",
+              "threshold": "[parameters('Threshold')]",
+              "timeAggregation": "[parameters('Time_Aggregation')]"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

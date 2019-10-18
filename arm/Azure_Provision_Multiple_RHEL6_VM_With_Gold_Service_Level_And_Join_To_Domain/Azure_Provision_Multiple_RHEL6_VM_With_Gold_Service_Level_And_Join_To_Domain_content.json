@@ -1,0 +1,230 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "location": {
+      "type": "string",
+      "metadata": {
+        "description": "Pick the same Location in which Azure AD Domain Service is deployed"
+      },
+      "allowedValues": [
+        "westus",
+        "westus2",
+        "eastus",
+        "eastus2",
+        "australiaeast",
+        "australiasoutheast",
+        "brazilsouth",
+        "canadacentral",
+        "canadaeast",
+        "centralindia",
+        "centralus",
+        "eastasia",
+        "francecentral",
+        "japaneast",
+        "japanwest",
+        "koreacentral",
+        "koreasouth",
+        "northcentralus",
+        "northeurope",
+        "southcentralus",
+        "southindia",
+        "southeastasia",
+        "uksouth",
+        "ukwest",
+        "westcentralus",
+        "westeurope",
+        "westindia"
+      ]
+    },
+    "virtualmachine_name": {
+      "type": "string",
+      "metadata": {
+        "description": "Name for the Virtual Machine to be provisioned. VM name is case-insensitive. Alphanumeric and hyphen are valid characters."
+      },
+      "minLength": 1,
+      "maxLength": 64
+    },
+    "availability_set": {
+      "type": "string",
+      "source": "availabilityset.list_aligned_availabilityset",
+      "metadata": {
+        "description": "Name of the existing availability Set"
+      }
+    },
+    "virtual_machine_count": {
+      "type": "int",
+      "metadata": {
+        "description": "Number of virtual machine to launch"
+      }
+    },
+    "virtualmachine_size": {
+      "type": "string",
+      "source": "instance_size.list_instance_size",
+      "metadata": {
+        "description": "The size of the virtual machine."
+      }
+    },
+    "vm_admin_username": {
+      "type": "string",
+      "metadata": {
+        "description": "Username of the administrator account in the Virtual Machine. Username will be used to remote connect (login) to the VM when it is created. Username must only contain letters, numbers, underscores, hyphens and may not start with a hyphen or number"
+      },
+      "minLength": 1,
+      "maxLength": 32
+    },
+    "vm_admin_password": {
+      "type": "securestring",
+      "metadata": {
+        "description": "Password of the administrator account in the Virtual Machine. Password must have 3 of the following: 1 lowercase character, 1 uppercase character, 1 number and  1 special character that is not - "
+      },
+      "minLength": 12,
+      "maxLength": 72
+    },
+    "existing_subnet_name": {
+      "type": "string",
+      "metadata": {
+        "description": "Specify the subnet within the virtual network where you would like to deploy this virtual machine. Do not select the gateway subnet in the virtual network. Also, do not select the dedicated subnet in which your managed domain is deployed."
+      },
+      "source": "virtual_network.list_all_subnet"
+    },
+    "domain_to_join": {
+      "type": "string",
+      "metadata": {
+        "description": "Specify the DNS domain name of your managed domain."
+      }
+    },
+    "domain_user_name": {
+      "type": "string",
+      "metadata": {
+        "description": "Specify the user account name on your managed domain that should be used to join the VM to the managed domain. Eg: 'developer'."
+      }
+    },
+    "domain_password": {
+      "type": "securestring",
+      "metadata": {
+        "description": "Specify the password of the domain user account referred to by the 'DomainUsername' parameter"
+      }
+    },
+    "tags": {
+      "type": "object",
+      "defaultValue": {},
+      "metadata": {
+        "description": "Tags to assign all resources.This is JSON param,Sample: <br/>{<br/>\"key1\":\"value1\"<br/>}"
+      }
+    }
+  },
+  "variables": {
+    "networkinterface_name": "[concat(parameters('virtualmachine_name'), '-nc')]"
+  },
+  "resources": [
+    {
+      "name": "[concat(parameters('virtualmachine_name'), copyIndex())]",
+      "type": "Microsoft.Compute/virtualMachines",
+      "apiVersion": "2018-06-01",
+      "location": "[parameters('location')]",
+      "tags": "[parameters('tags')]",
+      "copy": {
+        "name": "vmcopy",
+        "count": "[parameters('virtual_machine_count')]"
+      },
+      "dependsOn": [
+        "networkinterfacecopy"
+      ],
+      "properties": {
+        "osProfile": {
+          "computerName": "[parameters('virtualmachine_name')]",
+          "adminUsername": "[parameters('vm_admin_username')]",
+          "adminPassword": "[parameters('vm_admin_password')]"
+        },
+        "hardwareProfile": {
+          "vmSize": "[parameters('virtualmachine_size')]"
+        },
+        "storageProfile": {
+          "imageReference": {
+            "publisher": "RedHat",
+            "offer": "RHEL",
+            "sku": "6.8",
+            "version": "6.8.2017032020"
+          },
+          "osDisk": {
+            "createOption": "fromImage",
+            "managedDisk": {
+              "storageAccountType": "Premium_LRS"
+            }
+          }
+        },
+        "networkProfile": {
+          "networkInterfaces": [
+            {
+              "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('networkinterface_name'))]"
+            }
+          ]
+        },
+        "availabilitySet": "[if(equals(parameters('availability_set'),'NA'), json('null'), json(concat('{\"id\": \"', resourceId('Microsoft.Compute/availabilitySets',parameters('availability_set')), '\"}')))]"
+      }
+    },
+    {
+      "name": "[concat(variables('networkinterface_name'), copyIndex())]",
+      "type": "Microsoft.Network/networkInterfaces",
+      "apiVersion": "2018-04-01",
+      "tags": "[parameters('tags')]",
+      "location": "[parameters('location')]",
+      "copy": {
+        "name": "networkinterfacecopy",
+        "count": "[parameters('virtual_machine_count')]"
+      },
+      "dependsOn": [
+      ],
+      "properties": {
+        "ipConfigurations": [
+          {
+            "name": "ipconfig1",
+            "properties": {
+              "subnet": {
+                "id": "[parameters('existing_subnet_name')]"
+              },
+              "privateIPAllocationMethod": "Dynamic"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "[concat(parameters('virtualmachine_name'), '/domainjoin_extension')]",
+      "type": "Microsoft.Compute/virtualMachines/extensions",
+      "location": "[parameters('location')]",
+      "copy": {
+        "name": "vmDomainJoinCopy",
+        "count": "[parameters('virtual_machine_count')]"
+      },
+      "apiVersion": "2015-06-15",
+      "dependsOn": [
+        "vmcopy"
+      ],
+      "properties": {
+        "publisher": "Microsoft.Azure.Extensions",
+        "type": "CustomScript",
+        "typeHandlerVersion": "2.0",
+        "autoUpgradeMinorVersion": true,
+        "settings": {},
+        "protectedSettings": {
+          "fileUris": [
+            "https://sushmithaadtest.blob.core.windows.net/sushmithaadtest/centos-rhel-domainjoins.sh"
+          ],
+          "commandToExecute": "[concat('sh centos-rhel-domainjoins.sh', ' ', parameters('vm_admin_username'), ' ', toUpper(parameters('domain_to_join')), ' ', parameters('domain_user_name') , ' ', parameters('domain_password'))]"
+        }
+      }
+    }
+  ],
+  "outputs": {
+    "virtualMachine_name": {
+      "type": "string",
+      "value": "[parameters('virtualmachine_name')]"
+    },
+    "subnet_ID": {
+      "type": "string",
+      "value": "[parameters('existing_subnet_name')]"
+    }
+  }
+}

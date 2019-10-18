@@ -1,0 +1,106 @@
+{
+  "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "vm_id": {
+      "type": "String",
+      "metadata": {
+        "description": "The Virtual Machine Name."
+      },
+      "source": "instance.list_instance_by_id"
+    },
+    "location": {
+      "type": "String",
+      "metadata": {
+        "description": "The Virtual Machine Location."
+      },
+      "allowedValues": [
+        "West US",
+        "West Central US",
+        "East US",
+        "East US 2",
+        "Australia East",
+        "Australia Southeast",
+        "Brazil South",
+        "Canada Central",
+        "Canada East",
+        "Central India",
+        "Central US",
+        "East Asia",
+        "France Central",
+        "Japan East ",
+        "Japan West",
+        "Korea Central",
+        "Korea South",
+        "North Central US",
+        "North Europe",
+        "South Central US",
+        "South India",
+        "Southeast Asia",
+        "UK South",
+        "UK West",
+        "West Central US",
+        "West Europe",
+        "West India"
+      ]
+    },
+    "workspace_resource_id": {
+      "type": "String",
+      "metadata": {
+        "description": "Workspace ID."
+      }
+    }
+  },
+  "variables": {
+    "vm_name": "[last(split(parameters('vm_id'), '/'))]"
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Compute/virtualMachines",
+      "apiVersion": "2018-10-01",
+      "name": "[variables('vm_name')]",
+      "location": "[parameters('location')]",
+      "resources": [
+        {
+          "type": "Microsoft.Compute/virtualMachines/extensions",
+          "apiVersion": "2018-10-01",
+          "name": "[concat(variables('vm_name'),'/DependencyAgentWindows')]",
+          "location": "[parameters('location')]",
+          "dependsOn": [
+            "[concat('Microsoft.Compute/virtualMachines/', variables('vm_name'))]"
+          ],
+          "properties": {
+            "publisher": "Microsoft.Azure.Monitoring.DependencyAgent",
+            "type": "DependencyAgentWindows",
+            "typeHandlerVersion": "9.5",
+            "autoUpgradeMinorVersion": true
+          }
+        },
+        {
+          "type": "Microsoft.Compute/virtualMachines/extensions",
+          "apiVersion": "2018-10-01",
+          "name": "[concat(variables('vm_name'),'/MMAExtension')]",
+          "location": "[parameters('location')]",
+          "dependsOn": [
+            "[concat('Microsoft.Compute/virtualMachines/', variables('vm_name'))]"
+          ],
+          "properties": {
+            "publisher": "Microsoft.EnterpriseCloud.Monitoring",
+            "type": "MicrosoftMonitoringAgent",
+            "typeHandlerVersion": "1.0",
+            "autoUpgradeMinorVersion": "true",
+            "settings": {
+              "workspaceId": "[reference(parameters('workspace_resource_id'), '2015-03-20').customerId]",
+              "azureResourceId": "[parameters('vm_id')]",
+              "stopOnMultipleConnections": "false"
+            },
+            "protectedSettings": {
+              "workspaceKey": "[listKeys(parameters('workspace_resource_id'), '2015-03-20').primarySharedKey]"
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "outputs": {}
+}

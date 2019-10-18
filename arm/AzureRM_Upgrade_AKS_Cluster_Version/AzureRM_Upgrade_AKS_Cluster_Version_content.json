@@ -1,0 +1,59 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "ClusterName": {
+            "type": "String",
+            "metadata": {
+                "description": "The name of the Managed Cluster resource."
+            }
+        },
+        "DnsPrefix": {
+            "type": "String",
+            "metadata": {
+                "description": "Optional DNS prefix to use with hosted Kubernetes API server FQDN."
+            }
+        },
+        "KubernetesVersion": {
+            "defaultValue": "1.7.7",
+            "allowedValues": [
+                "1.7.7",
+                "1.7.9",
+                "1.7.12",
+                "1.7.15",
+                "1.7.16",
+                "1.8.1",
+                "1.8.2",
+                "1.8.6",
+                "1.8.7",
+                "1.8.10",
+                "1.8.11",
+                "1.9.2",
+                "1.9.1",
+                "1.9.6"
+            ],
+            "type": "String",
+            "metadata": {
+                "description": "The version of Kubernetes."
+            }
+        }
+    },
+    "resources": [
+        {
+            "type": "Microsoft.ContainerService/managedClusters",
+            "name": "[parameters('ClusterName')]",
+            "apiVersion": "2017-08-31",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "KubernetesVersion": "[parameters('KubernetesVersion')]",
+                "DnsPrefix": "[parameters('DnsPrefix')]"
+            }
+        }
+    ],
+    "outputs": {
+        "controlPlaneFQDN": {
+            "type": "String",
+            "value": "[reference(concat('Microsoft.ContainerService/managedClusters/', parameters('ClusterName'))).fqdn]"
+        }
+    }
+}

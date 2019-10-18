@@ -1,0 +1,365 @@
+{
+  "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "dnsName": {
+      "type": "string",
+      "metadata": {
+        "description": "Connect to your cluster using dnsName.location.cloudapp.azure.com"
+      }
+    },
+    "vmUserName": {
+      "type": "string",
+      "defaultValue": "clouduser",
+      "metadata": {
+        "description": "user name to access the VM. Username should not like admin, administrator, root."
+      }
+    },
+    "vmPassword": {
+      "type": "securestring",
+      "defaultValue": "P@ssw0rd@1234",
+      "metadata": {
+        "description": "password must be between 6-72 characters long and must satisfy at least 3 of password complexity requirements from the following: Contains an uppercase character, Contains a lowercase character, Contains a numeric digit Contains a special character."
+      }
+    },
+    "vmSize": {
+      "type": "string",
+      "defaultValue": "Standard_A2",
+      "metadata": {
+        "description": "size for the VMs. Please refer this link for more available Vmsize. https://docs.microsoft.com/en-us/azure/virtual-machines/virtual-machines-windows-sizes-memory"
+      }
+    },
+    "imagePublisher": {
+      "type": "string",
+      "defaultValue": "Canonical",
+      "allowedValues": [
+        "Canonical"
+      ],
+      "metadata": {
+        "description": "publisher for the VM OS image. Since Azure only supports canonical publisher for base images in ubuntu platform,so we restrict other publishers."
+      }
+    },
+    "imageOffer": {
+      "type": "string",
+      "defaultValue": "UbuntuServer",
+      "allowedValues": [
+        "UbuntuServer"
+      ],
+      "metadata": {
+        "description": "VM OS name. we are referencing to a public image of a specific publisher , we dont guarantee the availability of the specific image"
+      }
+    },
+    "imageSKU": {
+      "type": "string",
+      "defaultValue": "14.04.5-LTS",
+      "allowedValues": [
+        "14.04.5-LTS",
+        "16.04.0-LTS"
+      ],
+      "metadata": {
+        "description": "VM OS version"
+      }
+    },
+    "vnetAddressPrefix": {
+      "type": "string",
+      "defaultValue": "90.0.0.0/16",
+      "metadata": {
+        "description": "CIDR Address for provisioning VirtualNetwork. Please ensure that the CIDR is not already existing."
+      }
+    },
+    "dbSubnetAddressPrefix": {
+      "type": "string",
+      "defaultValue": "90.0.1.0/24",
+      "metadata": {
+        "description": "CIDR Address for provisioning Subnet"
+      }
+    },
+    "dbSubnetStartAddress": {
+      "type": "string",
+      "defaultValue": "90.0.1.4",
+      "metadata": {
+        "description": "Starting IPAddress from which all the resources start to create. IP Address of the VM as per the subnet configured"
+      }
+    }
+  },
+  "variables": {
+    "templateAPIVersion": "2015-01-01",
+    "resourceAPIVersion": "2015-06-15",
+    "storageAccountName": "[concat(uniquestring(resourceGroup().id),'storage')]",
+    "customScriptCommandToExecute": "bash App.sh",
+    "publicIPName": "[concat(parameters('dnsName'), 'pip')]",
+    "virtualNetworkName": "[concat(parameters('dnsName'), 'vnet')]",
+    "mysqlFrontEndPort0": 80,
+    "mysqlFrontEndPort1": 81,
+    "sshNatRuleFrontEndPort0": 64001,
+    "sshNatRuleFrontEndPort1": 64002,
+    "mysqlScriptPath": "https://s3.amazonaws.com/azuremysqlcluster",
+    "dbSubnetName": "[concat(parameters('dnsName'), 'dbsubnet')]",
+    "vnetNewOrExisting": "new",
+    "nodeCount": 2,
+    "storageAccountType": "Standard_LRS",
+    "lbPublicIPName": "[variables('publicIPName')]",
+    "lbPublicIPRef": "[resourceId('Microsoft.Network/publicIPAddresses',variables('lbPublicIPName'))]",
+    "lbName": "[concat(parameters('dnsName'), '-lb')]",
+    "lbID": "[resourceId('Microsoft.Network/loadBalancers',variables('lbName'))]",
+    "ilbBackendAddressPoolName": "[concat(parameters('dnsName'), '-ilbBackendPool')]",
+    "ilbBackendAddressPoolID": "[concat(variables('lbID'),'/backendAddressPools/', variables('ilbBackendAddressPoolName'))]",
+    "ilbRuleName": "[concat(parameters('dnsName'), '-ilbRule')]",
+    "ilbRuleID": "[concat(variables('lbID'),'/loadBalancingRules/',variables('ilbRuleName'))]",
+    "sshIPConfigName": "[concat(parameters('dnsName'), '-sshIPCfg')]",
+    "sshIPConfig": "[concat(variables('lbID'),'/frontendIPConfigurations/',variables('sshIPConfigName'))]",
+    "nicName": "[concat(parameters('dnsName'), '-nic')]",
+    "availabilitySetName": "[concat(parameters('dnsName'), '-set')]",
+    "customScriptFilePath": "[concat(variables('mysqlScriptPath'), '/App.sh')]",
+    "singleQuote": "",
+    "sa": "[parameters('dbSubnetStartAddress')]",
+    "ipOctet01": "[concat(split(variables('sa'), '.')[0], '.', split(variables('sa'), '.')[1], '.')]",
+    "ipOctet2": "[int(split(variables('sa'), '.')[2])]",
+    "ipOctet3": "[int(split(variables('sa'), '.')[3])]",
+    "virtualNetworkSetupURL": "[concat(variables('artifactsPath'),'/vnet-',variables('vnetNewOrExisting'),'.json')]",
+    "artifactsPath": "https://raw.githubusercontent.com/Azure/azure-quickstart-templates/master/mysql-replication"
+  },
+  "resources": [{
+      "name": "SettingUpVirtualNetwork",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "[variables('templateAPIVersion')]",
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[variables('virtualNetworkSetupURL')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "virtualNetworkName": {
+            "value": "[variables('virtualNetworkName')]"
+          },
+          "virtualNetworkAddressPrefix": {
+            "value": "[parameters('vnetAddressPrefix')]"
+          },
+          "dbSubnetName": {
+            "value": "[variables('dbSubnetName')]"
+          },
+          "dbSubnetAddressPrefix": {
+            "value": "[parameters('dbSubnetAddressPrefix')]"
+          }
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Storage/storageAccounts",
+      "name": "[variables('storageAccountName')]",
+      "apiVersion": "[variables('resourceAPIVersion')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "accountType": "[variables('storageAccountType')]"
+      }
+    },
+    {
+      "apiVersion": "[variables('resourceAPIVersion')]",
+      "type": "Microsoft.Network/publicIPAddresses",
+      "name": "[variables('lbPublicIPName')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "publicIPAllocationMethod": "Static",
+        "dnsSettings": {
+          "domainNameLabel": "[parameters('dnsName')]"
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Compute/availabilitySets",
+      "name": "[variables('availabilitySetName')]",
+      "apiVersion": "[variables('resourceAPIVersion')]",
+      "location": "[resourceGroup().location]",
+      "properties": {}
+    },
+    {
+      "apiVersion": "[variables('resourceAPIVersion')]",
+      "type": "Microsoft.Network/networkInterfaces",
+      "name": "[concat(variables('nicName'), copyIndex())]",
+      "location": "[resourceGroup().location]",
+      "copy": {
+        "name": "nicLoop",
+        "count": "[variables('nodeCount')]"
+      },
+      "dependsOn": [
+        "[concat('Microsoft.Resources/deployments/', 'SettingUpVirtualNetwork')]",
+        "[concat('Microsoft.Network/loadBalancers/', variables('lbName'))]"
+      ],
+      "properties": {
+        "ipConfigurations": [{
+          "name": "[concat('ipconfig', copyIndex())]",
+          "properties": {
+            "privateIPAllocationMethod": "Static",
+            "privateIPAddress": "[concat(variables('ipOctet01'), add(variables('ipOctet2'), div(copyIndex(variables('ipOctet3')), 255)), '.', mod(copyIndex(variables('ipOctet3')), 255))]",
+            "subnet": {
+              "id": "[reference('Microsoft.Resources/deployments/SettingUpVirtualNetwork', variables('templateAPIVersion')).outputs.dbSubnetRef.value]"
+            },
+            "loadBalancerBackendAddressPools": [{
+              "id": "[variables('ilbBackendAddressPoolID')]"
+            }],
+            "loadBalancerInboundNatRules": [{
+              "id": "[concat(variables('lbID'),'/inboundNatRules/',parameters('dnsName'), 'NatRule', copyIndex())]"
+            }]
+          }
+        }]
+      }
+    },
+    {
+      "name": "[concat(parameters('dnsName'), copyIndex())]",
+      "type": "Microsoft.Compute/virtualMachines",
+      "apiVersion": "[variables('resourceAPIVersion')]",
+      "location": "[resourceGroup().location]",
+      "copy": {
+        "name": "vmLoop",
+        "count": "[variables('nodeCount')]"
+      },
+      "dependsOn": [
+        "[concat('Microsoft.Compute/availabilitySets/', variables('availabilitySetName'))]",
+        "[concat('Microsoft.Storage/storageAccounts/', variables('storageAccountName'))]",
+        "[concat('Microsoft.Network/networkInterfaces/', variables('nicName'), copyIndex())]"
+      ],
+      "properties": {
+        "availabilitySet": {
+          "id": "[resourceId('Microsoft.Compute/availabilitySets', variables('availabilitySetName'))]"
+        },
+        "hardwareProfile": {
+          "vmSize": "[parameters('vmSize')]"
+        },
+        "osProfile": {
+          "computerName": "[concat(parameters('dnsName'), copyIndex())]",
+          "adminUsername": "[parameters('vmUserName')]",
+          "adminPassword": "[parameters('vmPassword')]"
+        },
+        "storageProfile": {
+          "imageReference": {
+            "publisher": "[parameters('imagePublisher')]",
+            "offer": "[parameters('imageOffer')]",
+            "sku": "[parameters('imageSKU')]",
+            "version": "latest"
+          },
+          "osDisk": {
+            "name": "osdisk",
+            "vhd": {
+              "uri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/', variables('storageAccountName')), variables('resourceAPIVersion')).primaryEndpoints.blob, 'vhds/', parameters('dnsName'), copyIndex(), 'osdisk.vhd')]"
+            },
+            "caching": "ReadWrite",
+            "createOption": "FromImage"
+          }
+        },
+        "networkProfile": {
+          "networkInterfaces": [{
+            "id": "[concat(resourceId('Microsoft.Network/networkInterfaces',variables('nicName')), copyIndex())]"
+          }]
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Compute/virtualMachines/extensions",
+      "name": "[concat(parameters('dnsName'), copyIndex(), '/setupAPP')]",
+      "apiVersion": "[variables('resourceAPIVersion')]",
+      "location": "[resourceGroup().location]",
+      "copy": {
+        "name": "extLoop",
+        "count": "[variables('nodeCount')]"
+      },
+      "dependsOn": [
+        "[concat('Microsoft.Compute/virtualMachines/', parameters('dnsName'), copyIndex())]"
+      ],
+      "properties": {
+        "publisher": "Microsoft.Azure.Extensions",
+        "type": "CustomScript",
+        "typeHandlerVersion": "2.0",
+        "autoUpgradeMinorVersion": true,
+        "settings": {
+          "fileUris": [
+            "[variables('customScriptFilePath')]"
+          ]
+        },
+        "protectedSettings": {
+          "commandToExecute": "[variables('customScriptCommandToExecute')]"
+        }
+      }
+    },
+    {
+      "apiVersion": "[variables('resourceAPIVersion')]",
+      "type": "Microsoft.Network/loadBalancers",
+      "name": "[variables('lbName')]",
+      "location": "[resourceGroup().location]",
+      "dependsOn": [
+        "[concat('Microsoft.Network/publicIPAddresses/', variables('lbPublicIPName'))]"
+      ],
+      "properties": {
+        "frontendIPConfigurations": [{
+          "name": "[variables('sshIPConfigName')]",
+          "properties": {
+            "publicIPAddress": {
+              "id": "[variables('lbPublicIPRef')]"
+            }
+          }
+        }],
+        "backendAddressPools": [{
+          "name": "[variables('ilbBackendAddressPoolName')]"
+        }],
+        "inboundNatRules": [{
+            "name": "[concat(parameters('dnsName'),'NatRule0')]",
+            "properties": {
+              "frontendIPConfiguration": {
+                "id": "[variables('sshIPConfig')]"
+              },
+              "protocol": "tcp",
+              "frontendPort": "[variables('sshNatRuleFrontEndPort0')]",
+              "backendPort": 22,
+              "enableFloatingIP": false
+            }
+          },
+          {
+            "name": "[concat(parameters('dnsName'),'NatRule1')]",
+            "properties": {
+              "frontendIPConfiguration": {
+                "id": "[variables('sshIPConfig')]"
+              },
+              "protocol": "tcp",
+              "frontendPort": "[variables('sshNatRuleFrontEndPort1')]",
+              "backendPort": 22,
+              "enableFloatingIP": false
+            }
+          }
+        ],
+        "probes": [{
+          "properties": {
+            "protocol": "Tcp",
+            "port": 80,
+            "intervalInSeconds": 15,
+            "numberOfProbes": 2
+          },
+          "name": "lbprobe"
+        }],
+        "loadBalancingRules": [{
+          "properties": {
+            "frontendIPConfiguration": {
+              "id": "[variables('sshIPConfig')]"
+            },
+            "backendAddressPool": {
+              "id": "[variables('ilbBackendAddressPoolID')]"
+            },
+            "probe": {
+              "id": "[concat(resourceId('Microsoft.Network/loadBalancers', variables('lbName')), '/probes/lbprobe')]"
+            },
+            "protocol": "Tcp",
+            "frontendPort": 80,
+            "backendPort": 80,
+            "idleTimeoutInMinutes": 15
+          },
+          "Name": "[variables('lbName')]"
+        }]
+      }
+    }
+  ],
+  "outputs": {
+    "AppURL": {
+      "value": "[concat('http://', reference(variables('lbPublicIPName')).dnsSettings.fqdn, '/Rolling_Updates')]",
+      "type": "string"
+    }
+  }
+}

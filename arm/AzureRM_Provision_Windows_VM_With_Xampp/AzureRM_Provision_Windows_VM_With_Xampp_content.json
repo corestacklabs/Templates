@@ -1,0 +1,299 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "Virtual_Machine_Name": {
+            "type": "string",
+            "metadata": {
+                "description": "Name for the Virtual Machine to be provisioned. Name for the Virtual Machine should be unique within the resource group and if the name already exists, then provisioning will fail. It can have alphabets, numbers and hyphens. The first character must be an alphabet and the last character must be an alphabet or number."
+            },
+            "position": 1
+        },
+        "Administrator_Username": {
+            "type": "string",
+            "metadata": {
+                "description": "User name for the Virtual Machine."
+            },
+            "position": 2
+        },
+        "Administrator_Password": {
+            "type": "securestring",
+            "metadata": {
+                "description": "Password for the Virtual Machine."
+            },
+            "position": 3
+        },
+        "DNS_Label": {
+            "type": "string",
+            "metadata": {
+                "description": "Unique DNS Name for the Public IP used to access the Virtual Machine."
+            },
+            "position": 4
+        },
+        "Windows_SKU": {
+            "type": "string",
+            "defaultValue": "2012-R2-Datacenter",
+            "metadata": {
+                "description": "The Windows version for the VM. This will pick a fully patched image of this given Windows version."
+            },
+            "position": 5
+        },
+        "Image_Publisher": {
+            "type": "string",
+            "position": 6,
+            "defaultValue": "MicrosoftWindowsServer"
+        },
+        "Image_Offer": {
+            "type": "string",
+            "position": 7,
+            "defaultValue": "WindowsServer"
+        },
+        "SKU_Version": {
+            "type": "string",
+            "position": 8,
+            "defaultValue": "4.127.20170510",
+            "allowedValues": [
+                "4.127.20170406",
+                "4.127.20170420",
+                "4.127.20170510",
+                "4.127.20170712"
+            ]
+        },
+        "Storage_Account_Name": {
+            "type": "string",
+            "metadata": {
+                "description": "Storage account name must be between 3 and 24 characters in length and use numbers and lower-case letters only."
+            },
+            "position": 9
+        },
+        "Network_Name": {
+            "type": "string",
+            "metadata": {
+                "description": "Name of an Existing network"
+            },
+            "position": 10
+        },
+        "Subnet_Name": {
+            "type": "string",
+            "metadata": {
+                "description": "Subnet which lies under network name specified above. And in this specified subnet NIC will be created."
+            },
+            "position": 11
+        },
+        "VM_Size": {
+            "type": "string",
+            "metadata": {
+                "description": "VM Size for the Instance to be launched"
+            },
+            "position": 12,
+            "defaultValue": "Standard_DS1_v2"
+        }
+    },
+    "variables": {
+        "storageAccountName": "[parameters('Storage_Account_Name')]",
+        "imagePublisher": "[parameters('Image_Publisher')]",
+        "imageOffer": "[parameters('Image_Offer')]",
+        "OSDiskName": "[concat(parameters('Virtual_Machine_Name'), '-disk')]",
+        "nicName": "[concat(parameters('Virtual_Machine_Name'), '-nic')]",
+        "storageAccountType": "Standard_LRS",
+        "publicIPAddressName": "[concat(parameters('Virtual_Machine_Name'), '-ip')]",
+        "publicIPAddressType": "Dynamic",
+        "vmStorageAccountContainerName": "vhds",
+        "virtualNetworkName": "[parameters('Network_Name')]",
+        "vnetID": "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworkName'))]",
+        "subnetRef": "[concat(variables('vnetID'), '/subnets/', parameters('Subnet_Name'))]",
+        "VSGName": "[concat(parameters('Virtual_Machine_Name'), '-sg')]",
+        "apiVersion": "2015-06-15",
+        "hostDNSNameScriptArgument": "[concat('*.',resourceGroup().location,'.cloudapp.azure.com')]"
+    },
+    "resources": [
+        {
+            "apiVersion": "[variables('apiVersion')]",
+            "type": "Microsoft.Network/networkSecurityGroups",
+            "name": "[variables('VSGName')]",
+            "location": "[resourceGroup().location]",
+            "tags": {
+                "displayName": "[variables('VSGName')]"
+            },
+            "properties": {
+                "securityRules": [{
+                        "name": "rdp",
+                        "properties": {
+                            "description": "Allow inbound rdp access",
+                            "protocol": "*",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "3389",
+                            "sourceAddressPrefix": "*",
+                            "destinationAddressPrefix": "*",
+                            "access": "Allow",
+                            "priority": 1000,
+                            "direction": "Inbound"
+                        }
+                    },
+                    {
+                        "name": "http",
+                        "properties": {
+                            "description": "Allow inbound http access",
+                            "protocol": "Tcp",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "80",
+                            "sourceAddressPrefix": "*",
+                            "destinationAddressPrefix": "*",
+                            "access": "Allow",
+                            "priority": 1001,
+                            "direction": "Inbound"
+                        }
+                    },
+                    {
+                        "name": "winrm",
+                        "properties": {
+                            "description": "Allow inbound winrm access",
+                            "protocol": "Tcp",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "5985",
+                            "sourceAddressPrefix": "*",
+                            "destinationAddressPrefix": "*",
+                            "access": "Allow",
+                            "priority": 1002,
+                            "direction": "Inbound"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "apiVersion": "2016-01-01",
+            "type": "Microsoft.Storage/storageAccounts",
+            "name": "[variables('storageAccountName')]",
+            "location": "[resourceGroup().location]",
+            "sku": {
+                "name": "[variables('storageAccountType')]"
+            },
+            "kind": "Storage",
+            "properties": {}
+        },
+        {
+            "apiVersion": "2016-09-01",
+            "type": "Microsoft.Network/publicIPAddresses",
+            "name": "[variables('publicIPAddressName')]",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "publicIPAllocationMethod": "[variables('publicIPAddressType')]",
+                "dnsSettings": {
+                    "domainNameLabel": "[parameters('DNS_Label')]"
+                }
+            }
+        },
+        {
+            "apiVersion": "2016-09-01",
+            "type": "Microsoft.Network/networkInterfaces",
+            "name": "[variables('nicName')]",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/publicIPAddresses/', variables('publicIPAddressName'))]",
+                "[concat('Microsoft.Network/networkSecurityGroups/', variables('VSGName'))]"
+            ],
+            "properties": {
+                "ipConfigurations": [{
+                    "name": "ipconfig1",
+                    "properties": {
+                        "privateIPAllocationMethod": "Dynamic",
+                        "publicIPAddress": {
+                            "id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('publicIPAddressName'))]"
+                        },
+                        "subnet": {
+                            "id": "[variables('subnetRef')]"
+                        }
+                    }
+                }],
+                "networkSecurityGroup": {
+                    "id": "[resourceId('Microsoft.Network/networkSecurityGroups/', variables('VSGName'))]"
+                }
+            }
+        },
+        {
+            "apiVersion": "[variables('apiVersion')]",
+            "type": "Microsoft.Compute/virtualMachines",
+            "name": "[parameters('Virtual_Machine_Name')]",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts/', variables('storageAccountName'))]",
+                "[resourceId('Microsoft.Network/networkInterfaces/', variables('nicName'))]"
+            ],
+            "properties": {
+                "hardwareProfile": {
+                    "vmSize": "[parameters('VM_Size')]"
+                },
+                "osProfile": {
+                    "computerName": "[parameters('Virtual_Machine_Name')]",
+                    "adminUsername": "[parameters('Administrator_Username')]",
+                    "adminPassword": "[parameters('Administrator_Password')]"
+                },
+                "storageProfile": {
+                    "imageReference": {
+                        "publisher": "[variables('imagePublisher')]",
+                        "offer": "[variables('imageOffer')]",
+                        "sku": "[parameters('Windows_SKU')]",
+                        "version": "[parameters('SKU_Version')]"
+                    },
+                    "osDisk": {
+                        "name": "[variables('OSDiskName')]",
+                        "vhd": {
+                            "uri": "[concat('http://',variables('storageAccountName'),'.blob.core.windows.net/',variables('vmStorageAccountContainerName'),'/',variables('OSDiskName'),'.vhd')]"
+                        },
+                        "caching": "ReadWrite",
+                        "createOption": "FromImage"
+                    }
+                },
+                "networkProfile": {
+                    "networkInterfaces": [{
+                        "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('nicName'))]"
+                    }]
+                }
+            }
+        },
+        {
+            "apiVersion": "[variables('apiVersion')]",
+            "type": "Microsoft.Compute/virtualMachines/extensions",
+            "name": "[concat(parameters('Virtual_Machine_Name'),'/WinRMCustomScriptExtension')]",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[concat('Microsoft.Compute/virtualMachines/', parameters('Virtual_Machine_Name'))]"
+            ],
+            "properties": {
+                "publisher": "Microsoft.Compute",
+                "type": "CustomScriptExtension",
+                "typeHandlerVersion": "1.4",
+                "settings": {
+                    "fileUris": [
+                        "https://s3.amazonaws.com/core-setup-files/azurerm_corestack/enable_winrm.ps1",
+                        "https://s3.amazonaws.com/core-setup-files/azurerm_corestack/xampp_install.ps1"
+                    ],
+                    "commandToExecute": "powershell -ExecutionPolicy Unrestricted -file enable_winrm.ps1 & powershell -ExecutionPolicy Unrestricted -file xampp_install.ps1"
+                }
+            }
+        }
+    ],
+    "outputs": {
+        "host_ip": {
+            "type": "string",
+            "value": "[reference(variables('publicIPAddressName')).dnsSettings.fqdn]"
+        },
+        "instance_name": {
+            "type": "string",
+            "value": "[parameters('Virtual_Machine_Name')]"
+        },
+        "username": {
+            "type": "string",
+            "value": "[parameters('Administrator_Username')]"
+        },
+        "password": {
+            "type": "string",
+            "value": "[parameters('Administrator_Password')]"
+        },
+        "resource_group": {
+            "type": "string",
+            "value": "[resourceGroup().name]"
+        }
+    }
+}

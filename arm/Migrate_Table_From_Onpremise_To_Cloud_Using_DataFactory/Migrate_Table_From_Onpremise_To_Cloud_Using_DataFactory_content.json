@@ -1,0 +1,309 @@
+  {
+  "contentVersion": "1.0.0.0",
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "parameters": {
+    "DataFactoryName": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of the data factory. Must be globally unique."
+      }
+    },
+    "DataFactoryLocation": {
+      "type": "string",
+      "allowedValues": [
+        "East US",
+        "East US 2",
+        "West Europe"
+      ],
+      "defaultValue": "East US",
+      "metadata": {
+        "description": "Location of the data factory. Currently, only East US, East US 2, and West Europe are supported. "
+      }
+    },
+    "SqlServerName": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of the on premise sql server that contains the input/output data."
+      }
+    },
+    "SqlServerUserName": {
+      "type": "string",
+      "metadata": {
+        "description": "User Name of the on premise sql server that contains the input/output data."
+      }
+    },
+    "SqlServerPassword": {
+      "type": "securestring",
+      "metadata": {
+        "description": "Key for the on premise sql server"
+      }
+    },
+    "SqlDatabaseName": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of the on premise sql database that contains the input/output data."
+      }
+    },
+    "SqlDatabaseTableName": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of the on premise sql database that contains the input/output data."
+      }
+    },
+    "IntegrationRuntimeName": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of the integration run time."
+      }
+    },
+    "AzureSqlServerName": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of the azure sql server that contains the input/output data."
+      }
+    },
+    "AzureSqlServerUserName": {
+      "type": "string",
+      "metadata": {
+        "description": "User Name of the azure sql server that contains the input/output data."
+      }
+    },
+    "AzureSqlServerPassword": {
+      "type": "securestring",
+      "metadata": {
+        "description": "Key for the azure sql server"
+      }
+    },
+    "AzureSqlDatabaseName": {
+      "type": "string",
+      "metadata": {
+        "description": "Database Name that contains the input/output data."
+      }
+    },
+    "AzureSqlDatabaseTableName": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of the table where the data has to be copied "
+      }
+    },
+    "triggerStartTime": {
+      "type": "string",
+      "metadata": {
+        "description": "starting time of the trigger."
+      }
+    },
+    "triggerEndTime": {
+      "type": "string",
+      "metadata": {
+        "description": "ending time of the trigger"
+      }
+    },
+     "onPremiseLinkedServiceName": {
+      "type": "string",
+      "metadata": {
+        "description": "Name for the onpremise linked service."
+      }
+    },
+       "azureStorageLinkedServiceName": {
+      "type": "string",
+      "metadata": {
+        "description": "Name for the azure storage linked service."
+      }
+    },
+     "inputDatasetName": {
+      "type": "string",
+      "metadata": {
+        "description": "Name for the input data set."
+      }
+    },
+     "outputDatasetName": {
+      "type": "string",
+      "metadata": {
+        "description": "Name for the output data set."
+      }
+    },
+    "pipelineName": {
+      "type": "string",
+      "metadata": {
+        "description": "Name for the pipe line."
+      }
+    },
+     "triggerName": {
+      "type": "string",
+      "metadata": {
+        "description": "Name for the trigger."
+      }
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.DataFactory/factories",
+      "apiVersion": "2018-06-01",
+      "name": "[parameters('DataFactoryName')]",
+      "location": "[parameters('DataFactoryLocation')]",
+      "identity": {
+        "type": "SystemAssigned"
+      },
+      "properties": {},
+      "resources": [
+        {
+          "type": "linkedservices",
+          "name": "[parameters('onPremiseLinkedServiceName')]",
+          "dependsOn": [
+            "[parameters('DataFactoryName')]"
+          ],
+          "apiVersion": "2018-06-01",
+          "properties": {
+            "type": "SqlServer",
+            "description": "Onpremise SQL server linked service",
+            "typeProperties": {
+              "connectionString": {
+                "value": "[concat('data source=',parameters('SqlServerName'),';initial catalog=',parameters('SqlDatabaseName'), ';Integrated Security=False;User ID=',parameters('SqlServerUserName'),';Password=',parameters('SqlServerPassword'))]",
+                "type": "SecureString"
+              },
+              "Password": {
+                "value": "[parameters('SqlServerPassword')]",
+                "type": "SecureString"
+              }
+            },
+            "connectVia": {
+              "referenceName": "[parameters('IntegrationRuntimeName')]",
+              "type": "IntegrationRuntimeReference"
+            }
+          }
+        },
+        {
+          "type": "linkedservices",
+          "name": "[parameters('azureStorageLinkedServiceName')]",
+          "dependsOn": [
+            "[parameters('dataFactoryName')]"
+          ],
+          "apiVersion": "2018-06-01",
+          "properties": {
+            "type": "AzureSqlDatabase",
+            "description": "Azure sql Database linked service",
+            "typeProperties": {
+              "connectionString": {
+                "value": "[concat('Server=',parameters('AzureSqlServerName'),'.database.windows.net;Database=',parameters('AzureSqlDatabaseName'), ';User ID=',parameters('AzureSqlServerUserName'),'@',parameters('AzureSqlServerName'),';Password=',parameters('AzureSqlServerPassword'), ';Integrated Security=False')]",
+                "type": "SecureString"
+              }
+            }
+          }
+        },
+        {
+          "type": "datasets",
+          "name": "[parameters('inputDatasetName')]",
+          "dependsOn": [
+            "[parameters('DataFactoryName')]",
+            "[parameters('onPremiseLinkedServiceName')]"
+          ],
+          "apiVersion": "2018-06-01",
+          "properties": {
+            "type": "SqlServerTable",
+            "typeProperties": {
+              "tableName": "[parameters('SqlDatabaseTableName')]"
+            },
+            "linkedServiceName": {
+              "referenceName": "[parameters('onPremiseLinkedServiceName')]",
+              "type": "LinkedServiceReference"
+            }
+          }
+        },
+        {
+          "type": "datasets",
+          "name": "[parameters('outputDatasetName')]",
+          "dependsOn": [
+            "[parameters('DataFactoryName')]",
+            "[parameters('azureStorageLinkedServiceName')]"
+          ],
+          "apiVersion": "2018-06-01",
+          "properties": {
+            "type": "AzureSqlTable",
+            "typeProperties": {
+              "fileName": "[parameters('AzureSqlDatabaseTableName')]"
+            },
+            "linkedServiceName": {
+              "referenceName": "[parameters('azureStorageLinkedServiceName')]",
+              "type": "LinkedServiceReference"
+            }
+          }
+        },
+        {
+          "type": "pipelines",
+          "name": "[parameters('pipelineName')]",
+          "dependsOn": [
+            "[parameters('DataFactoryName')]",
+            "[parameters('azureStorageLinkedServiceName')]",
+            "[parameters('onPremiseLinkedServiceName')]",
+            "[parameters('inputDatasetName')]",
+            "[parameters('outputDatasetName')]"
+          ],
+          "apiVersion": "2018-06-01",
+          "properties": {
+            "activities": [
+              {
+                "type": "Copy",
+                "name": "MyCopyActivity",
+                "typeProperties": {
+                  "source": {
+                    "type": "SqlSource",
+                    "sqlReaderQuery": "$$Text.format('select * from Table_2')"
+                  },
+                  "sink": {
+                    "type": "SqlSink",
+                    "writeBatchSize": 10000
+                  }
+                },
+                "inputs": [
+                  {
+                    "referenceName": "[parameters('inputDatasetName')]",
+                    "type": "DatasetReference"
+                  }
+                ],
+                "outputs": [
+                  {
+                    "referenceName": "[parameters('outputDatasetName')]",
+                    "type": "DatasetReference"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "triggers",
+          "name": "[parameters('triggerName')]",
+          "dependsOn": [
+            "[parameters('DataFactoryName')]",
+            "[parameters('azureStorageLinkedServiceName')]",
+            "[parameters('inputDatasetName')]",
+            "[parameters('outputDatasetName')]",
+            "[parameters('pipelineName')]"
+          ],
+          "apiVersion": "2018-06-01",
+          "properties": {
+            "type": "ScheduleTrigger",
+            "typeProperties": {
+              "recurrence": {
+                "frequency": "Minute",
+                "interval": 1,
+                "startTime": "[parameters('triggerStartTime')]",
+                "endTime": "[parameters('triggerEndTime')]",
+                "timeZone": "UTC"
+              }
+            },
+            "pipelines": [
+              {
+                "pipelineReference": {
+                  "type": "PipelineReference",
+                  "referenceName": "[parameters('pipelineName')]"
+                },
+                "parameters": {}
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

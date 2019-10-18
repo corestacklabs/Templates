@@ -1,0 +1,390 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "locations": {
+      "type": "string",
+      "metadata": {
+        "description": "Pick the same Location in which Azure AD Domain Service is deployed."
+      },
+      "allowedValues": [
+        "westus",
+        "westus2",
+        "eastus",
+        "eastus2",
+        "australiaeast",
+        "australiasoutheast",
+        "brazilsouth",
+        "canadacentral",
+        "canadaeast",
+        "centralindia",
+        "centralus",
+        "eastasia",
+        "francecentral",
+        "japaneast",
+        "japanwest",
+        "koreacentral",
+        "koreasouth",
+        "northcentralus",
+        "northeurope",
+        "southcentralus",
+        "southindia",
+        "southeastasia",
+        "uksouth",
+        "ukwest",
+        "westcentralus",
+        "westeurope",
+        "westindia"
+      ]
+    },
+    "instance_name": {
+      "type": "string",
+      "metadata": {
+        "description": "Name for the VirtualMachine to be provisioned. VM name is case-insensitive. Alphanumeric and hyphen are valid characters."
+      },
+      "minLength": 1,
+      "maxLength": 15
+    },
+    "sku": {
+      "type": "string",
+      "metadata": {
+        "description": "The image SKU."
+      },
+      "allowedValues": ["2012-Datacenter", "2016-Datacenter"]
+    },
+    "instance_size": {
+      "type": "string",
+      "metadata": {
+        "description": "The size of the VirtualMachine"
+      },
+      "source": "instance_size.list_instance_size"
+    },
+    "ExistingVNET_Name": {
+      "type": "string",
+      "metadata": {
+        "description": "Specify the resource-Name of the virtual network in which you have deployed your Azure AD DomainServices managed domain."
+      },
+      "source": "virtual_network.list_virtual_network"
+    },
+    "ExistingSubnet_Name": {
+      "type": "string",
+      "metadata": {
+        "description": "Specify the subnet name within the virtual network where you would like to deploy this virtual machine. Do not select the gateway subnet in the virtual network. Also, do not select the dedicated subnet in which your managed domain is deployed."
+      },
+      "source": "virtual_network.list_subnet"
+    },
+    "domain_name": {
+      "type": "string",
+      "metadata": {
+        "description": "Specify the DNS domain name of your managed domain."
+      }
+    },
+    "username": {
+      "type": "string",
+      "metadata": {
+        "description": "Specify the user account name on your managed domain that should be used to join the VM to the managed domain. Eg: 'developer'."
+      }
+    },
+    "password": {
+      "type": "securestring",
+      "metadata": {
+        "description": "Specify the password of the domain user account referred to by the 'DomainUsername' parameter"
+      }
+    },
+    "create_instance_username": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the administrator of the new VM and the domain. Exclusion list: 'admin','administrator"
+      }
+    },
+    "create_instance_password": {
+      "type": "securestring",
+      "metadata": {
+        "description": "The password for the administrator account of the new VM and the domain"
+      }
+    },
+    "tags": {
+      "type": "object",
+      "defaultValue": {},
+      "metadata": {
+        "description": "Tags to assign all resources.This is JSON param,Sample: <br/>{<br/>\"key1\":\"value1\"<br/>}"
+      }
+    },
+    "storage_account": {
+      "type": "string",
+      "source": "storage_account.list_storage_account",
+      "metadata": {
+        "description": "Name for existing storage account"
+      }
+    },
+    "PublicIPAddress_Type": {
+      "type": "string",
+      "defaultValue": "Dynamic",
+      "metadata": {
+        "description": "The public IP allocation method."
+      },
+      "allowedValues": [
+        "Static",
+        "Dynamic"
+      ]
+    },
+    "nic_name": {
+      "type": "string",
+      "metadata": {
+        "description": "Name for network interface which will be created"
+      }
+    },
+    "public_ip_name": {
+      "type": "string",
+      "metadata": {
+        "description": "Name for New public IP Address which will be created"
+      }
+    },
+    "public_ip_sku": {
+      "type": "string",
+      "defaultValue": "Basic",
+      "metadata": {
+        "description": "Sku for public IP Address"
+      },
+      "allowedValues": [
+        "Basic",
+        "Standard"
+      ]
+    },
+    "os_disk_type": {
+      "type": "string",
+      "metadata": {
+        "description": "Disk type for the os"
+      }
+    },
+    "availability_set": {
+      "type": "string",
+      "source": "availabilityset.list_availabilityset",
+      "metadata": {
+        "description": "Name of the existing availability Set"
+      },
+      "defaultValue": "NA"
+    }
+  },
+  "variables": {
+    "emptyArray": [],
+    "public_ip_allocation_method": "[if(equals(parameters('public_ip_sku'),'Basic'), parameters('PublicIPAddress_Type'), 'Static')]",
+    "subnetId": "[concat(concat(resourceId('Microsoft.Network/virtualNetworks',parameters('ExistingVNET_Name')), '/subnets/'),parameters('ExistingSubnet_Name'))]",
+    "location_name": "[parameters('locations')]",
+    "os_disk": {
+      "createOption": "fromImage",
+      "vhd": {
+        "uri": "[concat(concat(concat('https://', parameters('storage_account'), '.blob.core.windows.net/'), 'vhds/'), parameters('instance_name'), '.vhd')]"
+      },
+      "name": "[parameters('instance_name')]"
+    },
+    "managed_os_disk": {
+      "createOption": "fromImage",
+      "managedDisk": {
+        "storageAccountType": "[parameters('os_disk_type')]"
+      },
+      "name": "[parameters('instance_name')]"
+    }
+  },
+  "resources": [
+    {
+      "apiVersion": "2017-08-01",
+      "type": "Microsoft.Network/publicIPAddresses",
+      "name": "[parameters('public_ip_Name')]",
+      "location": "[variables('location_name')]",
+      "tags": "[parameters('tags')]",
+      "properties": {
+        "publicIPAllocationMethod": "[variables('public_ip_allocation_method')]"
+      },
+      "sku": {
+        "name": "[parameters('public_ip_sku')]"
+      }
+    },
+    {
+      "apiVersion": "2015-06-15",
+      "type": "Microsoft.Network/networkInterfaces",
+      "name": "[parameters('nic_name')]",
+      "location": "[variables('location_name')]",
+      "tags": "[parameters('tags')]",
+      "dependsOn": [
+        "[concat('Microsoft.Network/publicIPAddresses/', parameters('public_ip_name'))]"
+      ],
+      "properties": {
+        "ipConfigurations": [
+          {
+            "name": "ipconfig",
+            "properties": {
+              "privateIPAllocationMethod": "Dynamic",
+              "publicIPAddress": {
+                "id": "[resourceId('Microsoft.Network/publicIPAddresses', parameters('public_ip_name'))]"
+              },
+              "subnet": {
+                "id": "[variables('subnetId')]"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "apiVersion": "2018-04-01",
+      "type": "Microsoft.Compute/virtualMachines",
+      "name": "[parameters('instance_name')]",
+      "location": "[variables('location_name')]",
+      "tags": "[parameters('tags')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/networkInterfaces', parameters('nic_name'))]"
+      ],
+      "properties": {
+        "hardwareProfile": {
+          "vmSize": "[parameters('instance_size')]"
+        },
+        "osProfile": {
+          "computerName": "[parameters('instance_name')]",
+          "adminUsername": "[parameters('create_instance_username')]",
+          "adminPassword": "[parameters('create_instance_password')]"
+        },
+        "storageProfile": {
+          "imageReference": {
+            "publisher": "MicrosoftWindowsServer",
+            "offer": "WindowsServer",
+            "sku": "[parameters('sku')]",
+            "version": "latest"
+          },
+          "osDisk": "[if(equals(parameters('os_disk_type'),'BLOB'),variables('os_disk'),variables('managed_os_disk'))]",
+          "dataDisks": []
+        },
+        "networkProfile": {
+          "networkInterfaces": [
+            {
+              "id": "[resourceId('Microsoft.Network/networkInterfaces', parameters('nic_name'))]"
+            }
+          ]
+        },
+        "availabilitySet": "[if(equals(parameters('availability_set'),'NA'), json('null'), json(concat('{\"id\": \"', resourceId('Microsoft.Compute/availabilitySets',parameters('availability_set')), '\"}')))]"
+      }
+    },
+    {
+      "apiVersion": "2015-06-15",
+      "type": "Microsoft.Compute/virtualMachines/extensions",
+      "name": "[concat(parameters('instance_name'),'/joindomain')]",
+      "location": "[variables('location_name')]",
+      "dependsOn": [
+        "[concat('Microsoft.Compute/virtualMachines/', parameters('instance_name'))]"
+      ],
+      "properties": {
+        "publisher": "Microsoft.Compute",
+        "type": "JsonADDomainExtension",
+        "typeHandlerVersion": "1.3",
+        "autoUpgradeMinorVersion": true,
+        "settings": {
+          "Name": "[toUpper(parameters('domain_name'))]",
+          "User": "[concat(toUpper(parameters('domain_name')), '\\', parameters('username'))]",
+          "Restart": "true",
+          "Options": 3
+        },
+        "protectedSettings": {
+          "Password": "[parameters('password')]"
+        }
+      }
+    },
+    {
+      "apiVersion": "2017-05-10",
+      "name": "fetchIpAddress",
+      "type": "Microsoft.Resources/deployments",
+      "dependsOn": [
+        "[concat('Microsoft.Compute/virtualMachines/', parameters('instance_name'))]"
+      ],
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "contentVersion": "1.0.0.0",
+          "uri": "[uri('https://raw.githubusercontent.com/Azure/azure-quickstart-templates/master/201-application-gateway-webapp-iprestriction/', 'fetchIpAddress.json')]"
+        },
+        "parameters": {
+          "publicIPAddressId": {
+            "value": "[resourceId('Microsoft.Network/publicIPAddresses', parameters('public_ip_name'))]"
+          }
+        }
+      }
+    }
+  ],
+  "outputs": {
+    "username": {
+      "type": "string",
+      "value": "[parameters('create_instance_username')]"
+    },
+    "instance_id": {
+      "type": "string",
+      "value": "[parameters('instance_name')]"
+    },
+    "image_container": {
+      "type": "string",
+      "value": "vhds"
+    },
+    "os_disk": {
+      "type": "string",
+      "value": "[reference(parameters('instance_name')).storageProfile.osDisk.name]"
+    },
+    "fqdn": {
+      "type": "string",
+      "value": "[reference('fetchIpAddress').outputs.ipAddress.value]"
+    },
+    "root_username": {
+      "type": "string",
+      "value": "[parameters('create_instance_username')]"
+    },
+    "computerName": {
+      "type": "string",
+      "value": "[parameters('instance_name')]"
+    },
+    "vm_status": {
+      "type": "string",
+      "value": "Running"
+    },
+    "host_ip": {
+      "type": "string",
+      "value": "[reference('fetchIpAddress').outputs.ipAddress.value]"
+    },
+    "root_password": {
+      "type": "string",
+      "value": "[parameters('create_instance_password')]"
+    },
+    "storage_account": {
+      "type": "string",
+      "value": "[parameters('storage_account')]"
+    },
+    "password": {
+      "type": "string",
+      "value": "[parameters('create_instance_password')]"
+    },
+    "vm_id": {
+      "type": "string",
+      "value": "[reference(parameters('instance_name')).vmId]"
+    },
+    "public_ip_name": {
+      "type": "string",
+      "value": "[parameters('public_ip_name')]"
+    },
+    "subnet": {
+      "type": "string",
+      "value": "[last(split(variables('subnetId'),'/'))]"
+    },
+    "subnet_id": {
+      "type": "string",
+      "value": "[variables('subnetId')]"
+    },
+    "virtual_network": {
+      "type": "string",
+      "value": "[split(variables('subnetId'),'/')[8]]"
+    },
+    "id": {
+      "type": "string",
+      "value": "[resourceId(resourcegroup().name,'Microsoft.Compute/virtualMachines', parameters('instance_name'))]"
+    },
+    "nic_name": {
+      "type": "string",
+      "value": "[parameters('nic_name')]"
+    }
+  }
+}

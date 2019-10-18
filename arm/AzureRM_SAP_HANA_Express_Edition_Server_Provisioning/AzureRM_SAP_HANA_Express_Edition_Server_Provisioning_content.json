@@ -1,0 +1,447 @@
+{
+  "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "Location": {
+      "type": "string",
+      "allowedValues": [
+        "westus2",
+        "eastus",
+        "eastus2",
+        "westus",
+        "australiaeast",
+        "australiasoutheast",
+        "brazilsouth",
+        "canadacentral",
+        "canadaeast",
+        "centralindia",
+        "centralus",
+        "eastasia",
+        "francecentral",
+        "japaneast",
+        "japanwest",
+        "koreacentral",
+        "koreasouth",
+        "northcentralus",
+        "northeurope",
+        "southcentralus",
+        "southindia",
+        "southeastasia",
+        "uksouth",
+        "ukwest",
+        "westcentralus",
+        "westeurope",
+        "westindia"
+      ]
+    },
+    "VirtualMachine_Name": {
+      "type": "string",
+      "metadata": {
+        "description": "Name for the Virtual Machine to be provisioned. VM name is case-insensitive. Alphanumeric and hyphen are valid characters."
+      },
+      "minLength": 1,
+      "maxLength": 64
+    },
+    "VirtualMachine_Size": {
+      "type": "string",
+      "allowedValues": [
+        "Standard_E4_v3",
+        "Standard_A4m_v2",
+        "Standard_D12",
+        "Standard_D12_v2",
+        "Standard_D8_v3"
+      ]
+    },
+    "VM_Username": {
+      "type": "string",
+      "metadata": {
+        "description": "Username of the administrator account in the Virtual Machine. Username will be used to remote connect (login) to the VM when it is created. Username must only contain letters, numbers, underscores, hyphens and may not start with a hyphen or number"
+      },
+      "minLength": 1,
+      "maxLength": 32
+    },
+    "VM_Password": {
+      "type": "securestring",
+      "metadata": {
+        "description": "Password of the administrator account in the Virtual Machine. Password must have 3 of the following: 1 lowercase character, 1 uppercase character, 1 number and  1 special character that is not - "
+      },
+      "minLength": 12,
+      "maxLength": 72
+    },
+    "PublicIPAddress_Type": {
+      "type": "string",
+      "allowedValues": [
+        "Static",
+        "Dynamic"
+      ]
+    },
+    "DNS_Name_Label": {
+      "type": "string",
+      "metadata": {
+        "description": "An A record that starts with the specified label and resolves to the PublicIP Address of this VM. It can contain only lowercase letters, numbers and hyphens. The first character must be a letter. The last charcter must be a letter or number"
+      },
+      "minLength": 3,
+      "maxLength": 63
+    }
+  },
+  "variables": {
+    "storageaccount_name": "[concat('csstoragedisks', take(uniquestring(parameters('VirtualMachine_Name'), deployment().name), 6))]",
+    "diagnostics_storageaccount_name": "[concat('csstoragediag', take(uniquestring(parameters('VirtualMachine_Name'),deployment().name), 6))]",
+    "virtualnetwork_name": "[concat('csvnet', take(uniquestring(parameters('VirtualMachine_Name'), deployment().name), 6))]",
+    "subnet_name": "default",
+    "networkinterface_name": "[concat(parameters('VirtualMachine_Name'), take(uniquestring(parameters('VirtualMachine_Name'), deployment().name), 3))]",
+    "networksecuritygroup_name": "[concat(parameters('VirtualMachine_Name'), '-nsg')]",
+    "publicipaddress_name": "[concat(parameters('VirtualMachine_Name'), '-ip')]",
+    "vnetId": "[resourceId(resourcegroup().name,'Microsoft.Network/virtualNetworks', variables('virtualnetwork_name'))]",
+    "subnetRef": "[concat(variables('vnetId'), '/subnets/', variables('subnet_name'))]",
+    "address_prefix": "172.17.2.0/24",
+    "subnet_prefix": "172.17.2.0/24"
+  },
+  "resources": [{
+      "name": "[parameters('VirtualMachine_Name')]",
+      "type": "Microsoft.Compute/virtualMachines",
+      "apiVersion": "2017-12-01",
+      "location": "[parameters('Location')]",
+      "dependsOn": [
+        "[concat('Microsoft.Network/networkInterfaces/', variables('networkinterface_name'))]",
+        "[concat('Microsoft.Storage/storageAccounts/', variables('storageaccount_name'))]"
+      ],
+      "properties": {
+        "osProfile": {
+          "computerName": "[parameters('VirtualMachine_Name')]",
+          "adminUsername": "[parameters('VM_Username')]",
+          "adminPassword": "[parameters('VM_Password')]"
+        },
+        "hardwareProfile": {
+          "vmSize": "[parameters('VirtualMachine_Size')]"
+        },
+        "storageProfile": {
+          "imageReference": {
+            "publisher": "sap",
+            "offer": "hanaexpress",
+            "sku": "server",
+            "version": "latest"
+          },
+          "osDisk": {
+            "createOption": "fromImage",
+            "vhd": {
+              "uri": "[concat(concat(concat('https://', variables('storageaccount_name'), '.blob.core.windows.net/'), 'vhds/'), parameters('VirtualMachine_Name'), '20180802142148.vhd')]"
+            },
+            "name": "[parameters('VirtualMachine_Name')]"
+          },
+          "dataDisks": []
+        },
+        "networkProfile": {
+          "networkInterfaces": [{
+            "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('networkinterface_name'))]"
+          }]
+        }
+      },
+      "plan": {
+        "name": "server",
+        "publisher": "sap",
+        "product": "hanaexpress"
+      }
+    },
+    {
+      "name": "[variables('storageaccount_name')]",
+      "type": "Microsoft.Storage/storageAccounts",
+      "apiVersion": "2015-06-15",
+      "location": "[parameters('Location')]",
+      "properties": {
+        "accountType": "Standard_LRS"
+      }
+    },
+    {
+      "name": "[variables('virtualnetwork_name')]",
+      "type": "Microsoft.Network/virtualNetworks",
+      "apiVersion": "2018-04-01",
+      "location": "[parameters('Location')]",
+      "properties": {
+        "addressSpace": {
+          "addressPrefixes": [
+            "[variables('address_prefix')]"
+          ]
+        },
+        "subnets": [{
+          "name": "[variables('subnet_name')]",
+          "properties": {
+            "addressPrefix": "[variables('subnet_prefix')]"
+          }
+        }]
+      }
+    },
+    {
+      "name": "[variables('networkinterface_name')]",
+      "type": "Microsoft.Network/networkInterfaces",
+      "apiVersion": "2018-04-01",
+      "location": "[parameters('Location')]",
+      "dependsOn": [
+        "[concat('Microsoft.Network/virtualNetworks/', variables('virtualnetwork_name'))]",
+        "[concat('Microsoft.Network/publicIpAddresses/', variables('publicipaddress_name'))]",
+        "[concat('Microsoft.Network/networkSecurityGroups/', variables('networksecuritygroup_name'))]"
+      ],
+      "properties": {
+        "ipConfigurations": [{
+          "name": "ipconfig1",
+          "properties": {
+            "subnet": {
+              "id": "[variables('subnetRef')]"
+            },
+            "privateIPAllocationMethod": "Dynamic",
+            "publicIpAddress": {
+              "id": "[resourceId(resourcegroup().name, 'Microsoft.Network/publicIpAddresses', variables('publicipaddress_name'))]"
+            }
+          }
+        }],
+        "networkSecurityGroup": {
+          "id": "[resourceId(resourcegroup().name, 'Microsoft.Network/networkSecurityGroups', variables('networksecuritygroup_name'))]"
+        }
+      }
+    },
+    {
+      "name": "[variables('publicipaddress_name')]",
+      "type": "Microsoft.Network/publicIpAddresses",
+      "apiVersion": "2017-08-01",
+      "location": "[parameters('Location')]",
+      "properties": {
+        "publicIpAllocationMethod": "[parameters('PublicIPAddress_Type')]",
+        "dnsSettings": {
+          "domainNameLabel": "[parameters('DNS_Name_Label')]"
+        }
+      },
+      "sku": {
+        "name": "Basic"
+      }
+    },
+    {
+      "name": "[variables('networksecuritygroup_name')]",
+      "type": "Microsoft.Network/networkSecurityGroups",
+      "apiVersion": "2018-01-01",
+      "location": "[parameters('Location')]",
+      "properties": {
+        "securityRules": [{
+            "name": "SSH",
+            "properties": {
+              "priority": 1010,
+              "protocol": "TCP",
+              "access": "Allow",
+              "direction": "Inbound",
+              "sourceApplicationSecurityGroups": [],
+              "destinationApplicationSecurityGroups": [],
+              "sourceAddressPrefix": "*",
+              "sourcePortRange": "*",
+              "destinationAddressPrefix": "*",
+              "destinationPortRange": "22"
+            }
+          },
+          {
+            "name": "39013",
+            "properties": {
+              "priority": 1020,
+              "protocol": "TCP",
+              "access": "Allow",
+              "direction": "Inbound",
+              "sourceApplicationSecurityGroups": [],
+              "destinationApplicationSecurityGroups": [],
+              "sourceAddressPrefix": "*",
+              "sourcePortRange": "*",
+              "destinationAddressPrefix": "*",
+              "destinationPortRange": "39013"
+            }
+          },
+          {
+            "name": "39015",
+            "properties": {
+              "priority": 1030,
+              "protocol": "TCP",
+              "access": "Allow",
+              "direction": "Inbound",
+              "sourceApplicationSecurityGroups": [],
+              "destinationApplicationSecurityGroups": [],
+              "sourceAddressPrefix": "*",
+              "sourcePortRange": "*",
+              "destinationAddressPrefix": "*",
+              "destinationPortRange": "39015"
+            }
+          },
+          {
+            "name": "59013",
+            "properties": {
+              "priority": 1040,
+              "protocol": "TCP",
+              "access": "Allow",
+              "direction": "Inbound",
+              "sourceApplicationSecurityGroups": [],
+              "destinationApplicationSecurityGroups": [],
+              "sourceAddressPrefix": "*",
+              "sourcePortRange": "*",
+              "destinationAddressPrefix": "*",
+              "destinationPortRange": "59013"
+            }
+          },
+          {
+            "name": "59014",
+            "properties": {
+              "priority": 1050,
+              "protocol": "TCP",
+              "access": "Allow",
+              "direction": "Inbound",
+              "sourceApplicationSecurityGroups": [],
+              "destinationApplicationSecurityGroups": [],
+              "sourceAddressPrefix": "*",
+              "sourcePortRange": "*",
+              "destinationAddressPrefix": "*",
+              "destinationPortRange": "59014"
+            }
+          },
+          {
+            "name": "8090",
+            "properties": {
+              "priority": 1060,
+              "protocol": "TCP",
+              "access": "Allow",
+              "direction": "Inbound",
+              "sourceApplicationSecurityGroups": [],
+              "destinationApplicationSecurityGroups": [],
+              "sourceAddressPrefix": "*",
+              "sourcePortRange": "*",
+              "destinationAddressPrefix": "*",
+              "destinationPortRange": "8090"
+            }
+          },
+          {
+            "name": "4390",
+            "properties": {
+              "priority": 1070,
+              "protocol": "TCP",
+              "access": "Allow",
+              "direction": "Inbound",
+              "sourceApplicationSecurityGroups": [],
+              "destinationApplicationSecurityGroups": [],
+              "sourceAddressPrefix": "*",
+              "sourcePortRange": "*",
+              "destinationAddressPrefix": "*",
+              "destinationPortRange": "4390"
+            }
+          },
+          {
+            "name": "39041",
+            "properties": {
+              "priority": 1080,
+              "protocol": "TCP",
+              "access": "Allow",
+              "direction": "Inbound",
+              "sourceApplicationSecurityGroups": [],
+              "destinationApplicationSecurityGroups": [],
+              "sourceAddressPrefix": "*",
+              "sourcePortRange": "*",
+              "destinationAddressPrefix": "*",
+              "destinationPortRange": "39041"
+            }
+          },
+          {
+            "name": "39042",
+            "properties": {
+              "priority": 1090,
+              "protocol": "TCP",
+              "access": "Allow",
+              "direction": "Inbound",
+              "sourceApplicationSecurityGroups": [],
+              "destinationApplicationSecurityGroups": [],
+              "sourceAddressPrefix": "*",
+              "sourcePortRange": "*",
+              "destinationAddressPrefix": "*",
+              "destinationPortRange": "39042"
+            }
+          },
+          {
+            "name": "39043",
+            "properties": {
+              "priority": 1100,
+              "protocol": "TCP",
+              "access": "Allow",
+              "direction": "Inbound",
+              "sourceApplicationSecurityGroups": [],
+              "destinationApplicationSecurityGroups": [],
+              "sourceAddressPrefix": "*",
+              "sourcePortRange": "*",
+              "destinationAddressPrefix": "*",
+              "destinationPortRange": "39043"
+            }
+          },
+          {
+            "name": "39044",
+            "properties": {
+              "priority": 1110,
+              "protocol": "TCP",
+              "access": "Allow",
+              "direction": "Inbound",
+              "sourceApplicationSecurityGroups": [],
+              "destinationApplicationSecurityGroups": [],
+              "sourceAddressPrefix": "*",
+              "sourcePortRange": "*",
+              "destinationAddressPrefix": "*",
+              "destinationPortRange": "39044"
+            }
+          },
+          {
+            "name": "39045",
+            "properties": {
+              "priority": 1120,
+              "protocol": "TCP",
+              "access": "Allow",
+              "direction": "Inbound",
+              "sourceApplicationSecurityGroups": [],
+              "destinationApplicationSecurityGroups": [],
+              "sourceAddressPrefix": "*",
+              "sourcePortRange": "*",
+              "destinationAddressPrefix": "*",
+              "destinationPortRange": "39045"
+            }
+          },
+          {
+            "name": "1128",
+            "properties": {
+              "priority": 1130,
+              "protocol": "TCP",
+              "access": "Allow",
+              "direction": "Inbound",
+              "sourceApplicationSecurityGroups": [],
+              "destinationApplicationSecurityGroups": [],
+              "sourceAddressPrefix": "*",
+              "sourcePortRange": "*",
+              "destinationAddressPrefix": "*",
+              "destinationPortRange": "1128"
+            }
+          },
+          {
+            "name": "1129",
+            "properties": {
+              "priority": 1140,
+              "protocol": "TCP",
+              "access": "Allow",
+              "direction": "Inbound",
+              "sourceApplicationSecurityGroups": [],
+              "destinationApplicationSecurityGroups": [],
+              "sourceAddressPrefix": "*",
+              "sourcePortRange": "*",
+              "destinationAddressPrefix": "*",
+              "destinationPortRange": "1129"
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "outputs": {
+    "VirtualMachine_Name": {
+      "type": "string",
+      "value": "[parameters('VirtualMachine_Name')]"
+    },
+    "FQDN": {
+      "type": "string",
+      "value": "[reference(variables('publicipaddress_name')).dnsSettings.fqdn]"
+    }
+  }
+}

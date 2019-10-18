@@ -1,0 +1,397 @@
+{
+  "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "Location": {
+      "type": "string",
+      "allowedValues": [
+        "westus2",
+        "eastus",
+        "eastus2",
+        "westus",
+        "australiaeast",
+        "australiasoutheast",
+        "brazilsouth",
+        "canadacentral",
+        "canadaeast",
+        "centralindia",
+        "centralus",
+        "eastasia",
+        "francecentral",
+        "japaneast",
+        "japanwest",
+        "koreacentral",
+        "koreasouth",
+        "northcentralus",
+        "northeurope",
+        "southcentralus",
+        "southindia",
+        "southeastasia",
+        "uksouth",
+        "ukwest",
+        "westcentralus",
+        "westeurope",
+        "westindia"
+      ]
+    },
+    "VirtualMachine_Name": {
+      "type": "string",
+      "metadata": {
+        "description": "Name for the Virtual Machine to be provisioned. VM name is case-insensitive. Alphanumeric and hyphen are valid characters."
+      },
+      "minLength": 1,
+      "maxLength": 15
+    },
+    "VirtualMachine_Size": {
+      "type": "string",
+      "allowedValues": [
+        "Standard_B2s",
+        "Standard_B2ms",
+        "Standard_B4ms",
+        "Standard_DS1",
+        "Standard_DS1_v2"
+      ]
+    },
+    "VM_Username": {
+      "type": "string",
+      "metadata": {
+        "description": "Username of the administrator account in the Virtual Machine. Username will be used to remote connect(login) to the VM when it is created. Username cannot contain special characters or end with ."
+      },
+      "minLength": 1,
+      "maxLength": 15
+    },
+    "VM_Password": {
+      "type": "securestring",
+      "metadata": {
+        "description": "Password of the administrator account in the Virtual Machine. Password must have 3 of the following: 1 lowercase character, 1 uppercase character, 1 number and  1 special character that is not -"
+      },
+      "minLength": 12,
+      "maxLength": 123
+    },
+    "PublicIPAddress_Type": {
+      "type": "string",
+      "allowedValues": [
+        "Static",
+        "Dynamic"
+      ]
+    },
+    "SQL_ConnectivityType": {
+      "type": "string",
+      "metadata": {
+        "description": "Select the access level and network port settings for SQL Server"
+      },
+      "defaultValue": "Public",
+      "allowedValues": [
+        "Public",
+        "Private",
+        "Local"
+      ]
+    },
+    "SQL_PortNumber": {
+      "type": "int",
+      "metadata": {
+        "description": "Enter the port number for SQL Server. Please enter port number between 1024 & 65535"
+      },
+      "defaultValue": 1433,
+      "minValue": 1024,
+      "maxValue": 65535
+    },
+    "SQL_AuthenticationLogin": {
+      "type": "string",
+      "metadata": {
+        "description": "Enter the SQL Authentication login you will use to connect to SQL server. The Sysadmin role will be assigned to this login. Username cannot contain special characters or end with . "
+      },
+      "minLength": 2,
+      "maxLength": 128
+    },
+    "SQL_AuthenticationPassword": {
+      "type": "securestring",
+      "metadata": {
+        "description": "Enter the password associated with the SQL Authentication login. Password must have 3 of the following: 1 lowercase character, 1 uppercase character, 1 number and  1 special character that is not - "
+      },
+      "minLength": 2,
+      "maxLength": 128
+
+    },
+    "DNS_Name_Label": {
+      "type": "string",
+      "metadata": {
+        "description": "An A record that starts with the specified label and resolves to the Public IP Address of this VM. It can contain only lowercase letters, numbers and hyphens. The first character must be a letter. The last character must be a letter or number"
+      },
+      "minLength": 3,
+      "maxLength": 63
+    }
+  },
+  "variables": {
+    "storageaccount_name": "[concat('csstoragedisks', take(uniquestring(parameters('VirtualMachine_Name'), deployment().name), 6))]",
+    "diagnostics_storageaccount_name": "[concat('csstoragediag', take(uniquestring(parameters('VirtualMachine_Name'),deployment().name), 6))]",
+    "virtualnetwork_name": "[concat('csvnet', take(uniquestring(parameters('VirtualMachine_Name'), deployment().name), 6))]",
+    "subnet_name": "default",
+    "networkinterface_name": "[concat(parameters('VirtualMachine_Name'), take(uniquestring(parameters('VirtualMachine_Name'), deployment().name), 3))]",
+    "networksecuritygroup_name": "[concat(parameters('VirtualMachine_Name'), '-nsg')]",
+    "publicipaddress_name": "[concat(parameters('VirtualMachine_Name'), '-ip')]",
+    "vnetId": "[resourceId(resourcegroup().name,'Microsoft.Network/virtualNetworks', variables('virtualnetwork_name'))]",
+    "subnetRef": "[concat(variables('vnetId'), '/subnets/', variables('subnet_name'))]",
+    "address_prefix": "172.17.2.0/24",
+    "subnet_prefix": "172.17.2.0/24"
+  },
+  "resources": [{
+      "name": "[parameters('VirtualMachine_Name')]",
+      "type": "Microsoft.Compute/virtualMachines",
+      "apiVersion": "2017-12-01",
+      "location": "[parameters('Location')]",
+      "dependsOn": [
+        "[concat('Microsoft.Network/networkInterfaces/', variables('networkinterface_name'))]",
+        "[concat('Microsoft.Storage/storageAccounts/', variables('storageaccount_name'))]",
+        "[concat('Microsoft.Storage/storageAccounts/', variables('diagnostics_storageaccount_name'))]"
+      ],
+      "properties": {
+        "osProfile": {
+          "computerName": "[parameters('VirtualMachine_Name')]",
+          "adminUsername": "[parameters('VM_Username')]",
+          "adminPassword": "[parameters('VM_Password')]",
+          "windowsConfiguration": {
+            "provisionVmAgent": "true"
+          }
+        },
+        "hardwareProfile": {
+          "vmSize": "[parameters('VirtualMachine_Size')]"
+        },
+        "storageProfile": {
+          "imageReference": {
+            "publisher": "MicrosoftSQLServer",
+            "offer": "SQL2016SP2-WS2016",
+            "sku": "Express",
+            "version": "latest"
+          },
+          "osDisk": {
+            "createOption": "fromImage",
+            "vhd": {
+              "uri": "[concat(concat(concat('https://', variables('storageaccount_name'), '.blob.core.windows.net/'), 'vhds/'), parameters('VirtualMachine_Name'), '20180813184323.vhd')]"
+            },
+            "name": "[parameters('VirtualMachine_Name')]"
+          },
+          "dataDisks": [{
+            "createOption": "empty",
+            "lun": 0,
+            "diskSizeGB": "1023",
+            "caching": "ReadOnly",
+            "name": "[concat(parameters('VirtualMachine_Name'), '-disk-1')]",
+            "vhd": {
+              "uri": "[concat(concat(concat('https://', variables('storageaccount_name'), '.blob.core.windows.net/'), 'vhds/'), parameters('VirtualMachine_Name'), '.vhd')]"
+            }
+          }]
+        },
+        "networkProfile": {
+          "networkInterfaces": [{
+            "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('networkinterface_name'))]"
+          }]
+        },
+        "diagnosticsProfile": {
+          "bootDiagnostics": {
+            "enabled": true,
+            "storageUri": "[concat('https://', variables('diagnostics_storageaccount_name'), '.blob.core.windows.net/')]"
+          }
+        }
+      }
+    },
+    {
+      "apiVersion": "2015-06-15",
+      "type": "Microsoft.Compute/virtualMachines/extensions",
+      "name": "[concat(parameters('VirtualMachine_Name'), '/SqlIaasExtension')]",
+      "location": "[parameters('Location')]",
+      "dependsOn": [
+        "[concat('Microsoft.Compute/virtualMachines/', parameters('VirtualMachine_Name'))]",
+        "[concat('Microsoft.Compute/virtualMachines/', parameters('VirtualMachine_Name'))]"
+      ],
+      "properties": {
+        "type": "SqlIaaSAgent",
+        "publisher": "Microsoft.SqlServer.Management",
+        "typeHandlerVersion": "1.2",
+        "autoUpgradeMinorVersion": "true",
+        "settings": {
+          "AutoTelemetrySettings": {
+            "Region": "[parameters('Location')]"
+          },
+          "AutoPatchingSettings": {
+            "PatchCategory": "WindowsMandatoryUpdates",
+            "Enable": false,
+            "DayOfWeek": "Sunday",
+            "MaintenanceWindowStartingHour": "2",
+            "MaintenanceWindowDuration": "60"
+          },
+          "KeyVaultCredentialSettings": {
+            "Enable": false,
+            "CredentialName": ""
+          },
+          "ServerConfigurationsManagementSettings": {
+            "SQLConnectivityUpdateSettings": {
+              "ConnectivityType": "[parameters('SQL_ConnectivityType')]",
+              "Port": "[parameters('SQL_PortNumber')]"
+            },
+            "SQLWorkloadTypeUpdateSettings": {
+              "SQLWorkloadType": "GENERAL"
+            },
+            "SQLStorageUpdateSettings": {
+              "DiskCount": "1",
+              "NumberOfColumns": "1",
+              "StartingDeviceID": "2",
+              "DiskConfigurationType": "NEW"
+            },
+            "AdditionalFeaturesServerConfigurations": {
+              "IsRServicesEnabled": "false"
+            }
+          }
+        },
+        "protectedSettings": {
+          "SQLAuthUpdateUserName": "[parameters('SQL_AuthenticationLogin')]",
+          "SQLAuthUpdatePassword": "[parameters('SQL_AuthenticationPassword')]"
+        }
+      }
+    },
+    {
+      "name": "[variables('storageaccount_name')]",
+      "type": "Microsoft.Storage/storageAccounts",
+      "apiVersion": "2015-06-15",
+      "location": "[parameters('Location')]",
+      "properties": {
+        "accountType": "Premium_LRS"
+      }
+    },
+    {
+      "name": "[variables('diagnostics_storageaccount_name')]",
+      "type": "Microsoft.Storage/storageAccounts",
+      "apiVersion": "2015-06-15",
+      "location": "[parameters('Location')]",
+      "properties": {
+        "accountType": "Standard_LRS"
+      }
+    },
+    {
+      "name": "[variables('virtualnetwork_name')]",
+      "type": "Microsoft.Network/virtualNetworks",
+      "apiVersion": "2018-04-01",
+      "location": "[parameters('Location')]",
+      "properties": {
+        "addressSpace": {
+          "addressPrefixes": [
+            "[variables('address_prefix')]"
+          ]
+        },
+        "subnets": [{
+          "name": "[variables('subnet_name')]",
+          "properties": {
+            "addressPrefix": "[variables('subnet_prefix')]"
+          }
+        }]
+      }
+    },
+    {
+      "name": "[variables('networkinterface_name')]",
+      "type": "Microsoft.Network/networkInterfaces",
+      "apiVersion": "2018-04-01",
+      "location": "[parameters('location')]",
+      "dependsOn": [
+        "[concat('Microsoft.Network/virtualNetworks/', variables('virtualnetwork_name'))]",
+        "[concat('Microsoft.Network/publicIpAddresses/', variables('publicipaddress_name'))]",
+        "[concat('Microsoft.Network/networkSecurityGroups/', variables('networksecuritygroup_name'))]"
+      ],
+      "properties": {
+        "ipConfigurations": [{
+          "name": "ipconfig1",
+          "properties": {
+            "subnet": {
+              "id": "[variables('subnetRef')]"
+            },
+            "privateIPAllocationMethod": "Dynamic",
+            "publicIpAddress": {
+              "id": "[resourceId(resourcegroup().name,'Microsoft.Network/publicIpAddresses', variables('publicipaddress_name'))]"
+            }
+          }
+        }],
+        "networkSecurityGroup": {
+          "id": "[resourceId(resourcegroup().name, 'Microsoft.Network/networkSecurityGroups', variables('networksecuritygroup_name'))]"
+        }
+      }
+    },
+    {
+      "name": "[variables('publicipaddress_name')]",
+      "type": "Microsoft.Network/publicIpAddresses",
+      "apiVersion": "2017-08-01",
+      "location": "[parameters('Location')]",
+      "properties": {
+        "publicIpAllocationMethod": "[parameters('PublicIPAddress_Type')]",
+        "dnsSettings": {
+          "domainNameLabel": "[parameters('DNS_Name_Label')]"
+        }
+      },
+      "sku": {
+        "name": "Basic"
+      }
+    },
+    {
+      "name": "[variables('networksecuritygroup_name')]",
+      "type": "Microsoft.Network/networkSecurityGroups",
+      "apiVersion": "2018-01-01",
+      "location": "[parameters('Location')]",
+      "properties": {
+        "securityRules": [{
+            "name": "MS_SQL",
+            "properties": {
+              "priority": 300,
+              "protocol": "TCP",
+              "access": "Allow",
+              "direction": "Inbound",
+              "sourceApplicationSecurityGroups": [],
+              "destinationApplicationSecurityGroups": [],
+              "sourceAddressPrefix": "*",
+              "sourcePortRange": "*",
+              "destinationAddressPrefix": "*",
+              "destinationPortRange": "[parameters('SQL_PortNumber')]"
+            }
+          },
+          {
+            "name": "RDP",
+            "properties": {
+              "priority": 320,
+              "protocol": "TCP",
+              "access": "Allow",
+              "direction": "Inbound",
+              "sourceApplicationSecurityGroups": [],
+              "destinationApplicationSecurityGroups": [],
+              "sourceAddressPrefix": "*",
+              "sourcePortRange": "*",
+              "destinationAddressPrefix": "*",
+              "destinationPortRange": "3389"
+            }
+          },
+          {
+            "name": "default-allow-sql",
+            "properties": {
+              "priority": 1500,
+              "protocol": "TCP",
+              "access": "Allow",
+              "direction": "Inbound",
+              "sourceApplicationSecurityGroups": [],
+              "destinationApplicationSecurityGroups": [],
+              "sourceAddressPrefix": "*",
+              "sourcePortRange": "*",
+              "destinationAddressPrefix": "*",
+              "destinationPortRange": "[parameters('SQL_PortNumber')]"
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "outputs": {
+    "VirtualMachine_Name": {
+      "type": "string",
+      "value": "[parameters('VirtualMachine_Name')]"
+    },
+    "FQDN": {
+      "type": "string",
+      "value": "[reference(variables('publicipaddress_name')).dnsSettings.fqdn]"
+    }
+  }
+}

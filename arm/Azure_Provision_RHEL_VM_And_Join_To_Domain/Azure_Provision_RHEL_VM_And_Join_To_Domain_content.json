@@ -1,0 +1,312 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "Location": {
+      "type": "string",
+      "metadata": {
+        "description": "Pick the same Location in which Azure AD Domain Service is deployed"
+      },
+      "allowedValues": [
+        "westus",
+        "westus2",
+        "eastus",
+        "eastus2",
+        "australiaeast",
+        "australiasoutheast",
+        "brazilsouth",
+        "canadacentral",
+        "canadaeast",
+        "centralindia",
+        "centralus",
+        "eastasia",
+        "francecentral",
+        "japaneast",
+        "japanwest",
+        "koreacentral",
+        "koreasouth",
+        "northcentralus",
+        "northeurope",
+        "southcentralus",
+        "southindia",
+        "southeastasia",
+        "uksouth",
+        "ukwest",
+        "westcentralus",
+        "westeurope",
+        "westindia"
+      ]
+    },
+    "VirtualMachine_Name": {
+      "type": "string",
+      "metadata": {
+        "description": "Name for the Virtual Machine to be provisioned. VM name is case-insensitive. Alphanumeric and hyphen are valid characters."
+      },
+      "minLength": 1,
+      "maxLength": 64
+    },
+    "SKU": {
+      "type": "string",
+      "metadata": {
+        "description": "Select the version of CentOS to deploy"
+      },
+      "allowedValues": [
+        "RHEL-7.6",
+        "RHEL-7.5"
+      ]
+    },
+    "VirtualMachine_Size": {
+      "type": "string",
+      "source": "instance_size.list_instance_size"
+    },
+    "VM_Admin_Username": {
+      "type": "string",
+      "metadata": {
+        "description": "Username of the administrator account in the Virtual Machine. Username will be used to remote connect (login) to the VM when it is created. Username must only contain letters, numbers, underscores, hyphens and may not start with a hyphen or number"
+      },
+      "minLength": 1,
+      "maxLength": 32
+    },
+    "VM_Admin_Password": {
+      "type": "securestring",
+      "metadata": {
+        "description": "Password of the administrator account in the Virtual Machine. Password must have 3 of the following: 1 lowercase character, 1 uppercase character, 1 number and  1 special character that is not - "
+      },
+      "minLength": 12,
+      "maxLength": 72
+    },
+    "PublicIPAddress_Type": {
+      "type": "string",
+      "metadata": {
+        "description": "The public IP allocation method."
+      },
+      "allowedValues": [
+        "Static",
+        "Dynamic"
+      ]
+    },
+    "DNS_Name_Label": {
+      "type": "string",
+      "metadata": {
+        "description": "A record that starts with the specified label and resolves to the PublicIP Address of this VM. It can contain only lowercase letters, numbers and hyphens. The first character must be a letter. The last charcter must be a letter or number"
+      },
+      "minLength": 3,
+      "maxLength": 63
+    },
+    "ExistingVNET_Name": {
+      "type": "string",
+      "metadata": {
+        "description": "Specify the resource-name of the virtual network in which you have deployed your Azure AD DomainServices managed domain."
+      },
+       "source": "virtual_network.list_virtual_network"
+    },
+    "ExistingSubnet_Name": {
+      "type": "string",
+      "metadata": {
+        "description": "Specify the subnet within the virtual network where you would like to deploy this virtual machine. Do not select the gateway subnet in the virtual network. Also, do not select the dedicated subnet in which your managed domain is deployed."
+      },
+       "source": "virtual_network.list_subnet"
+    },
+    "DomainToJoin": {
+      "type": "string",
+      "metadata": {
+        "description": "Specify the DNS domain name of your managed domain."
+      }
+    },
+    "DomainUsername": {
+      "type": "string",
+      "metadata": {
+        "description": "Specify the user account name on your managed domain that should be used to join the VM to the managed domain. Eg: 'developer'."
+      }
+    },
+    "DomainPassword": {
+      "type": "securestring",
+      "metadata": {
+        "description": "Specify the password of the domain user account referred to by the 'DomainUsername' parameter"
+      }
+    }
+  },
+
+  "variables": {
+    "storageaccount_name": "[concat('csstoragedisks', take(uniquestring(parameters('VirtualMachine_Name'), deployment().name), 6))]",
+    "diagnostics_storageaccount_name": "[concat('csstoragediag', take(uniquestring(parameters('VirtualMachine_Name'),deployment().name), 6))]",
+    "networkinterface_name": "[concat(parameters('VirtualMachine_Name'), take(uniquestring(parameters('VirtualMachine_Name'), deployment().name), 3))]",
+    "networksecuritygroup_name": "[concat(parameters('VirtualMachine_Name'), '-nsg')]",
+    "publicipaddress_name": "[concat(parameters('VirtualMachine_Name'), '-ip')]",
+    "subnetId": "[concat(concat(resourceId('Microsoft.Network/virtualNetworks',parameters('ExistingVNET_Name')), '/subnets/'),parameters('ExistingSubnet_Name'))]",
+    "RHEL_Version": "[if(equals(parameters('SKU'), 'RHEL-7.6'), '7-RAW', '7.5')]"
+  },
+
+  "resources": [{
+      "name": "[parameters('VirtualMachine_Name')]",
+      "type": "Microsoft.Compute/virtualMachines",
+      "apiVersion": "2017-12-01",
+      "location": "[parameters('Location')]",
+      "dependsOn": [
+        "[concat('Microsoft.Network/networkInterfaces/', variables('networkinterface_name'))]",
+        "[concat('Microsoft.Storage/storageAccounts/', variables('storageaccount_name'))]",
+        "[concat('Microsoft.Storage/storageAccounts/', variables('diagnostics_storageaccount_name'))]"
+      ],
+      "properties": {
+        "osProfile": {
+          "computerName": "[parameters('VirtualMachine_Name')]",
+          "adminUsername": "[parameters('VM_Admin_Username')]",
+          "adminPassword": "[parameters('VM_Admin_Password')]"
+        },
+        "hardwareProfile": {
+          "vmSize": "[parameters('VirtualMachine_Size')]"
+        },
+        "storageProfile": {
+          "imageReference": {
+            "publisher": "RedHat",
+            "offer": "RHEL",
+            "sku": "[variables('RHEL_version')]",
+            "version": "latest"
+          },
+          "osDisk": {
+            "createOption": "fromImage",
+            "vhd": {
+              "uri": "[concat(concat(concat('https://', variables('storageaccount_name'), '.blob.core.windows.net/'), 'vhds/'), parameters('VirtualMachine_Name'), '.vhd')]"
+            },
+            "name": "[parameters('VirtualMachine_Name')]"
+          },
+          "dataDisks": []
+        },
+        "networkProfile": {
+          "networkInterfaces": [{
+            "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('networkinterface_name'))]"
+          }]
+        },
+        "diagnosticsProfile": {
+          "bootDiagnostics": {
+            "enabled": true,
+            "storageUri": "[concat('https://', variables('diagnostics_storageaccount_name'), '.blob.core.windows.net/')]"
+          }
+        }
+      }
+    },
+
+
+    {
+      "name": "[variables('storageaccount_name')]",
+      "type": "Microsoft.Storage/storageAccounts",
+      "apiVersion": "2015-06-15",
+      "location": "[parameters('Location')]",
+      "properties": {
+        "accountType": "Standard_LRS"
+      }
+    },
+
+    {
+      "name": "[variables('diagnostics_storageaccount_name')]",
+      "type": "Microsoft.Storage/storageAccounts",
+      "apiVersion": "2015-06-15",
+      "location": "[parameters('Location')]",
+      "properties": {
+        "accountType": "Standard_LRS"
+      }
+    },
+
+    {
+      "name": "[variables('networkinterface_name')]",
+      "type": "Microsoft.Network/networkInterfaces",
+      "apiVersion": "2018-04-01",
+      "location": "[parameters('Location')]",
+      "dependsOn": [
+        "[concat('Microsoft.Network/publicIpAddresses/', variables('publicipaddress_name'))]",
+        "[concat('Microsoft.Network/networkSecurityGroups/', variables('networksecuritygroup_name'))]"
+      ],
+      "properties": {
+        "ipConfigurations": [{
+          "name": "ipconfig1",
+          "properties": {
+            "subnet": {
+              "id": "[variables('subnetId')]"
+            },
+            "privateIPAllocationMethod": "Dynamic",
+            "publicIpAddress": {
+              "id": "[resourceId(resourcegroup().name,'Microsoft.Network/publicIpAddresses', variables('publicipaddress_name'))]"
+            }
+          }
+        }],
+        "networkSecurityGroup": {
+          "id": "[resourceId(resourcegroup().name, 'Microsoft.Network/networkSecurityGroups', variables('networksecuritygroup_name'))]"
+        }
+      }
+    },
+
+    {
+      "name": "[variables('publicipaddress_name')]",
+      "type": "Microsoft.Network/publicIpAddresses",
+      "apiVersion": "2017-08-01",
+      "location": "[parameters('Location')]",
+      "properties": {
+        "publicIpAllocationMethod": "[parameters('PublicIPAddress_Type')]",
+        "dnsSettings": {
+          "domainNameLabel": "[parameters('DNS_Name_Label')]"
+        }
+      },
+      "sku": {
+        "name": "Basic"
+      }
+    },
+
+    {
+      "name": "[variables('networksecuritygroup_name')]",
+      "type": "Microsoft.Network/networkSecurityGroups",
+      "apiVersion": "2018-01-01",
+      "location": "[parameters('Location')]",
+      "properties": {
+        "securityRules": [{
+          "name": "SSH",
+          "properties": {
+            "priority": "300",
+            "protocol": "TCP",
+            "access": "Allow",
+            "direction": "Inbound",
+            "sourceApplicationSecurityGroups": [],
+            "destinationApplicationSecurityGroups": [],
+            "sourceAddressPrefix": "*",
+            "sourcePortRange": "*",
+            "destinationAddressPrefix": "*",
+            "destinationPortRange": "22"
+          }
+        }]
+
+      }
+    },
+
+    {
+      "name": "[concat(parameters('VirtualMachine_Name'), '/domainjoin_extension')]",
+      "type": "Microsoft.Compute/virtualMachines/extensions",
+      "location": "[parameters('Location')]",
+      "apiVersion": "2015-06-15",
+      "dependsOn": [
+        "[concat('Microsoft.Compute/virtualMachines/', parameters('VirtualMachine_Name'))]"
+      ],
+      "properties": {
+        "publisher": "Microsoft.Azure.Extensions",
+        "type": "CustomScript",
+        "typeHandlerVersion": "2.0",
+        "autoUpgradeMinorVersion": true,
+        "settings": {},
+        "protectedSettings": {
+          "fileUris": ["https://sushmithaadtest.blob.core.windows.net/sushmithaadtest/centos-rhel-domainjoin.sh"],
+          "commandToExecute": "[concat('sh centos-rhel-domainjoin.sh', ' ', parameters('VM_Admin_Username'), ' ', toUpper(parameters('DomainToJoin')), ' ', parameters('DomainUsername') , ' ', parameters('DomainPassword'))]"
+
+        }
+      }
+    }
+  ],
+
+  "outputs": {
+    "VirtualMachine_Name": {
+      "type": "string",
+      "value": "[parameters('VirtualMachine_Name')]"
+    },
+    "Subnet_ID": {
+      "type": "string",
+      "value": "[variables('subnetId')]"
+    }
+  }
+}

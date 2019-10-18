@@ -1,0 +1,55 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "databaseNames": {
+      "type": "Array",
+      "source": "sql_server.list_server",
+      "metadata": {
+        "description": "Databases which is attached to Selected SQL. (Basic Configuration DB is not applicable for Post Provisioning purpose.)"
+      }
+    },
+    "sqlServerName": {
+      "type": "String",
+      "source": "sql_database.list_database",
+      "metadata": {
+        "description": "Name of the SQL server."
+      }
+    },
+    "transparentEncryption": {
+      "defaultValue": "Enabled",
+      "allowedValues": [
+        "Enabled",
+        "Disabled"
+      ],
+      "type": "String",
+      "metadata": {
+        "description": "Enable or disable Transparent Data Encryption (TDE) for the database."
+      }
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Sql/servers/databases/transparentDataEncryption",
+      "apiVersion": "2014-04-01-preview",
+      "name": "[concat(parameters('sqlServerName'), '/', parameters('databaseNames')[copyIndex()], '/', 'current')]",
+      "properties": {
+        "status": "[parameters('transparentEncryption')]"
+      },
+      "copy": {
+        "name": "encryption",
+        "count": "[length(parameters('databaseNames'))]"
+      }
+    }
+  ],
+  "outputs": {
+    "sqlServerName": {
+      "type": "String",
+      "value": "[parameters('sqlServerName')]"
+    },
+    "databaseNames": {
+      "type": "Array",
+      "value": "[parameters('databaseNames')]"
+    }
+  }
+}

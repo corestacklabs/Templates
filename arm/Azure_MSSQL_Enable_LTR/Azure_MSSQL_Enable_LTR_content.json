@@ -1,0 +1,39 @@
+{
+  "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "databaseNames": {
+      "type": "Array"
+    },
+    "sqlServerName": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Sql/servers/databases/backupLongTermRetentionPolicies",
+      "apiVersion": "2017-03-01-preview",
+      "name": "[concat(parameters('sqlServerName'), '/',parameters('databaseNames')[copyIndex()], '/', 'Default')]",
+      "properties": {
+        "weeklyRetention": "P520W",
+        "monthlyRetention": "P520W",
+        "yearlyRetention": "P520W",
+        "weekOfYear": 1
+      },
+      "copy": {
+        "name": "encryption",
+        "count": "[length(parameters('databaseNames'))]"
+      }
+    }
+  ],
+  "outputs": {
+    "sqlServerName": {
+      "type": "String",
+      "value": "[parameters('sqlServerName')]"
+    },
+    "status": {
+      "type": "String",
+      "value": "Completed"
+    }
+  }
+}

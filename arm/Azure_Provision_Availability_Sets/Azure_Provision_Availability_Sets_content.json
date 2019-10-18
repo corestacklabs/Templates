@@ -1,0 +1,100 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "0.0.1.0",
+  "parameters": {
+    "name": {
+      "type": "string",
+      "label": "Availability_Set_Name",
+      "metadata": {
+        "description": "The Name for the Availability set.The length must be between 1 and 80 characters. The first character must be a letter or number. The last character must be a letter, number, or underscore. The remaining characters must be letters, numbers, periods, underscores, or dashes."
+      },
+      "minLength": 1,
+      "maxLength": 80
+    },
+    "location": {
+      "type": "string",
+      "label": "Location",
+      "metadata": {
+        "description": "Pick the Location Where Availability Set has to be deployed."
+      },
+      "allowedValues": [
+        "West US",
+        "West Central US",
+        "East US",
+        "East US 2",
+        "Australia East",
+        "Australia Southeast",
+        "Brazil South",
+        "Canada Central",
+        "Canada East",
+        "Central India",
+        "Central US",
+        "East Asia",
+        "France Central",
+        "Japan East ",
+        "Japan West",
+        "Korea Central",
+        "Korea South",
+        "North Central US",
+        "North Europe",
+        "South Central US",
+        "South India",
+        "Southeast Asia",
+        "UK South",
+        "UK West",
+        "West Central US",
+        "West Europe",
+        "West India"
+      ]
+    },
+    "faultDomains": {
+      "type": "int",
+      "label": "Fault_Domain_Count",
+      "metadata": {
+        "description": "Fault Domain count.Virtual machine in the same domain share a common power source and physical network switch "
+      }
+    },
+    "updateDomains": {
+      "type": "int",
+      "label": "Update_Domain_Count",
+      "metadata": {
+        "description": "Update Domain count..Virtual machine in the same updated domain will restart at the same time during maintenance."
+      }
+    },
+    "sku": {
+      "type": "string",
+      "label": "SKU",
+      "metadata": {
+        "description": "Sku for the availability sets.Classic represents Unmanaged disks and Aligned Represents Managed Disks."
+      },
+      "allowedValues": [
+        "Classic",
+        "Aligned"
+      ]
+    },
+    "tags": {
+      "type": "object",
+      "label": "Tags",
+      "defaultValue": {},
+      "metadata": {
+        "description": "Tags for the availability set.This is JSON param,Sample: <br/>{<br/>\"key1\":\"value1\"<br/>}"
+      }
+    }
+  },
+  "resources": [
+    {
+      "apiVersion": "2018-06-01",
+      "type": "Microsoft.Compute/availabilitySets",
+      "name": "[parameters('name')]",
+      "location": "[parameters('location')]",
+      "properties": {
+        "platformUpdateDomainCount": "[parameters('updateDomains')]",
+        "platformFaultDomainCount": "[parameters('faultDomains')]"
+      },
+      "tags": "[parameters('tags')]",
+      "sku": {
+        "name": "[parameters('sku')]"
+      }
+    }
+  ]
+}
