@@ -12,7 +12,7 @@ Microsoft Azure Subscription
 
 Use terraform plan/apply to deploy the infra. Alternatively, click below to deploy the template directly to the corestack product 
 
-[![Deploy to Azure](https://docs.corestack.io/wp-content/uploads/2019/09/deploy-to-corestack.svg)](http://qa.corestack.io/heatstack/templates?repositories=github&external_redirect=true&name=Provision_Elasticip_AWS_Terraform&url=https://raw.githubusercontent.com/corestacklabs/master/terraform/Provision_Elasticip_AWS_Terraform/Provision_Elasticip_AWS_Terraform.tf&engine=terraform&type[0]=Cloud&classification[0]=Provisioning&scope=tenant#/mytemplates)
+[![Deploy to Azure](https://docs.corestack.io/wp-content/uploads/2019/09/deploy-to-corestack.svg)](http://qa.corestack.io/heatstack/templates?repositories=github&external_redirect=true&name=Provision_Elasticip_AWS_Terraform&url=https://raw.githubusercontent.com/corestacklabs/Templates/master/terraform/Provision_Elasticip_AWS_Terraform/Provision_Elasticip_AWS_Terraform.tf&engine=terraform&type[0]=Cloud&classification[0]=Provisioning&scope=tenant#/mytemplates)
 
 ## Contributing
 
