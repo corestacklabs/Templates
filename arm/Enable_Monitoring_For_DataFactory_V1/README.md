@@ -11,7 +11,7 @@ Microsoft Azure Subscription
 
 Use either Azure CLI or Azure PowerShell to deploy a template. Alternatively, click below to deploy the template directly to the corestack product 
 
-[![Deploy to Azure](https://docs.corestack.io/wp-content/uploads/2019/09/deploy-to-corestack.svg)](http://qa.corestack.io/heatstack/templates?repositories=github&external_redirect=true&name=Enable_Monitoring_For_DataFactory_V1&url=https://raw.githubusercontent.com/karthick-kk/corestacklabs/master/arm/Enable_Monitoring_For_DataFactory_V1/Enable_Monitoring_For_DataFactory_V1_content.json&engine=arm&type[0]=Cloud&classification[0]=Provisioning&scope=tenant#/mytemplates)
+[![Deploy to Azure](https://docs.corestack.io/wp-content/uploads/2019/09/deploy-to-corestack.svg)](http://qa.corestack.io/heatstack/templates?repositories=github&external_redirect=true&name=Enable_Monitoring_For_DataFactory_V1&url=https://raw.githubusercontent.com/corestacklabs/master/arm/Enable_Monitoring_For_DataFactory_V1/Enable_Monitoring_For_DataFactory_V1_content.json&engine=arm&type[0]=Cloud&classification[0]=Provisioning&scope=tenant#/mytemplates)
 
 ## Contributing
 

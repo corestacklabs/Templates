@@ -11,7 +11,7 @@ AWS account
 
 Import the CFN template on to the AWS CloudFormation or click below to deploy to the corestack product 
 
-[![Deploy to Azure](https://docs.corestack.io/wp-content/uploads/2019/09/deploy-to-corestack.svg)](http://qa.corestack.io/heatstack/templates?repositories=github&external_redirect=true&name=AWS_Deploy_Cloudera_Bigdata_Cluster_New_VPC&url=https://raw.githubusercontent.com/karthick-kk/corestacklabs/master/cfn/AWS_Deploy_Cloudera_Bigdata_Cluster_New_VPC/AWS_Deploy_Cloudera_Bigdata_Cluster_New_VPC_content.json&engine=cfn&type[0]=Cloud&classification[0]=Provisioning&scope=tenant#/mytemplates)
+[![Deploy to Azure](https://docs.corestack.io/wp-content/uploads/2019/09/deploy-to-corestack.svg)](http://qa.corestack.io/heatstack/templates?repositories=github&external_redirect=true&name=AWS_Deploy_Cloudera_Bigdata_Cluster_New_VPC&url=https://raw.githubusercontent.com/corestacklabs/master/cfn/AWS_Deploy_Cloudera_Bigdata_Cluster_New_VPC/AWS_Deploy_Cloudera_Bigdata_Cluster_New_VPC_content.json&engine=cfn&type[0]=Cloud&classification[0]=Provisioning&scope=tenant#/mytemplates)
 
 ## Contributing
 
