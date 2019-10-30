@@ -144,7 +144,8 @@
                                         "iam:DeletePolicyVersion",
                                         "iam:CreateServiceLinkedRole",
                                         "logs:*",
-                                        "cloudtrail:*"
+                                        "cloudtrail:*",
+                                        "cloudwatch:*"
                                     ],
                                     "Resource": "*"
                                 },
