@@ -5,6 +5,10 @@
         "S3bucketname": {
             "Type": "String",
             "Description": "Predefined S3 bucket for AWS Config"
+        },
+        "Password": {
+            "Type": "String",
+            "NoEcho": true
         }
     },
     "Resources": {
@@ -12,7 +16,7 @@
             "Type": "AWS::IAM::User",
             "Properties": {
                 "LoginProfile": {
-                    "Password": "C0restack"
+                    "Password": {"Ref": "Password"}
                 },
                 "UserName": "CorestackAssessmentUser"
             }
