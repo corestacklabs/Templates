@@ -111,52 +111,7 @@
                     ]
                   },
                 "Description" : "IAM User Corestack Governance ReadOnlyAccess Role",
-                "ManagedPolicyArns" : [ 
-                    "arn:aws:iam::aws:policy/ReadOnlyAccess",
-                    "arn:aws:iam::aws:policy/AWSLambdaFullAccess",
-                    "arn:aws:iam::aws:policy/service-role/AWSConfigRole",
-                    "arn:aws:iam::aws:policy/AWSCloudTrailReadOnlyAccess",
-                    "arn:aws:iam::aws:policy/AmazonInspectorFullAccess",
-                    "arn:aws:iam::aws:policy/CloudWatchEventsReadOnlyAccess",
-                    "arn:aws:iam::aws:policy/AmazonSNSFullAccess"
-                ],
                 "Path": "/",
-                "Policies" : [
-                    {
-                        "PolicyName": "CoreStack_Assessment_Policies",
-                        "PolicyDocument": {
-                            "Statement": [
-                                {
-                                    "Effect": "Allow",
-                                    "Action": [
-                                        "cloudformation:Describe*",
-                                        "cloudformation:List*",
-                                        "cloudformation:Get*",
-                                        "config:*",
-                                        "iam:GetRole",
-                                        "iam:GetRolePolicy",
-                                        "iam:ListRolePolicies",
-                                        "iam:ListRoles",
-                                        "iam:PutRolePolicy",
-                                        "iam:AttachRolePolicy",
-                                        "iam:CreatePolicy",
-                                        "iam:CreatePolicyVersion",
-                                        "iam:DeletePolicyVersion",
-                                        "iam:CreateServiceLinkedRole",
-                                        "logs:*",
-                                        "cloudtrail:*"
-                                    ],
-                                    "Resource": "*"
-                                },
-                                {
-                                    "Effect": "Allow",
-                                    "Action":["s3:*"],
-                                    "Resource":{ "Fn::Join" : [ "", [ "arn:aws:s3:::", { "Ref" : "S3bucketname" }, "/*"]]}
-                                }
-                            ]
-                        }    
-                    }             
-                ],
                 "RoleName" : "CorestackConfigRole"
               }
         },
