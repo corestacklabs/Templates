@@ -1,0 +1,115 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "IAM User Corestack Governance ReadOnlyAccess",
+    "Parameters": {
+        "S3bucketname": {
+            "Type": "String",
+            "Description": "Predefined S3 bucket for AWS Config"
+        }
+    },
+    "Resources": {
+        "CFNUser": {
+            "Type": "AWS::IAM::User",
+            "Properties": {
+                "LoginProfile": {
+                    "Password": "C0restack"
+                },
+                "UserName": "CorestackAssessmentUser"
+            }
+        },
+        "CFNUserGroup": {
+            "Type": "AWS::IAM::Group",
+            "Properties": {
+                "GroupName": "CorestackAssessmentGroup",
+                "ManagedPolicyArns": [
+                    "arn:aws:iam::aws:policy/ReadOnlyAccess",
+                    "arn:aws:iam::aws:policy/AWSLambdaFullAccess",
+                    "arn:aws:iam::aws:policy/service-role/AWSConfigRole",
+                    "arn:aws:iam::aws:policy/AWSCloudTrailReadOnlyAccess",
+                    "arn:aws:iam::aws:policy/AmazonInspectorFullAccess",
+                    "arn:aws:iam::aws:policy/CloudWatchEventsReadOnlyAccess",
+                    "arn:aws:iam::aws:policy/AmazonSNSFullAccess"
+                ]
+            }
+        },
+        "Users": {
+            "Type": "AWS::IAM::UserToGroupAddition",
+            "Properties": {
+                "GroupName": {
+                    "Ref": "CFNUserGroup"
+                },
+                "Users": [
+                    {
+                        "Ref": "CFNUser"
+                    }
+                ]
+            }
+        },
+        "CFNUserPolicies": {
+            "Type": "AWS::IAM::Policy",
+            "Properties": {
+                "PolicyName": "CoreStack_Assessment_Policies",
+                "PolicyDocument": {
+                    "Statement": [
+                        {
+                            "Effect": "Allow",
+                            "Action": [
+                                "cloudformation:Describe*",
+                                "cloudformation:List*",
+                                "cloudformation:Get*",
+                                "config:*",
+                                "iam:GetRole",
+                                "iam:GetRolePolicy",
+                                "iam:ListRolePolicies",
+                                "iam:ListRoles",
+                                "iam:PutRolePolicy",
+                                "iam:AttachRolePolicy",
+                                "iam:CreatePolicy",
+                                "iam:CreatePolicyVersion",
+                                "iam:DeletePolicyVersion",
+                                "iam:CreateServiceLinkedRole",
+                                "logs:*"
+                            ],
+                            "Resource": "*"
+                        },
+                        {
+                            "Effect": "Allow",
+                            "Action":["s3:*"],
+                            "Resource":{ "Fn::Join" : [ "", [ "arn:aws:s3:::", { "Ref" : "S3bucketname" }, "/*"]]}
+                        }
+                    ]
+                },
+                "Groups": [
+                    {
+                        "Ref": "CFNUserGroup"
+                    }
+                ]
+            }
+        },
+        "CFNKeys": {
+            "Type": "AWS::IAM::AccessKey",
+            "Properties": {
+                "UserName": {
+                    "Ref": "CFNUser"
+                }
+            }
+        }
+    },
+    "Outputs": {
+        "AccessKey": {
+            "Value": {
+                "Ref": "CFNKeys"
+            },
+            "Description": "AWSAccessKeyId of new user"
+        },
+        "SecretKey": {
+            "Value": {
+                "Fn::GetAtt": [
+                    "CFNKeys",
+                    "SecretAccessKey"
+                ]
+            },
+            "Description": "AWSSecretAccessKey of new user"
+        }
+    }
+}
