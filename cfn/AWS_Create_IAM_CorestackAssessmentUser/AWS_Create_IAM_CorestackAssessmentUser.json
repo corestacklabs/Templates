@@ -112,13 +112,14 @@
                   },
                 "Description" : "IAM User Corestack Governance ReadOnlyAccess Role",
                 "ManagedPolicyArns" : [ 
-                    "arn:aws:iam::aws:policy/ReadOnlyAccess",
-                    "arn:aws:iam::aws:policy/AWSLambdaFullAccess",
-                    "arn:aws:iam::aws:policy/service-role/AWSConfigRole",
+                    "arn:aws:iam::aws:policy/IAMReadOnlyAccess",
+                    "arn:aws:iam::aws:policy/AmazonEC2ReadOnlyAccess",
                     "arn:aws:iam::aws:policy/AWSCloudTrailReadOnlyAccess",
-                    "arn:aws:iam::aws:policy/AmazonInspectorFullAccess",
-                    "arn:aws:iam::aws:policy/CloudWatchEventsReadOnlyAccess",
-                    "arn:aws:iam::aws:policy/AmazonSNSFullAccess"
+                    "arn:aws:iam::aws:policy/CloudWatchLogsReadOnlyAccess",
+                    "arn:aws:iam::aws:policy/CloudWatchReadOnlyAccess",
+                    "arn:aws:iam::aws:policy/AmazonSNSReadOnlyAccess",
+                    "arn:aws:iam::aws:policy/service-role/AWSConfigRole",
+                    "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
                 ],
                 "Path": "/",
                 "Policies" : [
