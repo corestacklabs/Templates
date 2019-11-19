@@ -11,7 +11,7 @@ Microsoft Azure Subscription
 
 Use either Azure CLI or Azure PowerShell to deploy a template. Alternatively, click below to deploy the template directly to the corestack product 
 
-[![Deploy to Azure](https://docs.corestack.io/wp-content/uploads/2019/09/deploy-to-corestack.svg)](http://qa.corestack.io/heatstack/templates?repositories=github&external_redirect=true&name=Azure_Backup_SQL_Server_Encrypted&url=https://raw.githubusercontent.com/corestacklabs/Templates/master/arm/Azure_Backup_SQL_Server_Encrypted/Azure_Backup_SQL_Server_Encrypted_content.json&engine=arm&type[0]=Cloud&classification[0]=Provisioning&services[0]=Azure&scope=tenant#/mytemplates)
+[![Deploy to Azure](https://docs.corestack.io/wp-content/uploads/2019/09/deploy-to-corestack.svg)](http://sandbox.corestack.io/heatstack/templates?repositories=github&external_redirect=true&name=Azure_Backup_SQL_Server_Encrypted&url=https://raw.githubusercontent.com/corestacklabs/Templates/master/arm/Azure_Backup_SQL_Server_Encrypted/Azure_Backup_SQL_Server_Encrypted_content.json&engine=arm&type[0]=Cloud&classification[0]=Provisioning&services[0]=Azure&scope=tenant#/mytemplates)
 
 ## Contributing
 
