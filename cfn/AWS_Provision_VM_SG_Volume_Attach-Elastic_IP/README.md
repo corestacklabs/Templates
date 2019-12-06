@@ -5,13 +5,13 @@ Create and Attach the Volume to an Instances. Only allowed volume type is Io1
 
 ### Prerequisites
 
-AWS account
+AWS account with required access
 
 ## Deployment
 
 Import the CFN template on to the AWS CloudFormation or click below to deploy to the corestack product 
 
-[![Deploy to Azure](https://docs.corestack.io/wp-content/uploads/2019/09/deploy-to-corestack.svg)](http://sandbox.corestack.io/heatstack/templates?repositories=github&external_redirect=true&name=AWS_Provision_VM_SG_Volume_Attach-Elastic_IP&url=https://raw.githubusercontent.com/corestacklabs/Templates/master/cfn/AWS_Provision_VM_SG_Volume_Attach-Elastic_IP/AWS_Provision_VM_SG_Volume_Attach-Elastic_IP_content.json&engine=cfn&type[0]=Cloud&classification[0]=Provisioning&services[0]=AWS&scope=tenant#/mytemplates)
+[![Deploy to Azure](https://docs.corestack.io/wp-content/uploads/2019/09/deploy-to-corestack.svg)](http://qa.corestack.io/heatstack/templates?repositories=github&external_redirect=true&name=AWS_Provision_VM_SG_Volume_Attach-Elastic_IP&url=https://raw.githubusercontent.com/corestacklabs/Templates/qa/cfn/AWS_Provision_VM_SG_Volume_Attach-Elastic_IP/AWS_Provision_VM_SG_Volume_Attach-Elastic_IP_content.json&engine=cfn&type[0]=Cloud&classification[0]=Provisioning&services[0]=AWS&scope=tenant#/mytemplates)
 
 ## Contributing
 
