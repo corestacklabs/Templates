@@ -5,7 +5,7 @@ Purpose: To provision a Ubuntu Virtual Machine with limited set of inputs using 
 
 ### Prerequisites
 
-Microsoft Azure Subscription
+Microsoft Azure Subscription with required access
 
 ## Deployment
 

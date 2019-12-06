@@ -5,7 +5,7 @@ Purpose: To create a windows vm with premium ssd disk and availability set attac
 
 ### Prerequisites
 
-Microsoft Azure Subscription
+Microsoft Azure Subscription with required access
 
 ## Deployment
 

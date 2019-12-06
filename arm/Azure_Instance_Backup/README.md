@@ -5,7 +5,7 @@ This template is to Setup the backup schedule for Virtual Machine
 
 ### Prerequisites
 
-Microsoft Azure Subscription
+Microsoft Azure Subscription with required access
 
 ## Deployment
 

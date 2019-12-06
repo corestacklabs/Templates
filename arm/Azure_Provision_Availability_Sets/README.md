@@ -5,7 +5,7 @@ Purpose: To create an availability sets.
 
 ### Prerequisites
 
-Microsoft Azure Subscription
+Microsoft Azure Subscription with required access
 
 ## Deployment
 

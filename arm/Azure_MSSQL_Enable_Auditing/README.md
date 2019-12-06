@@ -5,7 +5,7 @@ This template enable the auditing for a SQL DB
 
 ### Prerequisites
 
-Microsoft Azure Subscription
+Microsoft Azure Subscription with required access
 
 ## Deployment
 

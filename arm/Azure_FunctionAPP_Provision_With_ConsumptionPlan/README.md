@@ -5,7 +5,7 @@ Purpose: To provision a azure FunctionAPP with a consumption plan
 
 ### Prerequisites
 
-Microsoft Azure Subscription
+Microsoft Azure Subscription with required access
 
 ## Deployment
 

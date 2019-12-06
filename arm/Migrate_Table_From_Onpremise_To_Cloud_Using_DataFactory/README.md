@@ -5,7 +5,7 @@ This template Migrate a data in on premise msql server table to azure sql table
 
 ### Prerequisites
 
-Microsoft Azure Subscription
+Microsoft Azure Subscription with required access
 
 ## Deployment
 

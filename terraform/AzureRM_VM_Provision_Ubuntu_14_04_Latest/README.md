@@ -5,8 +5,8 @@ This is a terraform template to provision a virtual machine in Azure Public Clou
 
 ### Prerequisites
 
-AWS Account 
-Microsoft Azure Subscription
+AWS Account with required access
+Microsoft Azure Subscription with required access
 
 ## Deployment
 

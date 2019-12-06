@@ -5,7 +5,7 @@ This template set the AD Admin for a SQL Databases
 
 ### Prerequisites
 
-Microsoft Azure Subscription
+Microsoft Azure Subscription with required access
 
 ## Deployment
 

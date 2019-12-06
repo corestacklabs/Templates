@@ -5,7 +5,7 @@ This template provision a Windows Server 2016 VM with Premium SSD Unmanaged disk
 
 ### Prerequisites
 
-Microsoft Azure Subscription
+Microsoft Azure Subscription with required access
 
 ## Deployment
 

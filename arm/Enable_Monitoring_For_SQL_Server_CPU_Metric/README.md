@@ -5,7 +5,7 @@ Template to create alert for cpu percent metric in azure sql server.
 
 ### Prerequisites
 
-Microsoft Azure Subscription
+Microsoft Azure Subscription with required access
 
 ## Deployment
 

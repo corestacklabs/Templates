@@ -5,7 +5,7 @@ This template attaches a backup-policy to a virtual machine
 
 ### Prerequisites
 
-Microsoft Azure Subscription
+Microsoft Azure Subscription with required access
 
 ## Deployment
 

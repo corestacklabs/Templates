@@ -5,7 +5,7 @@ Purpose: To create a RHEL vm with premium ssd disk attached and join it to Azure
 
 ### Prerequisites
 
-Microsoft Azure Subscription
+Microsoft Azure Subscription with required access
 
 ## Deployment
 

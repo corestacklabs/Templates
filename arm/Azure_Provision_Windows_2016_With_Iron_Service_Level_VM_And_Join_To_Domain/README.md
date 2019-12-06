@@ -5,7 +5,7 @@ Purpose: To create a Windows vm with managed disk attached and attach it with az
 
 ### Prerequisites
 
-Microsoft Azure Subscription
+Microsoft Azure Subscription with required access
 
 ## Deployment
 

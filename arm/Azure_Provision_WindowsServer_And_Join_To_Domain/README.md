@@ -5,7 +5,7 @@ Purpose: To provision a WindowsServer with Standard HDD Unmanaged Disk and join 
 
 ### Prerequisites
 
-Microsoft Azure Subscription
+Microsoft Azure Subscription with required access
 
 ## Deployment
 

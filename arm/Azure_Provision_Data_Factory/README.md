@@ -5,7 +5,7 @@ This template Provision a azure Data Factory.
 
 ### Prerequisites
 
-Microsoft Azure Subscription
+Microsoft Azure Subscription with required access
 
 ## Deployment
 

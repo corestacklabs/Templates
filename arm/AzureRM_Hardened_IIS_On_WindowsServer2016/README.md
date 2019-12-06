@@ -5,7 +5,7 @@ This template provision a Windows Server 2016 VM with Standard HDD Unmanaged dis
 
 ### Prerequisites
 
-Microsoft Azure Subscription
+Microsoft Azure Subscription with required access
 
 ## Deployment
 

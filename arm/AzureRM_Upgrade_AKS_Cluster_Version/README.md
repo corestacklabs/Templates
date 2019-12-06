@@ -5,7 +5,7 @@ This template allows you to upgrade your Azure AKS cluster version. Note: Downgr
 
 ### Prerequisites
 
-Microsoft Azure Subscription
+Microsoft Azure Subscription with required access
 
 ## Deployment
 
