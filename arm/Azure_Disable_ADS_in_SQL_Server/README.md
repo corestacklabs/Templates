@@ -5,7 +5,7 @@ This template disables Advanced Data Security of SQL server
 
 ### Prerequisites
 
-Microsoft Azure Subscription
+Microsoft Azure Subscription with required access
 
 ## Deployment
 

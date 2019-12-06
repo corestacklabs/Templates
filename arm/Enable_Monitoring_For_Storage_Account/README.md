@@ -5,7 +5,7 @@ Template to create alert for used capacity metric in azure storage account.
 
 ### Prerequisites
 
-Microsoft Azure Subscription
+Microsoft Azure Subscription with required access
 
 ## Deployment
 

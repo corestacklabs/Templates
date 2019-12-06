@@ -5,7 +5,7 @@ This template deploys a MySQL replication environment with one master and one sl
 
 ### Prerequisites
 
-Microsoft Azure Subscription
+Microsoft Azure Subscription with required access
 
 ## Deployment
 

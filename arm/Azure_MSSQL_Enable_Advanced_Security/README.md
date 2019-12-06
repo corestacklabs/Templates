@@ -5,7 +5,7 @@ This template is to enable advanced security to SQL
 
 ### Prerequisites
 
-Microsoft Azure Subscription
+Microsoft Azure Subscription with required access
 
 ## Deployment
 

@@ -5,7 +5,7 @@ Purpose: This template create a new SSH Keypair for the provided SSHUser in Azur
 
 ### Prerequisites
 
-Microsoft Azure Subscription
+Microsoft Azure Subscription with required access
 
 ## Deployment
 

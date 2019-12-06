@@ -5,7 +5,7 @@ This template will launch the internet faced loadbalancer along with two appserv
 
 ### Prerequisites
 
-Microsoft Azure Subscription
+Microsoft Azure Subscription with required access
 
 ## Deployment
 

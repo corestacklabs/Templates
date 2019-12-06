@@ -5,7 +5,7 @@ This template will create an activity log alert for virtual machines in the clou
 
 ### Prerequisites
 
-Microsoft Azure Subscription
+Microsoft Azure Subscription with required access
 
 ## Deployment
 

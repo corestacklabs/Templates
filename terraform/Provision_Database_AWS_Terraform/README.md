@@ -5,8 +5,8 @@ Provides sample configuration for creating a mysql or postgres instance.
 
 ### Prerequisites
 
-AWS Account 
-Microsoft Azure Subscription
+AWS Account with required access
+Microsoft Azure Subscription with required access
 
 ## Deployment
 

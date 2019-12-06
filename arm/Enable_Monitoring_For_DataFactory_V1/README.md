@@ -5,7 +5,7 @@ Template to create metric alert for failed runs in azure data factory version 1.
 
 ### Prerequisites
 
-Microsoft Azure Subscription
+Microsoft Azure Subscription with required access
 
 ## Deployment
 

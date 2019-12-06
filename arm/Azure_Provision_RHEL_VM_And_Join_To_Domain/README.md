@@ -5,7 +5,7 @@ Purpose: To provision a RHEL with Standard HDD Unmanaged Disk and join it to Azu
 
 ### Prerequisites
 
-Microsoft Azure Subscription
+Microsoft Azure Subscription with required access
 
 ## Deployment
 

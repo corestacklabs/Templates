@@ -5,7 +5,7 @@ Purpose: To create a RHEL vm with managed disk attached and attach it with azure
 
 ### Prerequisites
 
-Microsoft Azure Subscription
+Microsoft Azure Subscription with required access
 
 ## Deployment
 

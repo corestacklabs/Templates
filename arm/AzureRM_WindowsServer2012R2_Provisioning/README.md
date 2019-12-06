@@ -5,7 +5,7 @@ Purpose: To provision a WindowsServer2012R2 Virtual Machine with limited set of 
 
 ### Prerequisites
 
-Microsoft Azure Subscription
+Microsoft Azure Subscription with required access
 
 ## Deployment
 

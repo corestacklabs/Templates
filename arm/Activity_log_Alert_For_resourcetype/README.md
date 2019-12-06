@@ -5,7 +5,7 @@ This template will create an activity log alert for a specific resource_type in 
 
 ### Prerequisites
 
-Microsoft Azure Subscription
+Microsoft Azure Subscription with required access
 
 ## Deployment
 

@@ -5,7 +5,7 @@ Purpose: To provision a RHEL6.10 Virtual Machine with Standard HDD Unmanaged Dis
 
 ### Prerequisites
 
-Microsoft Azure Subscription
+Microsoft Azure Subscription with required access
 
 ## Deployment
 

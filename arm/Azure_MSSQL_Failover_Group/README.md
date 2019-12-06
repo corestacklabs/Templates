@@ -5,7 +5,7 @@ This template enable failover group to SQL
 
 ### Prerequisites
 
-Microsoft Azure Subscription
+Microsoft Azure Subscription with required access
 
 ## Deployment
 

@@ -5,7 +5,7 @@ This template allows to scale your Azure AKS cluster.
 
 ### Prerequisites
 
-Microsoft Azure Subscription
+Microsoft Azure Subscription with required access
 
 ## Deployment
 

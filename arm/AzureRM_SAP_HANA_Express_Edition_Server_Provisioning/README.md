@@ -5,7 +5,7 @@ This template provision a SUSE Linux Enterprise Server with Standard HDD Unmanag
 
 ### Prerequisites
 
-Microsoft Azure Subscription
+Microsoft Azure Subscription with required access
 
 ## Deployment
 

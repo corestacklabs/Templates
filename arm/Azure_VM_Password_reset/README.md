@@ -5,7 +5,7 @@ This template will reset Virtual Machine Password.
 
 ### Prerequisites
 
-Microsoft Azure Subscription
+Microsoft Azure Subscription with required access
 
 ## Deployment
 

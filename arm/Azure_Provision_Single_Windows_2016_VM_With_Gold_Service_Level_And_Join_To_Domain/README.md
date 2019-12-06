@@ -5,7 +5,7 @@ Purpose: To create a Windows vm with premium ssd disk attached and join it to Az
 
 ### Prerequisites
 
-Microsoft Azure Subscription
+Microsoft Azure Subscription with required access
 
 ## Deployment
 

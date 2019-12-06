@@ -5,7 +5,7 @@ This template is to Setup the SQL backup schedule for SQL Server of version 2014
 
 ### Prerequisites
 
-Microsoft Azure Subscription
+Microsoft Azure Subscription with required access
 
 ## Deployment
 

@@ -5,7 +5,7 @@ Template to Create LOG Analytics WorkSpace for a Linux VM
 
 ### Prerequisites
 
-Microsoft Azure Subscription
+Microsoft Azure Subscription with required access
 
 ## Deployment
 

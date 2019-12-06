@@ -5,7 +5,7 @@ Purpose: To Configure alert for the resources at a resource grouplevel.
 
 ### Prerequisites
 
-Microsoft Azure Subscription
+Microsoft Azure Subscription with required access
 
 ## Deployment
 

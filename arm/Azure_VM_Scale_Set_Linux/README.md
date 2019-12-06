@@ -5,7 +5,7 @@ Purpose: This template will launch the Appservers under the loadbalancer and ena
 
 ### Prerequisites
 
-Microsoft Azure Subscription
+Microsoft Azure Subscription with required access
 
 ## Deployment
 

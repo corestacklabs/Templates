@@ -5,7 +5,7 @@ Purpose: To create multiple RHEL vm with managed disk and availability set attac
 
 ### Prerequisites
 
-Microsoft Azure Subscription
+Microsoft Azure Subscription with required access
 
 ## Deployment
 

@@ -5,7 +5,7 @@ This template Provisions a Virtual Machine from the custom image provided with P
 
 ### Prerequisites
 
-Microsoft Azure Subscription
+Microsoft Azure Subscription with required access
 
 ## Deployment
 
