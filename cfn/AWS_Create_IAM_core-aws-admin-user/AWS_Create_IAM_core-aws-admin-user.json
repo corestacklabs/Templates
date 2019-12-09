@@ -1,0 +1,47 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "IAM User Corestack Admin Access",
+    "Parameters": {
+       "Password": {
+            "Type": "String",
+            "NoEcho": true
+        }
+    },
+    "Resources": {
+        "CFNUser": {
+            "Type": "AWS::IAM::User",
+            "Properties": {
+                "LoginProfile": {
+                    "Password": {"Ref": "Password"}
+                },
+                "ManagedPolicyArns" : [ "arn:aws:iam::aws:policy/AdministratorAccess" ],
+                "UserName": "core-aws-admin-user"
+            }
+        },    
+        "CFNKeys": {
+            "Type": "AWS::IAM::AccessKey",
+            "Properties": {
+                "UserName": {
+                    "Ref": "CFNUser"
+                }
+            }
+        }
+    },
+    "Outputs": {
+        "AccessKey": {
+            "Value": {
+                "Ref": "CFNKeys"
+            },
+            "Description": "AWSAccessKeyId of new user"
+        },
+        "SecretKey": {
+            "Value": {
+                "Fn::GetAtt": [
+                    "CFNKeys",
+                    "SecretAccessKey"
+                ]
+            },
+            "Description": "AWSSecretAccessKey of new user"
+        }
+    }
+}
