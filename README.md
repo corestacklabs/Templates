@@ -1,3 +1,8 @@
 # Templates
 Cloud Templates library
-Corestack
+
+## Template Resources
+.
+ * [arm](./arm)
+ * [cfn](./cfn)
+ * [terraform](./terraform)
