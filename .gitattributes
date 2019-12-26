@@ -1,3 +1,2 @@
 * linguist-vendored
-* linguist-vendored=false
-* linguist-language=Json
+*.json linguist-language=json
