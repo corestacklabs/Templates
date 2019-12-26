@@ -1,3 +1,3 @@
 *.tf linguist-language=JSON
-*.md linguist-language=JSON
-*.json linguist-language=JSON
+* linguist-vendored
+*.tf linguist-vendored=false
