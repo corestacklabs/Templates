@@ -1,2 +1,1 @@
-* linguist-vendored
-*.json linguist-language=json
+*.tf linguist-language=Java
