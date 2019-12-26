@@ -1,1 +1,2 @@
-*.tf linguist-language=JSON5
+src/main/resources/static/* linguist-vendored
+*.tf linguist-language=JSON
