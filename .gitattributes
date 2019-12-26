@@ -1,2 +1,4 @@
-src/main/resources/static/* linguist-vendored
 *.tf linguist-language=JSON
+*.tf linguist-detectable=true
+*.md linguist-detectable=false`
+*.json linguist-detectable=false
