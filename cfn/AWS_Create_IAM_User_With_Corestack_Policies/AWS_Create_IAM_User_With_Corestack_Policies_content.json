@@ -1,0 +1,324 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Creates a new IAM user for your AWS account with permissions to asses through Corestack.",
+  "Parameters": {
+    "Username": {
+      "Type": "String",
+      "Description": "The name of the user to create. Do not include the path in this value.",
+      "AllowedPattern": "[\\w+=,.@-]{1,128}"
+    },
+    "Password": {
+      "Type": "String",
+      "NoEcho": true,
+      "Description": "The user's password. It should follows organization password policy.",
+      "AllowedPattern": "[\\w+=,.@-]{1,128}"
+    },
+    "SettingsType": {
+      "Description": "Please select 'None' if you do not want any governance automation. 'Express' settings helps you get started quickly with the default configuration prescribed by our cloud experts. 'Custom' Settings helps you define and select the level of automation you need for your enterprise.",
+      "Type": "String",
+      "Default": "Express|Custom",
+      "AllowedValues": [
+        "None",
+        "Express|Custom"
+      ]
+    },
+    "IncludeCFNPolicy": {
+      "Description": "Flag to include policies required to execute CFN templates through Corestack",
+      "Type": "String",
+      "Default": "true",
+      "AllowedValues": [
+        "true",
+        "false"
+      ]
+    },
+    "IncludeInspectorPolicy": {
+      "Description": "Flag to include policies required to manage AWS Inspector through Corestack",
+      "Type": "String",
+      "Default": "true",
+      "AllowedValues": [
+        "true",
+        "false"
+      ]
+    }
+  },
+  "Conditions": {
+    "IncludeCFNPolicy": {
+      "Fn::Equals": [
+        {
+          "Ref": "IncludeCFNPolicy"
+        },
+        "true"
+      ]
+    },
+    "IncludeInspectorPolicy": {
+      "Fn::Equals": [
+        {
+          "Ref": "IncludeInspectorPolicy"
+        },
+        "true"
+      ]
+    },
+    "SettingsType": {
+      "Fn::Equals": [
+        {
+          "Ref": "SettingsType"
+        },
+        "Express|Custom"
+      ]
+    }
+  },
+  "Resources": {
+    "User": {
+      "Type": "AWS::IAM::User",
+      "Properties": {
+        "LoginProfile": {
+          "Password": {
+            "Ref": "Password"
+          }
+        },
+        "ManagedPolicyArns": [
+          "arn:aws:iam::aws:policy/ReadOnlyAccess"
+        ],
+        "UserName": {
+          "Ref": "Username"
+        }
+      }
+    },
+    "AccessKey": {
+      "Type": "AWS::IAM::AccessKey",
+      "Properties": {
+        "UserName": {
+          "Ref": "User"
+        }
+      }
+    },
+    "AuthorizationPolicy": {
+      "Type": "AWS::IAM::Policy",
+      "Properties": {
+        "PolicyName": "CoreStack_AuthorizationPolicy",
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Sid": "Auth",
+              "Action": [
+                "iam:SimulatePrincipalPolicy",
+                "organizations:ListAccounts",
+                "s3:HeadBucket",
+                "ec2:DescribeSubnets"
+              ],
+              "Effect": "Allow",
+              "Resource": "*"
+            }
+          ]
+        },
+        "Users": [
+          {
+            "Ref": "User"
+          }
+        ]
+      }
+    },
+    "ActivityLogPolicy": {
+      "Type": "AWS::IAM::Policy",
+      "Condition": "SettingsType",
+      "Properties": {
+        "PolicyName": "CoreStack_ActivityLogPolicy",
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Sid": "SimpleStorageService",
+              "Action": [
+                "s3:CreateBucket",
+                "s3:HeadBucket",
+                "s3:DeleteObject",
+                "s3:DeleteBucket",
+                "s3:GetBucketLocation",
+                "s3:GetBucketTagging",
+                "s3:GetObject",
+                "s3:ListObjects",
+                "s3:PutBucketPolicy",
+                "s3:PutBucketTagging",
+                "s3:PutEncryptionConfiguration"
+              ],
+              "Effect": "Allow",
+              "Resource": "*"
+            },
+            {
+              "Sid": "CloudTrail",
+              "Action": [
+                "cloudtrail:AddTags",
+                "cloudtrail:CreateTrail",
+                "cloudtrail:DeleteTrail",
+                "cloudtrail:DescribeTrails",
+                "cloudtrail:GetTrailStatus",
+                "cludtrail:ListTags",
+                "cloudtrail:PutEventSelectors",
+                "cloudtrail:StartLogging",
+                "cloudtrail:UpdateTrail"
+              ],
+              "Effect": "Allow",
+              "Resource": "*"
+            },
+            {
+              "Sid": "IAM",
+              "Action": [
+                "iam:CreateRole",
+                "iam:DeleteRole",
+                "iam:GetRole",
+                "iam:ListRolePolicies",
+                "iam:ListRoles",
+                "iam:DeleteRolePolicy",
+                "iam:PutRolePolicy"
+              ],
+              "Effect": "Allow",
+              "Resource": "*"
+            }
+          ]
+        },
+        "Users": [
+          {
+            "Ref": "User"
+          }
+        ]
+      }
+    },
+    "CloudWatchPolicy": {
+      "Type": "AWS::IAM::Policy",
+      "Condition": "SettingsType",
+      "Properties": {
+        "PolicyName": "CoreStack_CloudWatchPolicy",
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Sid": "CloudWatch",
+              "Action": [
+                "cloudwatch:DescribeAlarms",
+                "cloudwatch:DeleteAlarms",
+                "cloudwatch:GetMetricStatistics",
+                "cloudwatch:ListMetrics",
+                "cloudwatch:PutMetricAlarm"
+              ],
+              "Effect": "Allow",
+              "Resource": "*"
+            }
+          ]
+        },
+        "Users": [
+          {
+            "Ref": "User"
+          }
+        ]
+      }
+    },
+    "AutoShutdownPolicy": {
+      "Type": "AWS::IAM::Policy",
+      "Condition": "SettingsType",
+      "Properties": {
+        "PolicyName": "CoreStack_AutoShutdownPolicy",
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Sid": "ElasticComputeCloud",
+              "Action": [
+                "ec2:StartInstances",
+                "ec2:StopInstances"
+              ],
+              "Effect": "Allow",
+              "Resource": "*"
+            }
+          ]
+        },
+        "Users": [
+          {
+            "Ref": "User"
+          }
+        ]
+      }
+    },
+    "InspectorPolicy": {
+      "Type": "AWS::IAM::Policy",
+      "Condition": "IncludeInspectorPolicy",
+      "Properties": {
+        "PolicyName": "CoreStack_InspectorPolicy",
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Sid": "Inspector",
+              "Action": [
+                "inspector:ListRulesPackages",
+                "inspector:DescribeRulesPackages",
+                "inspector:ListAssessmentRuns",
+                "inspector:ListAssessmentTemplates",
+                "inspector:ListFindings",
+                "inspector:DescribeFindings",
+                "inspector:DescribeAssessmentRuns",
+                "inspector:CreateResourceGroup",
+                "inspector:CreateAssessmentTarget",
+                "inspector:CreateAssessmentTemplate",
+                "inspector:StartAssessmentRun"
+              ],
+              "Effect": "Allow",
+              "Resource": "*"
+            }
+          ]
+        },
+        "Users": [
+          {
+            "Ref": "User"
+          }
+        ]
+      }
+    },
+    "CFNPolicy": {
+      "Type": "AWS::IAM::Policy",
+      "Condition": "IncludeCFNPolicy",
+      "Properties": {
+        "PolicyName": "Corestack_CFNPolicy",
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Sid": "CFN",
+              "Action": [
+                "cloudformation:CreateStack",
+                "cloudformation:DeleteStack",
+                "cloudformation:DescribeStackResource",
+                "cloudformation:DescribeStacks",
+                "cloudformation:UpdateStack"
+              ],
+              "Effect": "Allow",
+              "Resource": "*"
+            }
+          ]
+        },
+        "Users": [
+          {
+            "Ref": "User"
+          }
+        ]
+      }
+    }
+  },
+  "Outputs": {
+    "Username": {
+      "Description": "The name of the user",
+      "Value": {
+        "Ref": "User"
+      }
+    },
+    "AccessKeyId": {
+      "Description": "AccessKeyId",
+      "Value": {
+        "Ref": "AccessKey"
+      }
+    },
+    "SecretAccessKey": {
+      "Description": "SecretAccessKey",
+      "Value": {
+        "Fn::GetAtt": [
+          "AccessKey",
+          "SecretAccessKey"
+        ]
+      }
+    }
+  }
+}
