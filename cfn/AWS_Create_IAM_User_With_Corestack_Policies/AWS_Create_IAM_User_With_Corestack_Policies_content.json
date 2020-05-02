@@ -151,7 +151,7 @@
                 "cloudtrail:DeleteTrail",
                 "cloudtrail:DescribeTrails",
                 "cloudtrail:GetTrailStatus",
-                "cludtrail:ListTags",
+                "cloudtrail:ListTags",
                 "cloudtrail:PutEventSelectors",
                 "cloudtrail:StartLogging",
                 "cloudtrail:UpdateTrail"
