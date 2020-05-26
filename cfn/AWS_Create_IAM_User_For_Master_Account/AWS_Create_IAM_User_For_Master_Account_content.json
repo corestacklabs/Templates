@@ -1,0 +1,135 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Creates a new IAM user for AWS Organization account with Billing bucket access.",
+  "Parameters": {
+    "Username": {
+      "AllowedPattern": "[\\w+=,.@-]{1,128}",
+      "Type": "String",
+      "Description": "The name of the user to create. Do not include the path in this value."
+    },
+    "BucketName": {
+      "Type": "String",
+      "Description": "Bucket to get billing details"
+    }
+  },
+  "Resources": {
+    "User": {
+      "Type": "AWS::IAM::User",
+      "Properties": {
+        "UserName": {
+          "Ref": "Username"
+        }
+      }
+    },
+    "AccessKey": {
+      "Type": "AWS::IAM::AccessKey",
+      "Properties": {
+        "UserName": {
+          "Ref": "User"
+        }
+      }
+    },
+    "BillingAccessPolicy": {
+      "Type": "AWS::IAM::Policy",
+      "Properties": {
+        "PolicyName": "CoreStack_BillingAccess_Policy",
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "s3:ListBucket"
+              ],
+              "Resource": [
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:aws:s3:::",
+                      {
+                        "Ref": "BucketName"
+                      }
+                    ]
+                  ]
+                }
+              ],
+              "Effect": "Allow",
+              "Sid": "AllowObjectsListingS3Bucket"
+            },
+            {
+              "Action": [
+                "s3:GetObject"
+              ],
+              "Resource": [
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:aws:s3:::",
+                      {
+                        "Ref": "BucketName"
+                      },
+                      "/costusage/Costusagereport/*"
+                    ]
+                  ]
+                }
+              ],
+              "Effect": "Allow",
+              "Sid": "AllowS3ObjectsDownload"
+            }
+          ]
+        },
+        "Users": [
+          {
+            "Ref": "User"
+          }
+        ]
+      }
+    },
+    "OrganizationAccountPolicy": {
+      "Type": "AWS::IAM::Policy",
+      "Properties": {
+        "PolicyName": "CoreStack_OrganizationAccount_Policy",
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Sid": "ListOrgAccounts",
+              "Action": [
+                "organizations:ListAccounts"
+              ],
+              "Effect": "Allow",
+              "Resource": "*"
+            }
+          ]
+        },
+        "Users": [
+          {
+            "Ref": "User"
+          }
+        ]
+      }
+    }
+  },
+  "Outputs": {
+    "Username": {
+      "Description": "The name of the user",
+      "Value": {
+        "Ref": "User"
+      }
+    },
+    "SecretAccessKey": {
+      "Description": "SecretAccessKey",
+      "Value": {
+        "Fn::GetAtt": [
+          "AccessKey",
+          "SecretAccessKey"
+        ]
+      }
+    },
+    "AccessKeyId": {
+      "Description": "AccessKeyId",
+      "Value": {
+        "Ref": "AccessKey"
+      }
+    }
+  }
+}

@@ -1,0 +1,116 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Creates a IAM Role tp access the Bucket configured in CloudTrail",
+  "Parameters": {
+    "BucketName": {
+      "Type": "String",
+      "Description": "The name of the bucket configured in CloudTrail"
+    },
+    "CoreStackAccountId": {
+      "Type": "String",
+      "Description": "AWS AccountId of CoreStack where Governance Lambda configured.",
+      "Default": "028811834831"
+    }
+  },
+  "Resources": {
+    "Role": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "RoleName": {
+          "Fn::Join": [
+            "_",
+            [
+              {
+                "Ref": "BucketName"
+              },
+              "role"
+            ]
+          ]
+        },
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": {
+                "AWS": {
+                  "Fn::Sub": [
+                    "arn:aws:iam::${CoreStackAccountId}:root",
+                    {
+                      "CoreStackAccountId": {
+                        "Ref": "CoreStackAccountId"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    "AttachPolicy": {
+      "Type": "AWS::IAM::Policy",
+      "Properties": {
+        "PolicyName": "CloudTrailBucketPolicy",
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Action": [
+                "s3:Get*",
+                "s3:List*"
+              ],
+              "Resource": [
+                {
+                  "Fn::Sub": [
+                    "arn:aws:s3:::${BucketName}",
+                    {
+                      "BucketName": {
+                        "Ref": "BucketName"
+                      }
+                    }
+                  ]
+                }
+              ],
+              "Effect": "Allow"
+            },
+            {
+              "Action": [
+                "s3:Get*",
+                "s3:List*"
+              ],
+              "Resource": [
+                {
+                  "Fn::Sub": [
+                    "arn:aws:s3:::${BucketName}/*",
+                    {
+                      "BucketName": {
+                        "Ref": "BucketName"
+                      }
+                    }
+                  ]
+                }
+              ],
+              "Effect": "Allow"
+            }
+          ]
+        },
+        "Roles": [
+          {
+            "Ref": "Role"
+          }
+        ]
+      }
+    }
+  },
+  "Outputs": {
+    "Role": {
+      "Description": "The name of role created.",
+      "Value": {
+        "Ref": "Role"
+      }
+    }
+  }
+}

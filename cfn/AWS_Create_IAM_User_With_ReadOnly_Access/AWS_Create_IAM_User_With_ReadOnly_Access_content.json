@@ -1,0 +1,55 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Creates a new IAM user for your AWS account with ReadOnlyAccess permissions.",
+  "Parameters": {
+    "Username": {
+      "Type": "String",
+      "Description": "The name of the user to create. Do not include the path in this value.",
+      "AllowedPattern": "[\\w+=,.@-]{1,128}"
+    }
+  },
+  "Resources": {
+    "User": {
+      "Type": "AWS::IAM::User",
+      "Properties": {
+        "ManagedPolicyArns": [
+          "arn:aws:iam::aws:policy/ReadOnlyAccess"
+        ],
+        "UserName": {
+          "Ref": "Username"
+        }
+      }
+    },
+    "AccessKey": {
+      "Type": "AWS::IAM::AccessKey",
+      "Properties": {
+        "UserName": {
+          "Ref": "User"
+        }
+      }
+    }
+  },
+  "Outputs": {
+    "Username": {
+      "Description": "The name of the user",
+      "Value": {
+        "Ref": "User"
+      }
+    },
+    "AccessKeyId": {
+      "Description": "AccessKeyId",
+      "Value": {
+        "Ref": "AccessKey"
+      }
+    },
+    "SecretAccessKey": {
+      "Description": "SecretAccessKey",
+      "Value": {
+        "Fn::GetAtt": [
+          "AccessKey",
+          "SecretAccessKey"
+        ]
+      }
+    }
+  }
+}
