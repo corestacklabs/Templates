@@ -1,7 +1,7 @@
 
 # AzureRM_Provision_Ubuntu_VM
 
-Purpose: To provision a Ubuntu Virtual Machine with limited set of inputs using Azure Resource Manager (Azure or ARM). Allows to select the Ubuntu OS flavor from the list and launch a VM quickly. Publisher and Image detail are pre-configured to launch only Ubuntu VM. VM Size is set to 'Standard_DS1_v2' which cannot be modified.
+
 
 ### Prerequisites
 
@@ -11,7 +11,7 @@ Microsoft Azure Subscription with required access
 
 Use either Azure CLI or Azure PowerShell to deploy a template. Alternatively, click below to deploy the template directly to the corestack product 
 
-[![Deploy to Azure](https://docs.corestack.io/wp-content/uploads/2019/09/deploy-to-corestack.svg)](http://qa.corestack.io/heatstack/templates?repositories=github&external_redirect=true&name=AzureRM_Provision_Ubuntu_VM&url=https://raw.githubusercontent.com/corestacklabs/Templates/master/arm/AzureRM_Provision_Ubuntu_VM/AzureRM_Provision_Ubuntu_VM_content.json&engine=arm&type[0]=Cloud&classification[0]=Provisioning&services[0]=Azure&scope=tenant#/mytemplates)
+[![Deploy to Azure](https://docs.corestack.io/wp-content/uploads/2019/09/deploy-to-corestack.svg)](http://sandbox.corestack.io/heatstack/templates?repositories=github&external_redirect=true&name=AzureRM_Provision_Ubuntu_VM&url=https://raw.githubusercontent.com/corestacklabs/Templates/master/arm/AzureRM_Provision_Ubuntu_VM/AzureRM_Provision_Ubuntu_VM_content.json&engine=arm&type[0]=Cloud&classification[0]=Provisioning&services[0]=Azure&scope=tenant#/mytemplates)
 
 ## Contributing
 
