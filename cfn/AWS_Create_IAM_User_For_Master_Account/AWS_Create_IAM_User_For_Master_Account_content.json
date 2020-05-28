@@ -68,7 +68,7 @@
                       {
                         "Ref": "BucketName"
                       },
-                      "/costusage/Costusagereport/*"
+                      "/*"
                     ]
                   ]
                 }
