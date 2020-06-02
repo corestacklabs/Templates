@@ -1,17 +1,17 @@
 
 # AWS_Create_IAM_User_For_Master_Account
 
-Creates a new IAM user for AWS Organization account with Billing bucket access.
+Creates a new IAM user for your AWS Master account with permissions to asses Cost and Linked Accounts through Corestack.
 
 ### Prerequisites
 
-AWS account with required access
+AWS account with access to create User, Access Key and Attach Policy to user.
 
 ## Deployment
 
 Import the CFN template on to the AWS CloudFormation or click below to deploy to the corestack product 
 
-[![Deploy to Azure](https://docs.corestack.io/wp-content/uploads/2019/09/deploy-to-corestack.svg)](http://sandbox.corestack.io/heatstack/templates?repositories=github&external_redirect=true&name=AWS_Create_IAM_User_For_Master_Account&url=https://raw.githubusercontent.com/corestacklabs/Templates/sandbox/cfn/AWS_Create_IAM_User_For_Master_Account/AWS_Create_IAM_User_For_Master_Account_content.json&engine=cfn&type[0]=Cloud&classification[0]=Provisioning&services[0]=AWS&scope=tenant#/mytemplates)
+[![Deploy to Azure](https://docs.corestack.io/wp-content/uploads/2019/09/deploy-to-corestack.svg)](http://qa.corestack.io/heatstack/templates?repositories=github&external_redirect=true&name=AWS_Create_IAM_User_For_Master_Account&url=https://raw.githubusercontent.com/corestacklabs/Templates/qa/cfn/AWS_Create_IAM_User_For_Master_Account/AWS_Create_IAM_User_For_Master_Account_content.json&engine=cfn&type[0]=Cloud&classification[0]=Provisioning&services[0]=AWS&scope=tenant#/mytemplates)
 
 ## Contributing
 
@@ -24,5 +24,5 @@ This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md
 ## Acknowledgments
 
 * Corestack developers
-* Microsoft Github
+
 
