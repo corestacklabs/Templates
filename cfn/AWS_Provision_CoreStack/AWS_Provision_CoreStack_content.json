@@ -270,7 +270,63 @@
         "UserData" : { "Fn::Base64" :
   { "Fn::Join" : ["", [
      "#!/bin/bash -xe\n",
-     "ansible-playbook /opt/core/post-deployment/corestack_queue_configuration/queue_configuration.yml -i /opt/core/post-deployment/corestack_queue_configuration/hosts --extra-vars queue_prefix={{ queueprefix }} --extra-vars aws_account_access_key={{ awsaccountaccesskey }} --extra-vars aws_account_secret_key={{ awsaccountsecretkey }} --extra-vars corestack_license_expiry_date={{ corestacklicenseexpirydate }} --extra-vars company_name={{ companyname }} --extra-vars admin_email_address={{ adminemailaddress }} --extra-vars smtp_email={{ smtpemail }} --extra-vars smtp_password={{ smtppassword }} --extra-vars smtp_host={{ smtphost }} --extra-vars smtp_port={{ smtpport }} -vv \n"
+     "ansible-playbook /opt/core/post-deployment/corestack_queue_configuration/queue_configuration.yml -i localhost, -c local", 
+      " --extra-vars ",
+      "queue_prefix=",
+       { 
+         "Ref": "queueprefix"
+       },
+      " --extra-vars ",
+      "aws_account_access_key=",
+       { 
+         "Ref": "awsaccountaccesskey"
+       },
+      " --extra-vars ",
+      "aws_account_access_key=",
+       { 
+         "Ref": "awsaccountaccesskey"
+       },
+      " --extra-vars ",
+      "aws_account_secret_key=",
+       { 
+         "Ref": "awsaccountsecretkey"
+       },
+       " --extra-vars ",
+       "corestack_license_expiry_date=",
+       { 
+         "Ref": "corestacklicenseexpirydate"
+       },
+       " --extra-vars ",
+       "company_name=",
+       { 
+         "Ref": "companyname"
+       },
+       " --extra-vars ",
+       "admin_email_address=",
+       { 
+         "Ref": "adminemailaddress"
+       },
+       " --extra-vars ",
+       "smtp_email=",
+       { 
+         "Ref": "smtpemail"
+       },
+       " --extra-vars ",
+       "smtp_password=",
+       { 
+         "Ref": "smtppassword"
+       },
+       " --extra-vars ",
+       "smtp_host=",
+       { 
+         "Ref": "smtphost"
+       },
+       " --extra-vars ",
+       "smtp_port=",
+       { 
+         "Ref": "smtpport"
+       },
+        "\n"
   ]]}
 }
       }
