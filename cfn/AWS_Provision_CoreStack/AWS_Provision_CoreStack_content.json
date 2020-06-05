@@ -1,7 +1,7 @@
 {
   "AWSTemplateFormatVersion": "2010-09-09",
 
-  "Description": "AWS CloudFormation Sample Template EC2InstanceWithSecurityGroupSample: Create an Amazon EC2 instance running the Amazon Linux AMI. The AMI is chosen based on the region in which the stack is run. This example creates an EC2 security group for the instance to give you SSH access. **WARNING** This template creates an Amazon EC2 instance. You will be billed for the AWS resources used if you create a stack from this template.",
+  "Description": "This template is to provision an ec2 instance with corestack ami id.",
 
   "Parameters": {
     "KeyName": {
@@ -11,14 +11,14 @@
     },
 
     "InstanceType": {
-      "Description": "WebServer EC2 instance type",
+      "Description": "EC2 instance type",
       "Type": "String",
-      "Default": "t2.small",
-      "AllowedValues": ["t1.micro", "t2.nano", "t2.micro", "t2.small", "t2.medium", "t2.large", "m1.small", "m1.medium", "m1.large", "m1.xlarge", "m2.xlarge", "m2.2xlarge", "m2.4xlarge", "m3.medium", "m3.large", "m3.xlarge", "m3.2xlarge", "m4.large", "m4.xlarge", "m4.2xlarge", "m4.4xlarge", "m4.10xlarge", "c1.medium", "c1.xlarge", "c3.large", "c3.xlarge", "c3.2xlarge", "c3.4xlarge", "c3.8xlarge", "c4.large", "c4.xlarge", "c4.2xlarge", "c4.4xlarge", "c4.8xlarge", "g2.2xlarge", "g2.8xlarge", "r3.large", "r3.xlarge", "r3.2xlarge", "r3.4xlarge", "r3.8xlarge", "i2.xlarge", "i2.2xlarge", "i2.4xlarge", "i2.8xlarge", "d2.xlarge", "d2.2xlarge", "d2.4xlarge", "d2.8xlarge", "hi1.4xlarge", "hs1.8xlarge", "cr1.8xlarge", "cc2.8xlarge", "cg1.4xlarge"],
+      "Default": "t2.large",
+      "AllowedValues": ["t2.large","m1.large", "m1.xlarge", "m2.xlarge", "m2.2xlarge", "m2.4xlarge","m3.large", "m3.xlarge", "m3.2xlarge", "m4.large", "m4.xlarge", "m4.2xlarge", "m4.4xlarge", "m4.10xlarge", "c1.medium", "c1.xlarge", "c3.large", "c3.xlarge", "c3.2xlarge", "c3.4xlarge", "c3.8xlarge", "c4.large", "c4.xlarge", "c4.2xlarge", "c4.4xlarge", "c4.8xlarge", "g2.2xlarge", "g2.8xlarge", "r3.large", "r3.xlarge", "r3.2xlarge", "r3.4xlarge", "r3.8xlarge", "i2.xlarge", "i2.2xlarge", "i2.4xlarge", "i2.8xlarge", "d2.xlarge", "d2.2xlarge", "d2.4xlarge", "d2.8xlarge", "hi1.4xlarge", "hs1.8xlarge", "cr1.8xlarge", "cc2.8xlarge", "cg1.4xlarge"],
       "ConstraintDescription": "must be a valid EC2 instance type."
     },
 
-    "SSHLocation": {
+    "RemoteCIDR": {
       "Description": "The IP address range that can be used to SSH to the EC2 instances",
       "Type": "String",
       "MinLength": "9",
@@ -27,76 +27,61 @@
       "AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
       "ConstraintDescription": "must be a valid IP CIDR range of the form x.x.x.x/x."
     },
+    "RemotehttpCIDR": {
+      "Description": "The IP address range that can be used for http connection",
+      "Type": "String",
+      "MinLength": "9",
+      "MaxLength": "18",
+      "Default": "0.0.0.0/0",
+      "AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
+      "ConstraintDescription": "must be a valid IP CIDR range of the form x.x.x.x/x."
+    },
     "AWSImageId": {
-      "Description": "Give the Server Image ID",
+      "Description": "Provide the Server Image ID",
       "Type": "String"
     },
-    "queueprefix": {
-      "Description": "Give the queue prefix, say PICO_queue",
-      "Type": "String"
-    },
+    "environmentname": {
+	"Description": "Default prefix value for queue",
+	"Type": "String",
+        "Default": "CS-"
+     },
     "awsaccountaccesskey": {
-      "Description": "Give your access key for sqs",
+      "NoEcho": "true",
+      "Description": "Required to create sqs,sns and lamba function for corestack onboarding.",
       "Type": "String"
     },
     "awsaccountsecretkey": {
-      "Description": "Give your secret key for sqs",
+      "NoEcho": "true",
+      "Description": "Required to create sqs,sns and lamba function for corestack onboarding.",
       "Type": "String"
-    },
-    "corestacklicenseexpirydate": {
-      "Description": "Give the expiry date, say 25-07-1997",
-      "Type": "String"
-    },
+    },    
     "companyname": {
-      "Description": "Give your company name",
-      "Type": "String"
-    },
-    "adminemailaddress": {
-      "Description": "Give your admin email id for license",
+      "Description": "Provide your company name",
       "Type": "String"
     },
     "smtpemail": {
-      "Description": "Give the smtp email for notification alerts",
+      "Description": "Provide the smtp email for notification alerts",
       "Type": "String"
     },
     "smtppassword": {
-      "Description": "Give the smtp password",
+      "NoEcho": "true",
+      "Description": "Provide the smtp password",
       "Type": "String"
     },
     "smtphost": {
-      "Description": "Give the smtp host of smtp provider, eg:- smtp.office365.com",
+      "Description": "Provide the smtp host of smtp provider, eg:- smtp.office365.com",
       "Type": "String"
     },
     "smtpport": {
-      "Description": "Give the smtp port of smtp provider, eg:- 587, 25",
+      "Description": "Provide the smtp port of smtp provider, eg:- 587, 25",
       "Type": "Number"
-    }
+    }    
   },
 
   "Mappings": {
     "AWSInstanceType2Arch": {
-      "t1.micro": {
-        "Arch": "HVM64"
-      },
-      "t2.nano": {
-        "Arch": "HVM64"
-      },
-      "t2.micro": {
-        "Arch": "HVM64"
-      },
-      "t2.small": {
-        "Arch": "HVM64"
-      },
-      "t2.medium": {
-        "Arch": "HVM64"
-      },
+    
       "t2.large": {
-        "Arch": "HVM64"
-      },
-      "m1.small": {
-        "Arch": "HVM64"
-      },
-      "m1.medium": {
         "Arch": "HVM64"
       },
       "m1.large": {
@@ -112,9 +97,6 @@
         "Arch": "HVM64"
       },
       "m2.4xlarge": {
-        "Arch": "HVM64"
-      },
-      "m3.medium": {
         "Arch": "HVM64"
       },
       "m3.large": {
@@ -236,7 +218,6 @@
       }
     }
   },
-
   "Resources": {
     "CreateElasticIP":{
       "Type" : "AWS::EC2::EIP",
@@ -270,63 +251,50 @@
         "UserData" : { "Fn::Base64" :
   { "Fn::Join" : ["", [
      "#!/bin/bash -xe\n",
-     "ansible-playbook /opt/core/post-deployment/corestack_queue_configuration/queue_configuration.yml -i localhost, -c local", 
-      " --extra-vars ",
-      "queue_prefix=",
-       { 
-         "Ref": "queueprefix"
-       },
-      " --extra-vars ",
-      "aws_account_access_key=",
-       { 
-         "Ref": "awsaccountaccesskey"
-       },
-      " --extra-vars ",
-      "aws_account_access_key=",
-       { 
-         "Ref": "awsaccountaccesskey"
-       },
-      " --extra-vars ",
-      "aws_account_secret_key=",
-       { 
-         "Ref": "awsaccountsecretkey"
-       },
-       " --extra-vars ",
-       "corestack_license_expiry_date=",
-       { 
-         "Ref": "corestacklicenseexpirydate"
-       },
-       " --extra-vars ",
-       "company_name=",
-       { 
-         "Ref": "companyname"
-       },
-       " --extra-vars ",
-       "admin_email_address=",
-       { 
-         "Ref": "adminemailaddress"
-       },
-       " --extra-vars ",
-       "smtp_email=",
-       { 
-         "Ref": "smtpemail"
-       },
-       " --extra-vars ",
-       "smtp_password=",
-       { 
-         "Ref": "smtppassword"
-       },
-       " --extra-vars ",
-       "smtp_host=",
-       { 
-         "Ref": "smtphost"
-       },
-       " --extra-vars ",
-       "smtp_port=",
-       { 
-         "Ref": "smtpport"
-       },
-        "\n"
+     "ansible-pull -U https://github.com/Eranachandran/ansible-cfn/ -i localhost, -c local",
+     " --extra-vars ",
+     "company_name=",
+     {
+	"Ref": "companyname"
+     },
+     " --extra-vars ",
+     "smtp_email=",
+     {
+	"Ref": "smtpemail"
+     },
+     " --extra-vars ",
+     "smtp_password=",
+     {
+	"Ref": "smtppassword"
+     },
+     " --extra-vars ",
+     "smtp_host=",
+     {
+	"Ref": "smtphost"
+     },
+     " --extra-vars ",
+     "smtp_port=",
+     {
+	"Ref": "smtpport"
+     },
+     " corestack_config_changes/corestack_configuration.yml -vv\n",
+     "ansible-pull -U https://github.com/Eranachandran/ansible-cfn/ -i localhost, -c local",
+     " --extra-vars ",
+     "environment_name=",
+     {
+	"Ref": "environmentname"
+     },
+     " --extra-vars ",
+     "aws_account_access_key=",
+     {
+	"Ref": "awsaccountaccesskey"
+     },
+     " --extra-vars ",
+     "aws_account_secret_key=",
+     {
+	"Ref": "awsaccountsecretkey"
+     },
+     " corestack_queue_configuration/queue_configuration.yml -vv\n"     
   ]]}
 }
       }
@@ -341,138 +309,139 @@
           "FromPort": "22",
           "ToPort": "22",
           "CidrIp": {
-            "Ref": "SSHLocation"
+            "Ref": "RemoteCIDR"
           }
         }, {
           "IpProtocol": "tcp",
           "FromPort": "80",
           "ToPort": "80",
           "CidrIp": {
-            "Ref": "SSHLocation"
+            "Ref": "RemotehttpCIDR"
           }
         }, {
           "IpProtocol": "tcp",
           "FromPort": "443",
           "ToPort": "443",
           "CidrIp": {
-            "Ref": "SSHLocation"
+            "Ref": "RemoteCIDR"
           }
         },{
           "IpProtocol": "tcp",
           "FromPort": "18090",
           "ToPort": "18090",
           "CidrIp": {
-            "Ref": "SSHLocation"
+            "Ref": "RemoteCIDR"
           }
         },{
           "IpProtocol": "tcp",
           "FromPort": "28082",
           "ToPort": "28082",
           "CidrIp": {
-            "Ref": "SSHLocation"
+            "Ref": "RemoteCIDR"
           }
         },{
           "IpProtocol": "tcp",
           "FromPort": "1789",
           "ToPort": "1789",
           "CidrIp": {
-            "Ref": "SSHLocation"
+            "Ref": "RemoteCIDR"
           }
         },{
           "IpProtocol": "tcp",
           "FromPort": "18081",
           "ToPort": "18081",
           "CidrIp": {
-            "Ref": "SSHLocation"
+            "Ref": "RemoteCIDR"
           }
         },{
           "IpProtocol": "tcp",
           "FromPort": "18083",
           "ToPort": "18083",
           "CidrIp": {
-            "Ref": "SSHLocation"
+            "Ref": "RemoteCIDR"
           }
         },{
           "IpProtocol": "tcp",
           "FromPort": "8004",
           "ToPort": "8004",
           "CidrIp": {
-            "Ref": "SSHLocation"
+            "Ref": "RemoteCIDR"
           }
         },{
           "IpProtocol": "tcp",
           "FromPort": "8000",
           "ToPort": "8000",
           "CidrIp": {
-            "Ref": "SSHLocation"
+            "Ref": "RemoteCIDR"
           }
         },{
           "IpProtocol": "tcp",
           "FromPort": "8003",
           "ToPort": "8003",
           "CidrIp": {
-            "Ref": "SSHLocation"
+            "Ref": "RemoteCIDR"
           }
         },{
           "IpProtocol": "tcp",
           "FromPort": "18080",
           "ToPort": "18080",
           "CidrIp": {
-            "Ref": "SSHLocation"
+            "Ref": "RemoteCIDR"
           }
         },{
           "IpProtocol": "tcp",
           "FromPort": "5000",
           "ToPort": "5000",
           "CidrIp": {
-            "Ref": "SSHLocation"
+            "Ref": "RemoteCIDR"
           }
         },{
           "IpProtocol": "tcp",
           "FromPort": "8989",
           "ToPort": "8989",
           "CidrIp": {
-            "Ref": "SSHLocation"
+            "Ref": "RemoteCIDR"
           }
         },{
           "IpProtocol": "tcp",
           "FromPort": "18084",
           "ToPort": "18084",
           "CidrIp": {
-            "Ref": "SSHLocation"
+            "Ref": "RemoteCIDR"
           }
         },{
           "IpProtocol": "tcp",
           "FromPort": "18087",
           "ToPort": "18087",
           "CidrIp": {
-            "Ref": "SSHLocation"
+            "Ref": "RemoteCIDR"
           }
         },{
           "IpProtocol": "tcp",
           "FromPort": "18085",
           "ToPort": "18085",
           "CidrIp": {
-            "Ref": "SSHLocation"
+            "Ref": "RemoteCIDR"
           }
         },{
           "IpProtocol": "tcp",
           "FromPort": "4400",
           "ToPort": "4400",
           "CidrIp": {
-            "Ref": "SSHLocation"
+            "Ref": "RemoteCIDR"
           }
         },{
           "IpProtocol": "tcp",
           "FromPort": "9001",
           "ToPort": "9001",
           "CidrIp": {
-            "Ref": "SSHLocation"
+            "Ref": "RemoteCIDR"
           }
         }]
       }
     }
   },
+     
 
   "Outputs": {
     "InstanceId": {
@@ -502,4 +471,3 @@
     
   }
 }
-
