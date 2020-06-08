@@ -107,6 +107,7 @@
     },
     "snsregions": {
       "Description": "Provide the list of sns regions with comma seperated,eg:  us-west-2a, us-west-2b. Note:- You must include the region where you execute the cloudformation template or else instance won't be launched ",
+      "Default": "us-east-1",
       "Type": "String"
     },
     "smtpemail": {
