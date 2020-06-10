@@ -1,6 +1,35 @@
 {
   "AWSTemplateFormatVersion": "2010-09-09",
   "Description": "This template is to provision an ec2 instance with corestack ami id.",
+  "Metadata": {
+    "AWS::CloudFormation::Interface": {
+      "ParameterGroups": [{
+          "Label": {
+            "default": "EC2 Configuration"
+          },
+          "Parameters": ["AccessKey", "SecretKey", "InstanceType", "ExistingImageId", "KeyName", "EnvironmentName"]
+        },
+        {
+          "Label": {
+            "default": "Network Configuration"
+          },
+          "Parameters": ["ExistingVPC", "ExistingSubnet", "RemoteCIDR", "RemotehttpCIDR"]
+        },
+        {
+          "Label": {
+            "default": "SNS Regions"
+          },
+          "Parameters": ["SNSRegions"]
+        },
+        {
+          "Label": {
+            "default": "Mail Configuration"
+          },
+          "Parameters": ["SMTPEmail", "SMTPPassword", "SMTPHost", "SMTPPort"]
+        }
+      ]
+    }
+  },
   "Parameters": {
     "KeyName": {
       "Description": "Name of an existing EC2 KeyPair to enable SSH access to the instance",
@@ -10,68 +39,34 @@
     "InstanceType": {
       "Description": "Select your EC2 instance type, either default type or higher than default type. ",
       "Type": "String",
-      "Default": "t2.large",
+      "Default": "m5.4xlarge",
       "AllowedValues": [
-        "t2.large",
-        "m1.large",
-        "m1.xlarge",
-        "m2.xlarge",
-        "m2.2xlarge",
-        "m2.4xlarge",
-        "m3.large",
-        "m3.xlarge",
-        "m3.2xlarge",
-        "m4.large",
-        "m4.xlarge",
-        "m4.2xlarge",
+        "a1.2xlarge",
+        "a1.4xlarge",
+        "a1.metal",
+        "m6g.4xlarge",
+        "m6g.8xlarge",
+        "m5.4xlarge",
+        "m5.8xlarge",
+        "m5a.4xlarge",
+        "m5a.8xlarge",
+        "m5n.4xlarge",
+        "m5n.8xlarge",
         "m4.4xlarge",
-        "m4.10xlarge",
-        "c1.medium",
-        "c1.xlarge",
-        "c3.large",
-        "c3.xlarge",
-        "c3.2xlarge",
-        "c3.4xlarge",
-        "c3.8xlarge",
-        "c4.large",
-        "c4.xlarge",
-        "c4.2xlarge",
-        "c4.4xlarge",
-        "c4.8xlarge",
-        "g2.2xlarge",
-        "g2.8xlarge",
-        "r3.large",
-        "r3.xlarge",
-        "r3.2xlarge",
-        "r3.4xlarge",
-        "r3.8xlarge",
-        "i2.xlarge",
-        "i2.2xlarge",
-        "i2.4xlarge",
-        "i2.8xlarge",
-        "d2.xlarge",
-        "d2.2xlarge",
-        "d2.4xlarge",
-        "d2.8xlarge",
-        "hi1.4xlarge",
-        "hs1.8xlarge",
-        "cr1.8xlarge",
-        "cc2.8xlarge",
-        "cg1.4xlarge"
+        "m4.10xlarge"
       ],
       "ConstraintDescription": "must be a valid EC2 instance type."
     },
     "RemoteCIDR": {
-      "Description": "IP address/range to enable SSH access ",
+      "Description": "Provide a ip address/subnet-range to enable access to corestack eg:- Ipaddress - 49.207.139.140/32 or Subnet_range - 49.207.139.0/24. Note:- It is not recommended to use 0.0.0.0/0",
       "Type": "String",
       "MinLength": "9",
       "MaxLength": "18",
-      "Default": "0.0.0.0/0",
       "AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
       "ConstraintDescription": "must be a valid IP CIDR range of the form x.x.x.x/x."
     },
     "RemotehttpCIDR": {
-      "Description": "IP address/range to enable web/port 80 access ",
+      "Description": "IP address/subnet-range to enable web 80/443 access ",
       "Type": "String",
       "MinLength": "9",
       "MaxLength": "18",
@@ -79,199 +74,63 @@
       "AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
       "ConstraintDescription": "must be a valid IP CIDR range of the form x.x.x.x/x."
     },
-    "AWSVpcId": {
+    "ExistingVPC": {
       "Type": "AWS::EC2::VPC::Id",
       "Description": "VpcId of your existing Virtual Private Cloud (VPC)"
     },
-    "AWSSubnetId": {
+    "ExistingSubnet": {
       "Type": "AWS::EC2::Subnet::Id",
       "Description": "SubnetId of your existing Virtual Private Cloud (VPC)"
     },
-    "AWSImageId": {
-      "Description": "Provide the Server Image ID",
+    "ExistingImageId": {
+      "Description": "Provide the existing Image ID of CoreStack",
       "Type": "String"
     },
-    "environmentname": {
+    "EnvironmentName": {
       "Description": "Provide your Environment type. eg.) Dev, Prod, Staging, etc. ",
       "Type": "String"
     },
-    "awsaccountaccesskey": {
+    "AccessKey": {
       "NoEcho": "true",
       "Description": "Required to create corestack specific SQS, SNS queues and lambda functions ",
       "Type": "String"
     },
-    "awsaccountsecretkey": {
+    "SecretKey": {
       "NoEcho": "true",
       "Description": "Required to create corestack specific SQS, SNS queues and lambda functions ",
       "Type": "String"
     },
-    "snsregions": {
-      "Description": "Provide the list of sns regions with comma seperated,eg:  us-west-2a, us-west-2b. Note:- You must include the region where you execute the cloudformation template or else instance won't be launched ",
-      "Default": "us-east-1",
+    "SNSRegions": {
+      "Description": "Provide the list of sns regions with comma seperated,eg:  us-west-2, us-west-2. Note:- You must include the region where you execute the cloudformation template or else instance won't be launched ",
       "Type": "String"
     },
-    "smtpemail": {
+    "SMTPEmail": {
       "Description": "SMTP email id to which notification alerts are to be sent ",
       "Type": "String"
     },
-    "smtppassword": {
+    "SMTPPassword": {
       "NoEcho": "true",
       "Description": "Provide the smtp password",
       "Type": "String"
     },
-    "smtphost": {
+    "SMTPHost": {
       "Description": "Provide the smtp host of smtp provider, eg:- smtp.office365.com",
       "Type": "String"
     },
-    "smtpport": {
+    "SMTPPort": {
       "Description": "Provide the smtp port of smtp provider, eg:- 587, 25",
       "Type": "Number"
-    }
-  },
-  "Mappings": {
-    "AWSInstanceType2Arch": {
-      "t2.large": {
-        "Arch": "HVM64"
-      },
-      "m1.large": {
-        "Arch": "HVM64"
-      },
-      "m1.xlarge": {
-        "Arch": "HVM64"
-      },
-      "m2.xlarge": {
-        "Arch": "HVM64"
-      },
-      "m2.2xlarge": {
-        "Arch": "HVM64"
-      },
-      "m2.4xlarge": {
-        "Arch": "HVM64"
-      },
-      "m3.large": {
-        "Arch": "HVM64"
-      },
-      "m3.xlarge": {
-        "Arch": "HVM64"
-      },
-      "m3.2xlarge": {
-        "Arch": "HVM64"
-      },
-      "m4.large": {
-        "Arch": "HVM64"
-      },
-      "m4.xlarge": {
-        "Arch": "HVM64"
-      },
-      "m4.2xlarge": {
-        "Arch": "HVM64"
-      },
-      "m4.4xlarge": {
-        "Arch": "HVM64"
-      },
-      "m4.10xlarge": {
-        "Arch": "HVM64"
-      },
-      "c1.medium": {
-        "Arch": "HVM64"
-      },
-      "c1.xlarge": {
-        "Arch": "HVM64"
-      },
-      "c3.large": {
-        "Arch": "HVM64"
-      },
-      "c3.xlarge": {
-        "Arch": "HVM64"
-      },
-      "c3.2xlarge": {
-        "Arch": "HVM64"
-      },
-      "c3.4xlarge": {
-        "Arch": "HVM64"
-      },
-      "c3.8xlarge": {
-        "Arch": "HVM64"
-      },
-      "c4.large": {
-        "Arch": "HVM64"
-      },
-      "c4.xlarge": {
-        "Arch": "HVM64"
-      },
-      "c4.2xlarge": {
-        "Arch": "HVM64"
-      },
-      "c4.4xlarge": {
-        "Arch": "HVM64"
-      },
-      "c4.8xlarge": {
-        "Arch": "HVM64"
-      },
-      "g2.2xlarge": {
-        "Arch": "HVMG2"
-      },
-      "g2.8xlarge": {
-        "Arch": "HVMG2"
-      },
-      "r3.large": {
-        "Arch": "HVM64"
-      },
-      "r3.xlarge": {
-        "Arch": "HVM64"
-      },
-      "r3.2xlarge": {
-        "Arch": "HVM64"
-      },
-      "r3.4xlarge": {
-        "Arch": "HVM64"
-      },
-      "r3.8xlarge": {
-        "Arch": "HVM64"
-      },
-      "i2.xlarge": {
-        "Arch": "HVM64"
-      },
-      "i2.2xlarge": {
-        "Arch": "HVM64"
-      },
-      "i2.4xlarge": {
-        "Arch": "HVM64"
-      },
-      "i2.8xlarge": {
-        "Arch": "HVM64"
-      },
-      "d2.xlarge": {
-        "Arch": "HVM64"
-      },
-      "d2.2xlarge": {
-        "Arch": "HVM64"
-      },
-      "d2.4xlarge": {
-        "Arch": "HVM64"
-      },
-      "d2.8xlarge": {
-        "Arch": "HVM64"
-      },
-      "hi1.4xlarge": {
-        "Arch": "HVM64"
-      },
-      "hs1.8xlarge": {
-        "Arch": "HVM64"
-      },
-      "cr1.8xlarge": {
-        "Arch": "HVM64"
-      },
-      "cc2.8xlarge": {
-        "Arch": "HVM64"
-      }
     }
   },
   "Resources": {
     "CreateElasticIP": {
       "Type": "AWS::EC2::EIP",
       "Properties": {
-        "Domain": "vpc"
+        "Domain": "vpc",
+        "Tags": [{
+          "Key": "Name",
+          "Value": "CoreStack"
+        }]
       }
     },
 
@@ -300,18 +159,23 @@
           "Fn::GetAtt": ["InstanceSecurityGroup", "GroupId"]
         }],
         "SubnetId": {
-          "Ref": "AWSSubnetId"
+          "Ref": "ExistingSubnet"
         },
         "KeyName": {
           "Ref": "KeyName"
         },
         "ImageId": {
-          "Ref": "AWSImageId"
+          "Ref": "ExistingImageId"
         },
         "Tags": [{
-          "Key": "Application",
-          "Value": "CoreStack"
-        }],
+            "Key": "Application",
+            "Value": "CoreStack"
+          },
+          {
+            "Key": "Name",
+            "Value": "CoreStack"
+          }
+        ],
         "UserData": {
           "Fn::Base64": {
             "Fn::Join": [
@@ -320,56 +184,56 @@
                 "#!/bin/bash -xe\n",
                 "smtp_email=",
                 {
-                  "Ref": "smtpemail"
+                  "Ref": "SMTPEmail"
                 },
                 "\n",
                 " echo $smtp_email >> /opt/smtp_input.txt",
                 "\n",
                 "smtp_password=",
                 {
-                  "Ref": "smtppassword"
+                  "Ref": "SMTPPassword"
                 },
                 "\n",
                 " echo $smtp_password >> /opt/smtp_input.txt",
                 "\n",
                 "smtp_host=",
                 {
-                  "Ref": "smtphost"
+                  "Ref": "SMTPHost"
                 },
                 "\n",
                 " echo $smtp_host >> /opt/smtp_input.txt",
                 "\n",
                 "smtp_port=",
                 {
-                  "Ref": "smtpport"
+                  "Ref": "SMTPPort"
                 },
                 "\n",
                 " echo $smtp_port >> /opt/smtp_input.txt",
                 "\n",
                 "environment_name=",
                 {
-                  "Ref": "environmentname"
+                  "Ref": "EnvironmentName"
                 },
                 "\n",
                 " echo $environment_name >> /opt/sns_input.txt",
                 "\n",
                 "aws_access_key=",
                 {
-                  "Ref": "awsaccountaccesskey"
+                  "Ref": "AccessKey"
                 },
                 "\n",
                 " echo $aws_access_key >> /opt/sns_input.txt",
                 "\n",
                 "aws_secret_key=",
                 {
-                  "Ref": "awsaccountsecretkey"
+                  "Ref": "SecretKey"
                 },
                 "\n",
                 " echo $aws_secret_key >> /opt/sns_input.txt",
                 "\n",
                 "sns_regions=",
                 {
-                  "Ref": "snsregions"
+                  "Ref": "SNSRegions"
                 },
                 "\n",
                 " echo $sns_regions >> /opt/sns_input.txt",
@@ -384,14 +248,19 @@
       "Type": "AWS::EC2::SecurityGroup",
       "Properties": {
         "VpcId": {
-          "Ref": "AWSVpcId"
+          "Ref": "ExistingVPC"
         },
-        "GroupName" : "CoreStack",
+        "GroupName": "CoreStack",
         "GroupDescription": "Enable SSH access via port 22",
         "Tags": [{
-          "Key": "Application",
-          "Value": "CoreStack"
-        }],
+            "Key": "Application",
+            "Value": "CoreStack"
+          },
+          {
+            "Key": "Name",
+            "Value": "CoreStack-SG"
+          }
+        ],
         "SecurityGroupIngress": [{
             "IpProtocol": "tcp",
             "FromPort": "22",
@@ -413,7 +282,7 @@
             "FromPort": "443",
             "ToPort": "443",
             "CidrIp": {
-              "Ref": "RemoteCIDR"
+              "Ref": "RemotehttpCIDR"
             }
           },
           {
@@ -530,8 +399,8 @@
           },
           {
             "IpProtocol": "tcp",
-            "FromPort": "4400",
-            "ToPort": "4400",
+            "FromPort": "4440",
+            "ToPort": "4440",
             "CidrIp": {
               "Ref": "RemoteCIDR"
             }
