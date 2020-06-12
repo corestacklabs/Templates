@@ -1,455 +1,458 @@
 {
-  "AWSTemplateFormatVersion": "2010-09-09",
-  "Description": "This template is to provision an ec2 instance with corestack ami id.",
-  "Metadata": {
-    "AWS::CloudFormation::Interface": {
-      "ParameterGroups": [{
-          "Label": {
-            "default": "EC2 Configuration"
-          },
-          "Parameters": ["AccessKey", "SecretKey", "InstanceType", "ExistingImageId", "KeyName", "EnvironmentName"]
-        },
-        {
-          "Label": {
-            "default": "Network Configuration"
-          },
-          "Parameters": ["ExistingVPC", "ExistingSubnet", "RemoteCIDR", "RemotehttpCIDR"]
-        },
-        {
-          "Label": {
-            "default": "SNS Regions"
-          },
-          "Parameters": ["SNSRegions"]
-        },
-        {
-          "Label": {
-            "default": "Mail Configuration"
-          },
-          "Parameters": ["SMTPEmail", "SMTPPassword", "SMTPHost", "SMTPPort"]
-        }
-      ]
-    }
-  },
-  "Parameters": {
-    "KeyName": {
-      "Description": "Name of an existing EC2 KeyPair to enable SSH access to the instance",
-      "Type": "AWS::EC2::KeyPair::KeyName",
-      "ConstraintDescription": "must be the name of an existing EC2 KeyPair."
-    },
-    "InstanceType": {
-      "Description": "Select your EC2 instance type, either default type or higher than default type. ",
-      "Type": "String",
-      "Default": "m5.4xlarge",
-      "AllowedValues": [
-        "a1.2xlarge",
-        "a1.4xlarge",
-        "a1.metal",
-        "m6g.4xlarge",
-        "m6g.8xlarge",
-        "m5.4xlarge",
-        "m5.8xlarge",
-        "m5a.4xlarge",
-        "m5a.8xlarge",
-        "m5n.4xlarge",
-        "m5n.8xlarge",
-        "m4.4xlarge",
-        "m4.10xlarge"
-      ],
-      "ConstraintDescription": "must be a valid EC2 instance type."
-    },
-    "RemoteCIDR": {
-      "Description": "Provide a ip address/subnet-range to enable access to corestack eg:- Ipaddress - 49.207.139.140/32 or Subnet_range - 49.207.139.0/24. Note:- It is not recommended to use 0.0.0.0/0",
-      "Type": "String",
-      "MinLength": "9",
-      "MaxLength": "18",
-      "AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
-      "ConstraintDescription": "must be a valid IP CIDR range of the form x.x.x.x/x."
-    },
-    "RemotehttpCIDR": {
-      "Description": "IP address/subnet-range to enable web 80/443 access ",
-      "Type": "String",
-      "MinLength": "9",
-      "MaxLength": "18",
-      "Default": "0.0.0.0/0",
-      "AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
-      "ConstraintDescription": "must be a valid IP CIDR range of the form x.x.x.x/x."
-    },
-    "ExistingVPC": {
-      "Type": "AWS::EC2::VPC::Id",
-      "Description": "VpcId of your existing Virtual Private Cloud (VPC)"
-    },
-    "ExistingSubnet": {
-      "Type": "AWS::EC2::Subnet::Id",
-      "Description": "SubnetId of your existing Virtual Private Cloud (VPC)"
-    },
-    "ExistingImageId": {
-      "Description": "Provide the existing Image ID of CoreStack",
-      "Type": "String"
-    },
-    "EnvironmentName": {
-      "Description": "Provide your Environment type. eg.) Dev, Prod, Staging, etc. ",
-      "Type": "String"
-    },
-    "AccessKey": {
-      "NoEcho": "true",
-      "Description": "Required to create corestack specific SQS, SNS queues and lambda functions ",
-      "Type": "String"
-    },
-    "SecretKey": {
-      "NoEcho": "true",
-      "Description": "Required to create corestack specific SQS, SNS queues and lambda functions ",
-      "Type": "String"
-    },
-    "SNSRegions": {
-      "Description": "Provide the list of sns regions with comma seperated,eg:  us-west-2, us-west-2. Note:- You must include the region where you execute the cloudformation template or else instance won't be launched ",
-      "Type": "String"
-    },
-    "SMTPEmail": {
-      "Description": "SMTP email id to which notification alerts are to be sent ",
-      "Type": "String"
-    },
-    "SMTPPassword": {
-      "NoEcho": "true",
-      "Description": "Provide the smtp password",
-      "Type": "String"
-    },
-    "SMTPHost": {
-      "Description": "Provide the smtp host of smtp provider, eg:- smtp.office365.com",
-      "Type": "String"
-    },
-    "SMTPPort": {
-      "Description": "Provide the smtp port of smtp provider, eg:- 587, 25",
-      "Type": "Number"
-    }
-  },
-  "Resources": {
-    "CreateElasticIP": {
-      "Type": "AWS::EC2::EIP",
-      "Properties": {
-        "Domain": "vpc",
-        "Tags": [{
-          "Key": "Name",
-          "Value": "CoreStack"
-        }]
-      }
-    },
-
-    "AssociateElasticIP": {
-      "Type": "AWS::EC2::EIPAssociation",
-      "Properties": {
-        "AllocationId": {
-          "Fn::GetAtt": [
-            "CreateElasticIP",
-            "AllocationId"
-          ]
-        },
-        "InstanceId": {
-          "Ref": "EC2Instance"
-        }
-      },
-      "DependsOn": "EC2Instance"
-    },
-    "EC2Instance": {
-      "Type": "AWS::EC2::Instance",
-      "Properties": {
-        "InstanceType": {
-          "Ref": "InstanceType"
-        },
-        "SecurityGroupIds": [{
-          "Fn::GetAtt": ["InstanceSecurityGroup", "GroupId"]
-        }],
-        "SubnetId": {
-          "Ref": "ExistingSubnet"
-        },
-        "KeyName": {
-          "Ref": "KeyName"
-        },
-        "ImageId": {
-          "Ref": "ExistingImageId"
-        },
-        "Tags": [{
-            "Key": "Application",
-            "Value": "CoreStack"
-          },
-          {
-            "Key": "Name",
-            "Value": "CoreStack"
-          }
-        ],
-        "UserData": {
-          "Fn::Base64": {
-            "Fn::Join": [
-              "",
-              [
-                "#!/bin/bash -xe\n",
-                "smtp_email=",
-                {
-                  "Ref": "SMTPEmail"
-                },
-                "\n",
-                " echo $smtp_email >> /opt/smtp_input.txt",
-                "\n",
-                "smtp_password=",
-                {
-                  "Ref": "SMTPPassword"
-                },
-                "\n",
-                " echo $smtp_password >> /opt/smtp_input.txt",
-                "\n",
-                "smtp_host=",
-                {
-                  "Ref": "SMTPHost"
-                },
-                "\n",
-                " echo $smtp_host >> /opt/smtp_input.txt",
-                "\n",
-                "smtp_port=",
-                {
-                  "Ref": "SMTPPort"
-                },
-                "\n",
-                " echo $smtp_port >> /opt/smtp_input.txt",
-                "\n",
-                "environment_name=",
-                {
-                  "Ref": "EnvironmentName"
-                },
-                "\n",
-                " echo $environment_name >> /opt/sns_input.txt",
-                "\n",
-                "aws_access_key=",
-                {
-                  "Ref": "AccessKey"
-                },
-                "\n",
-                " echo $aws_access_key >> /opt/sns_input.txt",
-                "\n",
-                "aws_secret_key=",
-                {
-                  "Ref": "SecretKey"
-                },
-                "\n",
-                " echo $aws_secret_key >> /opt/sns_input.txt",
-                "\n",
-                "sns_regions=",
-                {
-                  "Ref": "SNSRegions"
-                },
-                "\n",
-                " echo $sns_regions >> /opt/sns_input.txt",
-                "\n"
-              ]
-            ]
-          }
-        }
-      }
-    },
-    "InstanceSecurityGroup": {
-      "Type": "AWS::EC2::SecurityGroup",
-      "Properties": {
-        "VpcId": {
-          "Ref": "ExistingVPC"
-        },
-        "GroupName": "CoreStack",
-        "GroupDescription": "Enable SSH access via port 22",
-        "Tags": [{
-            "Key": "Application",
-            "Value": "CoreStack"
-          },
-          {
-            "Key": "Name",
-            "Value": "CoreStack-SG"
-          }
-        ],
-        "SecurityGroupIngress": [{
-            "IpProtocol": "tcp",
-            "FromPort": "22",
-            "ToPort": "22",
-            "CidrIp": {
-              "Ref": "RemoteCIDR"
-            }
-          },
-          {
-            "IpProtocol": "tcp",
-            "FromPort": "80",
-            "ToPort": "80",
-            "CidrIp": {
-              "Ref": "RemotehttpCIDR"
-            }
-          },
-          {
-            "IpProtocol": "tcp",
-            "FromPort": "443",
-            "ToPort": "443",
-            "CidrIp": {
-              "Ref": "RemotehttpCIDR"
-            }
-          },
-          {
-            "IpProtocol": "tcp",
-            "FromPort": "18090",
-            "ToPort": "18090",
-            "CidrIp": {
-              "Ref": "RemoteCIDR"
-            }
-          },
-          {
-            "IpProtocol": "tcp",
-            "FromPort": "28082",
-            "ToPort": "28082",
-            "CidrIp": {
-              "Ref": "RemoteCIDR"
-            }
-          },
-          {
-            "IpProtocol": "tcp",
-            "FromPort": "1789",
-            "ToPort": "1789",
-            "CidrIp": {
-              "Ref": "RemoteCIDR"
-            }
-          },
-          {
-            "IpProtocol": "tcp",
-            "FromPort": "18081",
-            "ToPort": "18081",
-            "CidrIp": {
-              "Ref": "RemoteCIDR"
-            }
-          },
-          {
-            "IpProtocol": "tcp",
-            "FromPort": "18083",
-            "ToPort": "18083",
-            "CidrIp": {
-              "Ref": "RemoteCIDR"
-            }
-          },
-          {
-            "IpProtocol": "tcp",
-            "FromPort": "8004",
-            "ToPort": "8004",
-            "CidrIp": {
-              "Ref": "RemoteCIDR"
-            }
-          },
-          {
-            "IpProtocol": "tcp",
-            "FromPort": "8000",
-            "ToPort": "8000",
-            "CidrIp": {
-              "Ref": "RemoteCIDR"
-            }
-          },
-          {
-            "IpProtocol": "tcp",
-            "FromPort": "8003",
-            "ToPort": "8003",
-            "CidrIp": {
-              "Ref": "RemoteCIDR"
-            }
-          },
-          {
-            "IpProtocol": "tcp",
-            "FromPort": "18080",
-            "ToPort": "18080",
-            "CidrIp": {
-              "Ref": "RemoteCIDR"
-            }
-          },
-          {
-            "IpProtocol": "tcp",
-            "FromPort": "5000",
-            "ToPort": "5000",
-            "CidrIp": {
-              "Ref": "RemoteCIDR"
-            }
-          },
-          {
-            "IpProtocol": "tcp",
-            "FromPort": "8989",
-            "ToPort": "8989",
-            "CidrIp": {
-              "Ref": "RemoteCIDR"
-            }
-          },
-          {
-            "IpProtocol": "tcp",
-            "FromPort": "18084",
-            "ToPort": "18084",
-            "CidrIp": {
-              "Ref": "RemoteCIDR"
-            }
-          },
-          {
-            "IpProtocol": "tcp",
-            "FromPort": "18087",
-            "ToPort": "18087",
-            "CidrIp": {
-              "Ref": "RemoteCIDR"
-            }
-          },
-          {
-            "IpProtocol": "tcp",
-            "FromPort": "18085",
-            "ToPort": "18085",
-            "CidrIp": {
-              "Ref": "RemoteCIDR"
-            }
-          },
-          {
-            "IpProtocol": "tcp",
-            "FromPort": "4440",
-            "ToPort": "4440",
-            "CidrIp": {
-              "Ref": "RemoteCIDR"
-            }
-          },
-          {
-            "IpProtocol": "tcp",
-            "FromPort": "9001",
-            "ToPort": "9001",
-            "CidrIp": {
-              "Ref": "RemoteCIDR"
-            }
-          }
-        ]
-      }
-    }
-  },
-  "Outputs": {
-    "InstanceId": {
-      "Description": "InstanceId of the newly created EC2 instance",
-      "Value": {
-        "Ref": "EC2Instance"
-      }
-    },
-    "AZ": {
-      "Description": "Availability Zone of the newly created EC2 instance",
-      "Value": {
-        "Fn::GetAtt": [
-          "EC2Instance",
-          "AvailabilityZone"
-        ]
-      }
-    },
-    "PublicDNS": {
-      "Description": "Public DNSName of the newly created EC2 instance",
-      "Value": {
-        "Fn::GetAtt": [
-          "EC2Instance",
-          "PublicDnsName"
-        ]
-      }
-    },
-    "PublicIP": {
-      "Description": "Public IP address of the newly created EC2 instance",
-      "Value": {
-        "Fn::GetAtt": [
-          "EC2Instance",
-          "PublicIp"
-        ]
-      }
-    }
-  }
+	"AWSTemplateFormatVersion": "2010-09-09",
+	"Description": "This template is to provision an ec2 instance with corestack ami id.",
+	"Metadata": {
+		"AWS::CloudFormation::Interface": {
+			"ParameterGroups": [{
+					"Label": {
+						"default": "EC2 Configuration"
+					},
+					"Parameters": ["AccessKey", "SecretKey", "InstanceType", "ExistingImageId", "KeyName", "EnvironmentName"]
+				},
+				{
+					"Label": {
+						"default": "Network Configuration"
+					},
+					"Parameters": ["ExistingVPC", "ExistingSubnet", "RemoteCIDR", "RemotehttpCIDR"]
+				},
+				{
+					"Label": {
+						"default": "SNS Regions"
+					},
+					"Parameters": ["SNSRegions"]
+				},
+				{
+					"Label": {
+						"default": "Mail Configuration"
+					},
+					"Parameters": ["SMTPEmail", "SMTPPassword", "SMTPHost", "SMTPPort"]
+				}
+			]
+		}
+	},
+	"Parameters": {
+		"KeyName": {
+			"Description": "Name of an existing EC2 KeyPair to enable SSH access to the instance",
+			"Type": "AWS::EC2::KeyPair::KeyName",
+			"ConstraintDescription": "must be the name of an existing EC2 KeyPair."
+		},
+		"InstanceType": {
+			"Description": "Select your EC2 instance type, either default type or higher than default type. ",
+			"Type": "String",
+			"Default": "m5.4xlarge",
+			"AllowedValues": [
+				"a1.2xlarge",
+				"a1.4xlarge",
+				"a1.metal",
+				"m6g.4xlarge",
+				"m6g.8xlarge",
+				"m5.4xlarge",
+				"m5.8xlarge",
+				"m5a.4xlarge",
+				"m5a.8xlarge",
+				"m5n.4xlarge",
+				"m5n.8xlarge",
+				"m4.4xlarge",
+				"m4.10xlarge"
+			],
+			"ConstraintDescription": "must be a valid EC2 instance type."
+		},
+		"RemoteCIDR": {
+			"Description": "Provide a ip address/subnet-range to enable access to corestack eg:- Ipaddress - 49.207.139.140/32 or Subnet_range - 49.207.139.0/24. Note:- It is not recommended to use 0.0.0.0/0",
+			"Type": "String",
+			"MinLength": "9",
+			"MaxLength": "18",
+			"AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
+			"ConstraintDescription": "must be a valid IP CIDR range of the form x.x.x.x/x."
+		},
+		"RemotehttpCIDR": {
+			"Description": "IP address/subnet-range to enable web 80/443 access ",
+			"Type": "String",
+			"MinLength": "9",
+			"MaxLength": "18",
+			"Default": "0.0.0.0/0",
+			"AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
+			"ConstraintDescription": "must be a valid IP CIDR range of the form x.x.x.x/x."
+		},
+		"ExistingVPC": {
+			"Type": "AWS::EC2::VPC::Id",
+			"Description": "VpcId of your existing Virtual Private Cloud (VPC)"
+		},
+		"ExistingSubnet": {
+			"Type": "AWS::EC2::Subnet::Id",
+			"Description": "SubnetId of your existing Virtual Private Cloud (VPC)"
+		},
+		"ExistingImageId": {
+			"Description": "Provide the existing Image ID of CoreStack",
+			"Type": "String"
+		},
+		"EnvironmentName": {
+			"Description": "Provide your Environment type. eg.) Dev, Prod, Staging, etc. ",
+			"Type": "String"
+		},
+		"AccessKey": {
+			"NoEcho": "true",
+			"Description": "Required to create corestack specific SQS, SNS queues and lambda functions ",
+			"Type": "String"
+		},
+		"SecretKey": {
+			"NoEcho": "true",
+			"Description": "Required to create corestack specific SQS, SNS queues and lambda functions ",
+			"Type": "String"
+		},
+		"SNSRegions": {
+			"Description": "Provide the list of sns regions with comma seperated,eg:  us-west-2, us-west-2. Note:- You must include the region where you execute the cloudformation template or else instance won't be launched ",
+			"Type": "String"
+		},
+		"SMTPEmail": {
+			"Description": "SMTP email id to which notification alerts are to be sent ",
+			"Type": "String"
+		},
+		"SMTPPassword": {
+			"NoEcho": "true",
+			"Description": "Provide the smtp password",
+			"Type": "String"
+		},
+		"SMTPHost": {
+			"Description": "Provide the smtp host of smtp provider, eg:- smtp.office365.com",
+			"Type": "String"
+		},
+		"SMTPPort": {
+			"Description": "Provide the smtp port of smtp provider, eg:- 587, 25",
+			"Type": "Number"
+		}
+	},
+	"Resources": {
+		"CreateElasticIP": {
+			"Type": "AWS::EC2::EIP",
+			"Properties": {
+				"Domain": "vpc",
+				"Tags": [{
+					"Key": "Name",
+					"Value": "CoreStack"
+				}]
+			}
+		},
+		"AssociateElasticIP": {
+			"Type": "AWS::EC2::EIPAssociation",
+			"Properties": {
+				"AllocationId": {
+					"Fn::GetAtt": [
+						"CreateElasticIP",
+						"AllocationId"
+					]
+				},
+				"InstanceId": {
+					"Ref": "EC2Instance"
+				}
+			},
+			"DependsOn": "EC2Instance"
+		},
+		"EC2Instance": {
+			"Type": "AWS::EC2::Instance",
+			"Properties": {
+				"InstanceType": {
+					"Ref": "InstanceType"
+				},
+                                "BlockDeviceMappings" : [{
+                                          "DeviceName" : "/dev/sda1",
+                                          "Ebs" : { "VolumeSize" : "50" }
+                                         }],
+				"SecurityGroupIds": [{
+					"Fn::GetAtt": ["InstanceSecurityGroup", "GroupId"]
+				}],
+				"SubnetId": {
+					"Ref": "ExistingSubnet"
+				},
+				"KeyName": {
+					"Ref": "KeyName"
+				},
+				"ImageId": {
+					"Ref": "ExistingImageId"
+				},
+				"Tags": [{
+						"Key": "Application",
+						"Value": "CoreStack"
+					},
+					{
+						"Key": "Name",
+						"Value": "CoreStack"
+					}
+				],
+				"UserData": {
+					"Fn::Base64": {
+						"Fn::Join": [
+							"",
+							[
+								"#!/bin/bash -xe\n",
+								"smtp_email=",
+								{
+									"Ref": "SMTPEmail"
+								},
+								"\n",
+								" echo $smtp_email >> /opt/smtp_input.txt",
+								"\n",
+								"smtp_password=",
+								{
+									"Ref": "SMTPPassword"
+								},
+								"\n",
+								" echo $smtp_password >> /opt/smtp_input.txt",
+								"\n",
+								"smtp_host=",
+								{
+									"Ref": "SMTPHost"
+								},
+								"\n",
+								" echo $smtp_host >> /opt/smtp_input.txt",
+								"\n",
+								"smtp_port=",
+								{
+									"Ref": "SMTPPort"
+								},
+								"\n",
+								" echo $smtp_port >> /opt/smtp_input.txt",
+								"\n",
+								"environment_name=",
+								{
+									"Ref": "EnvironmentName"
+								},
+								"\n",
+								" echo $environment_name >> /opt/sns_input.txt",
+								"\n",
+								"aws_access_key=",
+								{
+									"Ref": "AccessKey"
+								},
+								"\n",
+								" echo $aws_access_key >> /opt/sns_input.txt",
+								"\n",
+								"aws_secret_key=",
+								{
+									"Ref": "SecretKey"
+								},
+								"\n",
+								" echo $aws_secret_key >> /opt/sns_input.txt",
+								"\n",
+								"sns_regions=",
+								{
+									"Ref": "SNSRegions"
+								},
+								"\n",
+								" echo $sns_regions >> /opt/sns_input.txt",
+								"\n"
+							]
+						]
+					}
+				}
+			}
+		},
+		"InstanceSecurityGroup": {
+			"Type": "AWS::EC2::SecurityGroup",
+			"Properties": {
+				"VpcId": {
+					"Ref": "ExistingVPC"
+				},
+				"GroupName": "CoreStack",
+				"GroupDescription": "Enable SSH access via port 22",
+				"Tags": [{
+						"Key": "Application",
+						"Value": "CoreStack"
+					},
+					{
+						"Key": "Name",
+						"Value": "CoreStack-SG"
+					}
+				],
+				"SecurityGroupIngress": [{
+						"IpProtocol": "tcp",
+						"FromPort": "22",
+						"ToPort": "22",
+						"CidrIp": {
+							"Ref": "RemoteCIDR"
+						}
+					},
+					{
+						"IpProtocol": "tcp",
+						"FromPort": "80",
+						"ToPort": "80",
+						"CidrIp": {
+							"Ref": "RemotehttpCIDR"
+						}
+					},
+					{
+						"IpProtocol": "tcp",
+						"FromPort": "443",
+						"ToPort": "443",
+						"CidrIp": {
+							"Ref": "RemotehttpCIDR"
+						}
+					},
+					{
+						"IpProtocol": "tcp",
+						"FromPort": "18090",
+						"ToPort": "18090",
+						"CidrIp": {
+							"Ref": "RemoteCIDR"
+						}
+					},
+					{
+						"IpProtocol": "tcp",
+						"FromPort": "28082",
+						"ToPort": "28082",
+						"CidrIp": {
+							"Ref": "RemoteCIDR"
+						}
+					},
+					{
+						"IpProtocol": "tcp",
+						"FromPort": "1789",
+						"ToPort": "1789",
+						"CidrIp": {
+							"Ref": "RemoteCIDR"
+						}
+					},
+					{
+						"IpProtocol": "tcp",
+						"FromPort": "18081",
+						"ToPort": "18081",
+						"CidrIp": {
+							"Ref": "RemoteCIDR"
+						}
+					},
+					{
+						"IpProtocol": "tcp",
+						"FromPort": "18083",
+						"ToPort": "18083",
+						"CidrIp": {
+							"Ref": "RemoteCIDR"
+						}
+					},
+					{
+						"IpProtocol": "tcp",
+						"FromPort": "8004",
+						"ToPort": "8004",
+						"CidrIp": {
+							"Ref": "RemoteCIDR"
+						}
+					},
+					{
+						"IpProtocol": "tcp",
+						"FromPort": "8000",
+						"ToPort": "8000",
+						"CidrIp": {
+							"Ref": "RemoteCIDR"
+						}
+					},
+					{
+						"IpProtocol": "tcp",
+						"FromPort": "8003",
+						"ToPort": "8003",
+						"CidrIp": {
+							"Ref": "RemoteCIDR"
+						}
+					},
+					{
+						"IpProtocol": "tcp",
+						"FromPort": "18080",
+						"ToPort": "18080",
+						"CidrIp": {
+							"Ref": "RemoteCIDR"
+						}
+					},
+					{
+						"IpProtocol": "tcp",
+						"FromPort": "5000",
+						"ToPort": "5000",
+						"CidrIp": {
+							"Ref": "RemoteCIDR"
+						}
+					},
+					{
+						"IpProtocol": "tcp",
+						"FromPort": "8989",
+						"ToPort": "8989",
+						"CidrIp": {
+							"Ref": "RemoteCIDR"
+						}
+					},
+					{
+						"IpProtocol": "tcp",
+						"FromPort": "18084",
+						"ToPort": "18084",
+						"CidrIp": {
+							"Ref": "RemoteCIDR"
+						}
+					},
+					{
+						"IpProtocol": "tcp",
+						"FromPort": "18087",
+						"ToPort": "18087",
+						"CidrIp": {
+							"Ref": "RemoteCIDR"
+						}
+					},
+					{
+						"IpProtocol": "tcp",
+						"FromPort": "18085",
+						"ToPort": "18085",
+						"CidrIp": {
+							"Ref": "RemoteCIDR"
+						}
+					},
+					{
+						"IpProtocol": "tcp",
+						"FromPort": "4440",
+						"ToPort": "4440",
+						"CidrIp": {
+							"Ref": "RemoteCIDR"
+						}
+					},
+					{
+						"IpProtocol": "tcp",
+						"FromPort": "9001",
+						"ToPort": "9001",
+						"CidrIp": {
+							"Ref": "RemoteCIDR"
+						}
+					}
+				]
+			}
+		}
+	},
+	"Outputs": {
+		"InstanceId": {
+			"Description": "InstanceId of the newly created EC2 instance",
+			"Value": {
+				"Ref": "EC2Instance"
+			}
+		},
+		"AZ": {
+			"Description": "Availability Zone of the newly created EC2 instance",
+			"Value": {
+				"Fn::GetAtt": [
+					"EC2Instance",
+					"AvailabilityZone"
+				]
+			}
+		},
+		"PublicDNS": {
+			"Description": "Public DNSName of the newly created EC2 instance",
+			"Value": {
+				"Fn::GetAtt": [
+					"EC2Instance",
+					"PublicDnsName"
+				]
+			}
+		},
+		"PublicIP": {
+			"Description": "Public IP address of the newly created EC2 instance",
+			"Value": {
+				"Fn::GetAtt": [
+					"EC2Instance",
+					"PublicIp"
+				]
+			}
+		}
+	}
 }
