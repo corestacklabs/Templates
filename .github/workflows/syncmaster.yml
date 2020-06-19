@@ -1,0 +1,16 @@
+
+name: sync master with qa
+on:
+  schedule:
+  - cron:  "*/15 * * * *"
+jobs:
+  repo-sync:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@master
+    - name: repo-sync
+      uses: repo-sync/github-sync@v2
+      with:
+        source_branch: "qa"
+        destination_branch: "master"
+        github_token: ${{ secrets.GITHUB_TOKEN }}
