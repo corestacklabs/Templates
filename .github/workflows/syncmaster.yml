@@ -11,6 +11,7 @@ jobs:
     - name: repo-sync
       uses: repo-sync/github-sync@v2
       with:
+        source_repo: "https://github.com/corestacklabs/Templates.git"
         source_branch: "qa"
         destination_branch: "master"
         github_token: ${{ secrets.GITHUB_TOKEN }}
