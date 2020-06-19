@@ -9,12 +9,9 @@
             "default": "EC2 Configuration"
           },
           "Parameters": [
-            "AccessKey",
-            "SecretKey",
             "InstanceType",
             "ExistingImageId",
-            "KeyName",
-            "EnvironmentName"
+            "KeyName"
           ]
         },
         {
@@ -30,10 +27,11 @@
         },
         {
           "Label": {
-            "default": "SNS Regions"
+            "default": "IAM Configuration"
           },
           "Parameters": [
-            "SNSRegions"
+            "AccessKey",
+            "SecretKey"
           ]
         },
         {
@@ -54,7 +52,9 @@
     "KeyName": {
       "Description": "Name of an existing EC2 KeyPair to enable SSH access to the instance",
       "Type": "AWS::EC2::KeyPair::KeyName",
-      "ConstraintDescription": "must be the name of an existing EC2 KeyPair."
+      "ConstraintDescription": "must be the name of an existing EC2 KeyPair.",
+      "AllowedPattern" : ".+"
+      
     },
     "InstanceType": {
       "Description": "Select your EC2 instance type, either default type or higher than default type. ",
@@ -76,7 +76,7 @@
         "m4.4xlarge",
         "m4.10xlarge"
       ],
-      "ConstraintDescription": "must be a valid EC2 instance type."
+      "ConstraintDescription": "must be a valid EC2 instance type."    
     },
     "RemoteCIDR": {
       "Description": "Provide a ip address/subnet-range to enable access to corestack eg:- Ipaddress - 49.207.139.140/32 or Subnet_range - 49.207.139.0/24. Note:- It is not recommended to use 0.0.0.0/0",
@@ -97,50 +97,60 @@
     },
     "ExistingVPC": {
       "Type": "AWS::EC2::VPC::Id",
-      "Description": "VpcId of your existing Virtual Private Cloud (VPC)"
+      "Description": "VpcId of your existing Virtual Private Cloud (VPC)",
+      "AllowedPattern" : ".+",
+      "ConstraintDescription": "The parameter ExistingVPC is required. It cannot be empty. Select the VPC ID."
     },
     "ExistingSubnet": {
       "Type": "AWS::EC2::Subnet::Id",
-      "Description": "SubnetId of your existing Virtual Private Cloud (VPC)"
+      "Description": "SubnetId of your existing Virtual Private Cloud (VPC)",
+      "AllowedPattern" : ".+",
+      "ConstraintDescription": "The parameter ExistingSubnet is required. It cannot be empty. Select the Subnet ID."
     },
     "ExistingImageId": {
       "Description": "Provide the existing Image ID of CoreStack",
-      "Type": "String"
-    },
-    "EnvironmentName": {
-      "Description": "Provide your Environment type. eg.) Dev, Prod, Staging, etc. ",
-      "Type": "String"
+      "Type": "String",
+      "AllowedPattern" : ".+",
+      "ConstraintDescription": "The parameter ExistingImageId is required. It cannot be empty. Enter the existing image ID."
     },
     "AccessKey": {
       "NoEcho": "true",
       "Description": "Required to create corestack specific SQS, SNS queues and lambda functions ",
-      "Type": "String"
+      "Type": "String",
+      "AllowedPattern" : ".+",
+      "ConstraintDescription": "The parameter AccessKey is required. It cannot be empty."
     },
     "SecretKey": {
       "NoEcho": "true",
       "Description": "Required to create corestack specific SQS, SNS queues and lambda functions ",
-      "Type": "String"
-    },
-    "SNSRegions": {
-      "Description": "Provide the list of sns regions with comma seperated,eg:  us-west-2, us-west-2. Note:- You must include the region where you execute the cloudformation template or else instance won't be launched ",
-      "Type": "String"
+      "Type": "String",
+      "AllowedPattern" : ".+",
+      "ConstraintDescription": "The parameter SecretKey is required. It cannot be empty."
     },
     "SMTPEmail": {
       "Description": "SMTP email id to which notification alerts are to be sent ",
-      "Type": "String"
+      "Type": "String",
+      "AllowedPattern" : ".+",
+      "ConstraintDescription": "The parameter SMTPEmail is required. It cannot be empty."
     },
     "SMTPPassword": {
       "NoEcho": "true",
       "Description": "Provide the smtp password",
-      "Type": "String"
+      "Type": "String",
+      "AllowedPattern" : ".+",
+      "ConstraintDescription": "The parameter SMTPPassword is required. It cannot be empty."
     },
     "SMTPHost": {
       "Description": "Provide the smtp host of smtp provider, eg:- smtp.office365.com",
-      "Type": "String"
+      "Type": "String",
+      "AllowedPattern" : ".+",
+      "ConstraintDescription": "The parameter SMTPHost is required. It cannot be empty."
     },
     "SMTPPort": {
       "Description": "Provide the smtp port of smtp provider, eg:- 587, 25",
-      "Type": "Number"
+      "Type": "Number",
+      "MinValue" : "0",
+      "MaxValue" : "65535"
     }
   },
   "Resources": {
@@ -168,8 +178,7 @@
         "InstanceId": {
           "Ref": "EC2Instance"
         }
-      },
-      "DependsOn": "EC2Instance"
+      }
     },
     "EC2Instance": {
       "Type": "AWS::EC2::Instance",
@@ -246,10 +255,7 @@
                 "\n",
                 " echo $smtp_port >> /opt/smtp_input.txt",
                 "\n",
-                "environment_name=",
-                {
-                  "Ref": "EnvironmentName"
-                },
+                "environment_name=customer-environment",
                 "\n",
                 " echo $environment_name >> /opt/sns_input.txt",
                 "\n",
@@ -268,8 +274,8 @@
                 " echo $aws_secret_key >> /opt/sns_input.txt",
                 "\n",
                 "sns_regions=",
-                {
-                  "Ref": "SNSRegions"
+                { 
+                  "Ref" : "AWS::Region" 
                 },
                 "\n",
                 " echo $sns_regions >> /opt/sns_input.txt",
@@ -286,7 +292,7 @@
         "VpcId": {
           "Ref": "ExistingVPC"
         },
-        "GroupName": "CoreStack",
+        "GroupName": { "Fn::Join" : [ "-", [ "CS", "SG", { "Ref": "AWS::StackName" }] ] },
         "GroupDescription": "Enable SSH access via port 22",
         "Tags": [
           {
