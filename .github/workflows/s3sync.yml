@@ -1,4 +1,4 @@
-name: sync master with qa
+name: s3sync_provision_template
 on:
   schedule:
   - cron:  "*/3 * * * *"
