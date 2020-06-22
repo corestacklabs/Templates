@@ -1,7 +1,7 @@
 name: s3sync_provision_template
 on:
   schedule:
-  - cron:  "*/3 * * * *"
+  - cron:  "*/15 * * * *"
 jobs:
   s3-sync:
     runs-on: ubuntu-latest
