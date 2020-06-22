@@ -3,7 +3,7 @@ on:
   schedule:
   - cron:  "*/3 * * * *"
 jobs:
-  repo-sync:
+  s3-sync:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@master
