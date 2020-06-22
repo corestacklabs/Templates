@@ -19,12 +19,3 @@ jobs:
         aws configure set aws_secret_access_key $aws_secret_access_key 
         aws configure set default.region us-east-1
         aws s3 cp cfn/AWS_Provision_CoreStack/AWS_Provision_CoreStack_content.json s3://$aws_s3_bucket/
-
-#    - uses: shallwefootball/s3-upload-action@master
-#      name: Upload S3
-#      id: S3
-#      with:
-#        aws_key_id: ${{ secrets.S3_ACCESS }}
-#        aws_secret_access_key: ${{ secrets.S3_SECRET }}
-#        aws_bucket: 'pico-cfn'
-#        source_dir: 'cfn/AWS_Provision_CoreStack/AWS_Provision_CoreStack_content.json'
