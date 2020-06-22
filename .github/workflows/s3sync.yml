@@ -1,4 +1,4 @@
-name: s3sync_provision_template
+name: sync corestack provisioning template with s3
 on:
   schedule:
   - cron:  "*/15 * * * *"
