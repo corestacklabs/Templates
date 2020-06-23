@@ -1,7 +1,7 @@
 name: sync corestack provisioning template with s3
-on:
-  schedule:
-  - cron:  "*/15 * * * *"
+on: [ push ]
+#  schedule:
+#  - cron:  "*/15 * * * *"
 jobs:
   s3-sync:
     runs-on: ubuntu-latest
