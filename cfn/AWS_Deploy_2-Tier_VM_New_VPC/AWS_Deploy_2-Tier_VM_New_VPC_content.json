@@ -13,13 +13,11 @@
         },
         "ImageID": {
             "Description": "Image ID (AMI) to be used for provisioning instance in AWS. AMI provides the information required to launch an instance, which is a virtual server in the cloud.",
-            "Type": "String",
-            "source": "image.list_image"
+            "Type": "String"
         },
         "KeypairName": {
             "Description": "Existing Keypair name to be used for provisioning instance in AWS. Amazon EC2 uses public-key cryptography to encrypt piece of data using public keys and decrypt the same using private keys. Public & Private keys known as Keypair.",
-            "Type": "String",
-            "source": "keypair.list_keypair"
+            "Type": "AWS::EC2::KeyPair::KeyName"
         },
         "InstanceType": {
             "Description": "Instance Type (Flavor) name to be used for provisioning instance in AWS. Instance types comprise varying combinations of CPU, memory, storage, and networking capacity.",
