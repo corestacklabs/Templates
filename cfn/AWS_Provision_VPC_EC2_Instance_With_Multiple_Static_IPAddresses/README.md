@@ -11,7 +11,7 @@ AWS account with required access
 
 Import the CFN template on to the AWS CloudFormation or click below to deploy to the corestack product 
 
-[![Deploy to Azure](https://docs.corestack.io/wp-content/uploads/2019/09/deploy-to-corestack.svg)](http://discover.corestack.io/heatstack/templates?repositories=github&external_redirect=true&name=AWS_Provision_VPC_EC2_Instance_With_Multiple_Static_IPAddresses&url=https://raw.githubusercontent.com/corestacklabs/Templates/sandbox/cfn/AWS_Provision_VPC_EC2_Instance_With_Multiple_Static_IPAddresses/AWS_Provision_VPC_EC2_Instance_With_Multiple_Static_IPAddresses_content.json&engine=cfn&type[0]=Cloud&classification[0]=Provisioning&services[0]=AWS&scope=tenant#/mytemplates)
+[![Deploy to Azure](https://docs.corestack.io/wp-content/uploads/2019/09/deploy-to-corestack.svg)](http://discover.corestack.io/heatstack/templates?repositories=github&external_redirect=true&name=AWS_Provision_VPC_EC2_Instance_With_Multiple_Static_IPAddresses&url=https://raw.githubusercontent.com/corestacklabs/Templates/sandbox/cfn/AWS_Provision_VPC_EC2_Instance_With_Multiple_Static_IPAddresses/AWS_Provision_VPC_EC2_Instance_With_Multiple_Static_IPAddresses_content.json&engine=cfn&type[0]=Cloud&classification[0]=Provisioning&services[0]=AWS&scope=tenant#/private)
 
 ## Contributing
 

@@ -11,7 +11,7 @@ Microsoft Azure Subscription with required access
 
 Use either Azure CLI or Azure PowerShell to deploy a template. Alternatively, click below to deploy the template directly to the corestack product 
 
-[![Deploy to Azure](https://docs.corestack.io/wp-content/uploads/2019/09/deploy-to-corestack.svg)](http://discover.corestack.io/heatstack/templates?repositories=github&external_redirect=true&name=Azure_Provision_Single_RHEL_V7_VM_With_Gold_Service_Level_And_Join_To_Domain&url=https://raw.githubusercontent.com/corestacklabs/Templates/master/arm/Azure_Provision_Single_RHEL_V7_VM_With_Gold_Service_Level_And_Join_To_Domain/Azure_Provision_Single_RHEL_V7_VM_With_Gold_Service_Level_And_Join_To_Domain_content.json&engine=arm&type[0]=Cloud&classification[0]=Provisioning&services[0]=Azure&scope=tenant#/mytemplates)
+[![Deploy to Azure](https://docs.corestack.io/wp-content/uploads/2019/09/deploy-to-corestack.svg)](http://discover.corestack.io/heatstack/templates?repositories=github&external_redirect=true&name=Azure_Provision_Single_RHEL_V7_VM_With_Gold_Service_Level_And_Join_To_Domain&url=https://raw.githubusercontent.com/corestacklabs/Templates/master/arm/Azure_Provision_Single_RHEL_V7_VM_With_Gold_Service_Level_And_Join_To_Domain/Azure_Provision_Single_RHEL_V7_VM_With_Gold_Service_Level_And_Join_To_Domain_content.json&engine=arm&type[0]=Cloud&classification[0]=Provisioning&services[0]=Azure&scope=tenant#/private)
 
 ## Contributing
 
