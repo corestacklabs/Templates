@@ -1,7 +1,7 @@
 
 # AzureRM_Provision_SQLServer2016_Express_Edition
 
-This template provision a Windows Server 2016 VM with Premium SSD Unmanaged disk and deploy the Express edition of SQL Server 2016. This is a free (no SQL Server licensing cost) database system for lightweight applications. It includes the core database engine, limited to 1 GB memory and 10 GB storage, and Management Studio for integrated administration and development. It is recommended to use a virtual machine size of DS1 or higher. So in this template we have listed only the VM size of DS1 and higher
+
 
 ### Prerequisites
 
@@ -11,7 +11,7 @@ Microsoft Azure Subscription with required access
 
 Use either Azure CLI or Azure PowerShell to deploy a template. Alternatively, click below to deploy the template directly to the corestack product 
 
-[![Deploy to Azure](https://docs.corestack.io/wp-content/uploads/2019/09/deploy-to-corestack.svg)](http://qa.corestack.io/heatstack/templates?repositories=github&external_redirect=true&name=AzureRM_Provision_SQLServer2016_Express_Edition&url=https://raw.githubusercontent.com/corestacklabs/Templates/master/arm/AzureRM_Provision_SQLServer2016_Express_Edition/AzureRM_Provision_SQLServer2016_Express_Edition_content.json&engine=arm&type[0]=Cloud&classification[0]=Provisioning&services[0]=Azure&scope=tenant#/mytemplates)
+[![Deploy to Azure](https://docs.corestack.io/wp-content/uploads/2019/09/deploy-to-corestack.svg)](http://qa.corestack.io/heatstack/templates?repositories=github&external_redirect=true&name=AzureRM_Provision_SQLServer2016_Express_Edition&url=https://raw.githubusercontent.com/corestacklabs/Templates/master/arm/AzureRM_Provision_SQLServer2016_Express_Edition/AzureRM_Provision_SQLServer2016_Express_Edition_content.json&engine=arm&type[0]=Cloud&classification[0]=Provisioning&services[0]=Azure&scope=tenant#/private)
 
 ## Contributing
 

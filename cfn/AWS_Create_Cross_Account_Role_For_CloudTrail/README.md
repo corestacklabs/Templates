@@ -1,17 +1,17 @@
 
 # AWS_Create_Cross_Account_Role_For_CloudTrail
 
-Creates a new IAM Role to access bucket configured in CloudTrail to asses CloudTrail logs through Corestack.
+Creates a IAM Role tp access the Bucket configured in CloudTrail
 
 ### Prerequisites
 
-AWS account with access to create IAM Role, and Attach Policy to Role.
+AWS account with required access
 
 ## Deployment
 
 Import the CFN template on to the AWS CloudFormation or click below to deploy to the corestack product 
 
-[![Deploy to Azure](https://docs.corestack.io/wp-content/uploads/2019/09/deploy-to-corestack.svg)](http://qa.corestack.io/heatstack/templates?repositories=github&external_redirect=true&name=AWS_Create_Cross_Account_Role_For_CloudTrail&url=https://raw.githubusercontent.com/corestacklabs/Templates/qa/cfn/AWS_Create_Cross_Account_Role_For_CloudTrail/AWS_Create_Cross_Account_Role_For_CloudTrail_content.json&engine=cfn&type[0]=Cloud&classification[0]=Provisioning&services[0]=AWS&scope=tenant#/mytemplates)
+[![Deploy to Azure](https://docs.corestack.io/wp-content/uploads/2019/09/deploy-to-corestack.svg)](http://qa.corestack.io/heatstack/templates?repositories=github&external_redirect=true&name=AWS_Create_Cross_Account_Role_For_CloudTrail&url=https://raw.githubusercontent.com/corestacklabs/Templates/qa/cfn/AWS_Create_Cross_Account_Role_For_CloudTrail/AWS_Create_Cross_Account_Role_For_CloudTrail_content.json&engine=cfn&type[0]=Cloud&classification[0]=Provisioning&services[0]=AWS&scope=tenant#/private)
 
 ## Contributing
 
@@ -24,5 +24,5 @@ This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md
 ## Acknowledgments
 
 * Corestack developers
-
+* Microsoft Github
 

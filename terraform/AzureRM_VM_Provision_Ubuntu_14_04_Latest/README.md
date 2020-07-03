@@ -1,7 +1,7 @@
 
 # AzureRM_VM_Provision_Ubuntu_14_04_Latest
 
-This is a terraform template to provision a virtual machine in Azure Public Cloud. Resources will be provisioned in an existing resource group as selected during provision. This offer is published by Canonical Subnet and network interface will be automatically created if not present for the specific resource group.
+
 
 ### Prerequisites
 
@@ -12,7 +12,7 @@ Microsoft Azure Subscription with required access
 
 Use terraform plan/apply to deploy the infra. Alternatively, click below to deploy the template directly to the corestack product 
 
-[![Deploy to Azure](https://docs.corestack.io/wp-content/uploads/2019/09/deploy-to-corestack.svg)](http://qa.corestack.io/heatstack/templates?repositories=github&external_redirect=true&name=AzureRM_VM_Provision_Ubuntu_14_04_Latest&url=https://raw.githubusercontent.com/corestacklabs/Templates/master/terraform/AzureRM_VM_Provision_Ubuntu_14_04_Latest/AzureRM_VM_Provision_Ubuntu_14_04_Latest.tf&engine=terraform&type[0]=Cloud&classification[0]=Provisioning&services[0]=AWS&services[1]=Azure&scope=tenant#/mytemplates)
+[![Deploy to Azure](https://docs.corestack.io/wp-content/uploads/2019/09/deploy-to-corestack.svg)](http://qa.corestack.io/heatstack/templates?repositories=github&external_redirect=true&name=AzureRM_VM_Provision_Ubuntu_14_04_Latest&url=https://raw.githubusercontent.com/corestacklabs/Templates/master/terraform/AzureRM_VM_Provision_Ubuntu_14_04_Latest/AzureRM_VM_Provision_Ubuntu_14_04_Latest.tf&engine=terraform&type[0]=Cloud&classification[0]=Provisioning&services[0]=AWS&services[1]=Azure&scope=tenant#/private)
 
 ## Contributing
 
