@@ -19,4 +19,4 @@ jobs:
         aws configure set aws_secret_access_key $aws_secret_access_key 
         aws configure set default.region us-east-1
         aws s3 cp cfn/AWS_Provision_CoreStack/AWS_Provision_CoreStack_content.json s3://$aws_s3_bucket/
-        aws s3api put-object-acl $aws_s3_bucket --key AWS_Provision_CoreStack_content.json --acl public-read
+        aws s3api put-object-acl --bucket $aws_s3_bucket --key AWS_Provision_CoreStack_content.json --acl public-read
