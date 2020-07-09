@@ -1,71 +1,88 @@
 {
-  "AWSTemplateFormatVersion": "2010-09-09",
-  "Description": "Creates a new IAM user for your AWS account with permissions to asses through Corestack.",
-  "Parameters": {
-    "Username": {
-      "Type": "String",
-      "Description": "The name of the user to create. Do not include the path in this value.",
-      "AllowedPattern": "[\\w+=,.@-]{1,128}"
-    },
-    "Password": {
-      "Type": "String",
-      "NoEcho": true,
-      "Description": "The user's password. It should follows organization password policy.",
-      "AllowedPattern": "[\\w+=,.@-]{1,128}"
-    },
-    "SettingsType": {
-      "Description": "Please select 'None' if you do not want any governance automation. 'Express' settings helps you get started quickly with the default configuration prescribed by our cloud experts. 'Custom' Settings helps you define and select the level of automation you need for your enterprise.",
-      "Type": "String",
-      "Default": "Express|Custom",
-      "AllowedValues": [
-        "None",
-        "Express|Custom"
-      ]
-    },
-    "IncludeCFNPolicy": {
-      "Description": "Flag to include policies required to execute CFN templates through Corestack",
-      "Type": "String",
-      "Default": "true",
-      "AllowedValues": [
-        "true",
-        "false"
-      ]
-    },
-    "IncludeInspectorPolicy": {
-      "Description": "Flag to include policies required to manage AWS Inspector through Corestack",
-      "Type": "String",
-      "Default": "true",
-      "AllowedValues": [
-        "true",
-        "false"
-      ]
-    }
-  },
-  "Conditions": {
-    "IncludeCFNPolicy": {
-      "Fn::Equals": [
-        {
-          "Ref": "IncludeCFNPolicy"
-        },
-        "true"
-      ]
-    },
-    "IncludeInspectorPolicy": {
-      "Fn::Equals": [
-        {
-          "Ref": "IncludeInspectorPolicy"
-        },
-        "true"
-      ]
-    },
-    "SettingsType": {
-      "Fn::Equals": [
-        {
-          "Ref": "SettingsType"
-        },
-        "Express|Custom"
-      ]
-    }
+	"AWSTemplateFormatVersion": "2010-09-09",
+	"Description": "Creates a new IAM user for your AWS account with permissions to asses through Corestack.",
+	"Parameters": {
+		"Username": {
+			"Type": "String",
+			"Description": "The name of the user to create. Do not include the path in this value.",
+			"AllowedPattern": "[\\w+=,.@-]{1,128}"
+		},
+		"Password": {
+			"Type": "String",
+			"NoEcho": true,
+			"Description": "The user's password. It should follows organization password policy.",
+			"AllowedPattern": "[\\w+=,.@-]{1,128}"
+		},
+		"SettingsType": {
+			"Description": "Please select 'None' if you do not want any governance automation. 'Express' settings helps you get started quickly with the default configuration prescribed by our cloud experts. 'Custom' Settings helps you define and select the level of automation you need for your enterprise.",
+			"Type": "String",
+			"Default": "Express|Custom",
+			"AllowedValues": [
+				"None",
+				"Express|Custom"
+			]
+		},
+		"IncludeCFNPolicy": {
+			"Description": "Flag to include policies required to execute CFN templates through Corestack",
+			"Type": "String",
+			"Default": "true",
+			"AllowedValues": [
+				"true",
+				"false"
+			]
+		},
+		"IncludeInspectorPolicy": {
+			"Description": "Flag to include policies required to manage AWS Inspector through Corestack",
+			"Type": "String",
+			"Default": "true",
+			"AllowedValues": [
+				"true",
+				"false"
+			]
+		},
+		"IncludeGuardDutyPolicy": {
+			"Description": "Flag to include policies required to manage AWS GuardDuty through Corestack",
+			"Type": "String",
+			"Default": "true",
+			"AllowedValues": [
+				"true",
+				"false"
+			]
+		},
+		"PoliciesGroupName": {
+			"Description": "Name of the IAM group. It will be attached to the user with the policies",
+			"Type": "String"
+		}
+	},
+	"Conditions": {
+		"IncludeCFNPolicy": {
+			"Fn::Equals": [{
+					"Ref": "IncludeCFNPolicy"
+				},
+				"true"
+			]
+		},
+		"IncludeInspectorPolicy": {
+			"Fn::Equals": [{
+					"Ref": "IncludeInspectorPolicy"
+				},
+				"true"
+			]
+		},
+		"IncludeGuardDutyPolicy": {
+			"Fn::Equals": [{
+					"Ref": "IncludeGuardDutyPolicy"
+				},
+				"true"
+			]
+		},
+		"SettingsType": {
+			"Fn::Equals": [{
+					"Ref": "SettingsType"
+				},
+				"Express|Custom"
+			]
+		}
   },
   "Resources": {
     "User": {
@@ -91,6 +108,26 @@
           "Ref": "User"
         }
       }
+    },
+    "CorestackPoliciesGroup": {
+        "Type": "AWS::IAM::Group",
+        "Properties": {
+            "GroupName": {
+                "Ref": "PoliciesGroupName"
+            },
+            "ManagedPolicyArns": []
+        }
+    },
+    "Users": {
+        "Type": "AWS::IAM::UserToGroupAddition",
+        "Properties": {
+            "GroupName": {
+                "Ref": "CorestackPoliciesGroup"
+            },
+            "Users": [{
+                "Ref": "User"
+            }]
+        }
     },
     "CoreStackSelfservicePolicy": {
         "Type": "AWS::IAM::ManagedPolicy",
@@ -339,6 +376,71 @@
           }
         ]
       }
+    },
+    "GuardDutyPolicy": {
+        "Type": "AWS::IAM::Policy",
+        "Condition": "IncludeGuardDutyPolicy",
+        "Properties": {
+            "PolicyName": "Corestack_GuardDutyPolicy",
+            "PolicyDocument": {
+                "Statement": [{
+                    "Sid": "GuardDuty",
+                    "Effect": "Allow",
+                    "Action": [
+                        "s3:PutBucketNotification",
+                        "guardduty:GetFindings",
+                        "guardduty:ListDetectors",
+                        "guardduty:CreateDetector",
+                        "guardduty:UpdateDetector",
+                        "s3:ListBucket",
+                        "guardduty:DeleteDetector",
+                        "guardduty:CreatePublishingDestination",
+                        "guardduty:ListFindings",
+                        "guardduty:GetDetector",
+                        "guardduty:TagResource",
+                        "iam:TagRole"
+                    ],
+                    "Resource": "*"
+                }]
+            },
+            "Groups": [{
+                "Ref": "CorestackPoliciesGroup"
+            }]
+        }
+    },
+    "GuardDutyKMSPolicy": {
+        "Type": "AWS::IAM::Policy",
+        "Condition": "IncludeGuardDutyPolicy",
+        "Properties": {
+            "PolicyName": "Corestack_GuardDutyKMSPolicy",
+            "PolicyDocument": {
+                "Statement": [{
+                    "Sid": "KMS",
+                    "Effect": "Allow",
+                    "Action": [
+                        "kms:Create*",
+                        "kms:Describe*",
+                        "kms:Enable*",
+                        "kms:List*",
+                        "kms:Put*",
+                        "kms:Update*",
+                        "kms:Revoke*",
+                        "kms:Disable*",
+                        "kms:Get*",
+                        "kms:Delete*",
+                        "kms:TagResource",
+                        "kms:UntagResource",
+                        "kms:ScheduleKeyDeletion",
+                        "kms:CancelKeyDeletion"
+
+                    ],
+                    "Resource": "*"
+                }]
+            },
+            "Groups": [{
+                "Ref": "CorestackPoliciesGroup"
+            }]
+        }
     }
   },
   "Outputs": {
