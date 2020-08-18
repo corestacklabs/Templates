@@ -1,0 +1,52 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Creates a new IAM role for your AWS account with ReadOnlyAccess permissions.",
+  "Parameters": {
+    "RoleName": {
+      "Type": "String",
+      "Description": "The name of the IAM role to create. Use alphanumeric and '+=,.@-_' characters.",
+      "AllowedPattern": "[\\w+=,.@-]{1,64}",
+      "MinLength": "1",
+      "MaxLength": "64"
+    }
+  },
+  "Resources": {
+    "Role": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [{
+            "Effect": "Allow",
+            "Principal": {
+              "AWS": {
+                "Ref": "AWS::AccountId"
+              }
+            },
+            "Action": [
+              "sts:AssumeRole"
+            ]
+          }]
+        },
+        "Path": "/",
+        "ManagedPolicyArns": [
+          "arn:aws:iam::aws:policy/ReadOnlyAccess"
+        ],
+        "RoleName": {
+          "Ref": "RoleName"
+        }
+      }
+    }
+  },
+  "Outputs": {
+    "RoleARN": {
+      "Description": "ARN of the IAM Role.",
+      "Value": {
+        "Fn::GetAtt": [
+          "Role",
+          "Arn"
+        ]
+      }
+    }
+  }
+}
