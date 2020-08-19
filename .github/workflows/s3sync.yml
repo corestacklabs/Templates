@@ -23,6 +23,8 @@ jobs:
         aws s3api put-object-acl --bucket $aws_s3_bucket --key AWS_Provision_CoreStack_content.json --acl public-read
         aws s3 cp cfn/AWS_Create_IAM_User_With_Corestack_Policies/AWS_Create_IAM_User_With_Corestack_Policies_content.json s3://$aws_s3_bucket/
         aws s3api put-object-acl --bucket $aws_s3_bucket --key AWS_Create_IAM_User_With_Corestack_Policies_content.json --acl public-read
+        aws s3 cp cfn/AWS_Create_IAM_Role_With_ReadOnly_Access/AWS_Create_IAM_Role_With_ReadOnly_Access_content.json s3://$aws_s3_bucket/
+        aws s3api put-object-acl --bucket $aws_s3_bucket --key AWS_Create_IAM_Role_With_ReadOnly_Access_content.json --acl public-read
         aws s3 cp cfn/AWS_Create_IAM_Role_With_Corestack_Policies/AWS_Create_IAM_Role_With_Corestack_Policies_content.json s3://$aws_s3_bucket/
         aws s3api put-object-acl --bucket $aws_s3_bucket --key AWS_Create_IAM_Role_With_Corestack_Policies_content.json  --acl public-read
         
