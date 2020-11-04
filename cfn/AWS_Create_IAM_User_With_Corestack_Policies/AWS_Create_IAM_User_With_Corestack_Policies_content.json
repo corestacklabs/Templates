@@ -182,6 +182,9 @@
               "Sid": "Auth",
               "Action": [
                 "iam:SimulatePrincipalPolicy",
+		"iam:ReadAccess",
+		"iam:GenerateCredentialReport",
+		"iam:GetCredentialReport,
                 "organizations:ListAccounts",
                 "s3:HeadBucket",
                 "ec2:DescribeSubnets"
