@@ -1,88 +1,104 @@
 {
-	"AWSTemplateFormatVersion": "2010-09-09",
-	"Description": "Creates a new IAM user for your AWS account with permissions to asses through Corestack.",
-	"Parameters": {
-		"Username": {
-			"Type": "String",
-			"Description": "The name of the user to create. Do not include the path in this value.",
-			"AllowedPattern": "[\\w+=,.@-]{1,128}"
-		},
-		"Password": {
-			"Type": "String",
-			"NoEcho": true,
-			"Description": "The user's password. It should follows organization password policy.",
-			"AllowedPattern": "[\\w+=,.@-]{1,128}"
-		},
-		"SettingsType": {
-			"Description": "Please select 'None' if you do not want any governance automation. 'Express' settings helps you get started quickly with the default configuration prescribed by our cloud experts. 'Custom' Settings helps you define and select the level of automation you need for your enterprise.",
-			"Type": "String",
-			"Default": "Express|Custom",
-			"AllowedValues": [
-				"None",
-				"Express|Custom"
-			]
-		},
-		"IncludeCFNPolicy": {
-			"Description": "Flag to include policies required to execute CFN templates through Corestack",
-			"Type": "String",
-			"Default": "true",
-			"AllowedValues": [
-				"true",
-				"false"
-			]
-		},
-		"IncludeInspectorPolicy": {
-			"Description": "Flag to include policies required to manage AWS Inspector through Corestack",
-			"Type": "String",
-			"Default": "true",
-			"AllowedValues": [
-				"true",
-				"false"
-			]
-		},
-		"IncludeGuardDutyPolicy": {
-			"Description": "Flag to include policies required to manage AWS GuardDuty through Corestack",
-			"Type": "String",
-			"Default": "true",
-			"AllowedValues": [
-				"true",
-				"false"
-			]
-		},
-		"PoliciesGroupName": {
-			"Description": "Name of the IAM group. It will be attached to the user with the policies",
-			"Type": "String"
-		}
-	},
-	"Conditions": {
-		"IncludeCFNPolicy": {
-			"Fn::Equals": [{
-					"Ref": "IncludeCFNPolicy"
-				},
-				"true"
-			]
-		},
-		"IncludeInspectorPolicy": {
-			"Fn::Equals": [{
-					"Ref": "IncludeInspectorPolicy"
-				},
-				"true"
-			]
-		},
-		"IncludeGuardDutyPolicy": {
-			"Fn::Equals": [{
-					"Ref": "IncludeGuardDutyPolicy"
-				},
-				"true"
-			]
-		},
-		"SettingsType": {
-			"Fn::Equals": [{
-					"Ref": "SettingsType"
-				},
-				"Express|Custom"
-			]
-		}
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Creates a new IAM user for your AWS account with permissions to asses through Corestack.",
+  "Parameters": {
+    "Username": {
+      "Type": "String",
+      "Description": "The name of the user to create. Do not include the path in this value.",
+      "AllowedPattern": "[\\w+=,.@-]{1,128}"
+    },
+    "Password": {
+      "Type": "String",
+      "NoEcho": true,
+      "Description": "The user's password. It should follows organization password policy.",
+      "AllowedPattern": "[\\w+=,.@-]{1,128}"
+    },
+    "SettingsType": {
+      "Description": "Please select 'None' if you do not want any governance automation. 'Express' settings helps you get started quickly with the default configuration prescribed by our cloud experts. 'Custom' Settings helps you define and select the level of automation you need for your enterprise.",
+      "Type": "String",
+      "Default": "Express|Custom",
+      "AllowedValues": [
+        "None",
+        "Express|Custom"
+      ]
+    },
+    "IncludeCFNPolicy": {
+      "Description": "Flag to include policies required to execute CFN templates through Corestack",
+      "Type": "String",
+      "Default": "true",
+      "AllowedValues": [
+        "true",
+        "false"
+      ]
+    },
+    "IncludeInspectorPolicy": {
+      "Description": "Flag to include policies required to manage AWS Inspector through Corestack",
+      "Type": "String",
+      "Default": "true",
+      "AllowedValues": [
+        "true",
+        "false"
+      ]
+    },
+    "IncludeGuardDutyPolicy": {
+      "Description": "Flag to include policies required to manage AWS GuardDuty through Corestack",
+      "Type": "String",
+      "Default": "true",
+      "AllowedValues": [
+        "true",
+        "false"
+      ]
+    },
+    "IncludeBudgetPolicy": {
+      "Description": "Flag to include policies required to create and manage AWS Budget through Corestack",
+      "Type": "String",
+      "Default": "true",
+      "AllowedValues": [
+        "true",
+        "false"
+      ]
+    },
+    "PoliciesGroupName": {
+      "Description": "Name of the IAM group. It will be attached to the user with the policies",
+      "Type": "String"
+    }
+  },
+  "Conditions": {
+    "IncludeCFNPolicy": {
+      "Fn::Equals": [{
+          "Ref": "IncludeCFNPolicy"
+        },
+        "true"
+      ]
+    },
+    "IncludeInspectorPolicy": {
+      "Fn::Equals": [{
+          "Ref": "IncludeInspectorPolicy"
+        },
+        "true"
+      ]
+    },
+    "IncludeGuardDutyPolicy": {
+      "Fn::Equals": [{
+          "Ref": "IncludeGuardDutyPolicy"
+        },
+        "true"
+      ]
+    },
+    "IncludeBudgetPolicy": {
+      "Fn::Equals": [{
+          "Ref": "IncludeBudgetPolicy"
+        },
+        "true"
+      ]
+    },
+    "SettingsType": {
+      "Fn::Equals": [{
+          "Ref": "SettingsType"
+        },
+        "Express|Custom"
+      ]
+    }
   },
   "Resources": {
     "User": {
@@ -110,95 +126,84 @@
       }
     },
     "CorestackPoliciesGroup": {
-        "Type": "AWS::IAM::Group",
-        "Properties": {
-            "GroupName": {
-                "Ref": "PoliciesGroupName"
-            },
-            "ManagedPolicyArns": []
-        }
+      "Type": "AWS::IAM::Group",
+      "Properties": {
+        "GroupName": {
+          "Ref": "PoliciesGroupName"
+        },
+        "ManagedPolicyArns": []
+      }
     },
     "Users": {
-        "Type": "AWS::IAM::UserToGroupAddition",
-        "Properties": {
-            "GroupName": {
-                "Ref": "CorestackPoliciesGroup"
-            },
-            "Users": [{
-                "Ref": "User"
-            }]
-        }
+      "Type": "AWS::IAM::UserToGroupAddition",
+      "Properties": {
+        "GroupName": {
+          "Ref": "CorestackPoliciesGroup"
+        },
+        "Users": [{
+          "Ref": "User"
+        }]
+      }
     },
     "CoreStackSelfservicePolicy": {
-        "Type": "AWS::IAM::ManagedPolicy",
-        "Properties": {
-            "ManagedPolicyName": "CoreStack_SelfservicePolicy",
-            "PolicyDocument": {
-                "Version": "2012-10-17",
-                "Statement": [
-                    {
-                        "Sid": "ElasticComputeCloud",
-                        "Effect": "Allow",
-                        "Action": [
-                            "ec2:DetachVolume",
-                            "ec2:AttachVolume",
-                            "ec2:AuthorizeSecurityGroupIngress",
-                            "ec2:DeregisterImage",
-                            "ec2:TerminateInstances",
-                            "ec2:CreateTags",
-                            "ec2:CreateImage",
-                            "ec2:RunInstances",
-                            "ec2:DescribeImages",
-                            "ec2:DescribeInstances",
-                            "ec2:AllocateAddress",
-                            "ec2:CreateVolume",
-                            "ec2:RevokeSecurityGroupIngress",
-                            "ec2:DeleteVolume",
-                            "ec2:DescribeVolumes",
-                            "ec2:CreateSecurityGroup",
-                            "ec2:DeleteSecurityGroup",
-                            "ec2:CreateSnapshot",
-                            "ec2:ModifyInstanceAttribute",
-                            "ec2:AssociateAddress"
-                        ],
-                        "Resource": "*"
-                    }
-                ]
-            },
-            "Users": [
-                {
-                  "Ref": "User"
-                }
-              ]
-        }
+      "Type": "AWS::IAM::ManagedPolicy",
+      "Properties": {
+        "ManagedPolicyName": "CoreStack_SelfservicePolicy",
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [{
+            "Sid": "ElasticComputeCloud",
+            "Effect": "Allow",
+            "Action": [
+              "ec2:DetachVolume",
+              "ec2:AttachVolume",
+              "ec2:AuthorizeSecurityGroupIngress",
+              "ec2:DeregisterImage",
+              "ec2:TerminateInstances",
+              "ec2:CreateTags",
+              "ec2:CreateImage",
+              "ec2:RunInstances",
+              "ec2:DescribeImages",
+              "ec2:DescribeInstances",
+              "ec2:AllocateAddress",
+              "ec2:CreateVolume",
+              "ec2:RevokeSecurityGroupIngress",
+              "ec2:DeleteVolume",
+              "ec2:DescribeVolumes",
+              "ec2:CreateSecurityGroup",
+              "ec2:DeleteSecurityGroup",
+              "ec2:CreateSnapshot",
+              "ec2:ModifyInstanceAttribute",
+              "ec2:AssociateAddress"
+            ],
+            "Resource": "*"
+          }]
+        },
+        "Users": [{
+          "Ref": "User"
+        }]
+      }
     },
     "AuthorizationPolicy": {
       "Type": "AWS::IAM::Policy",
       "Properties": {
         "PolicyName": "CoreStack_AuthorizationPolicy",
         "PolicyDocument": {
-          "Statement": [
-            {
-              "Sid": "Auth",
-              "Action": [
-                "iam:SimulatePrincipalPolicy",
-		"iam:ReadAccess",
-		"iam:GenerateCredentialReport",
-		"iam:GetCredentialReport",
-                "organizations:ListAccounts",
-                "s3:HeadBucket",
-                "ec2:DescribeSubnets"
-              ],
-              "Effect": "Allow",
-              "Resource": "*"
-            }
-          ]
+          "Statement": [{
+            "Sid": "Auth",
+            "Action": [
+              "iam:SimulatePrincipalPolicy",
+              "organizations:ListAccounts",
+              "s3:HeadBucket",
+              "ec2:DescribeSubnets"
+            ],
+            "Effect": "Allow",
+            "Resource": "*"
+          }]
         },
-        "Users": [
-          {
-            "Ref": "User"
-          }
-        ]
+        "Users": [{
+          "Ref": "User"
+        }]
       }
     },
     "ActivityLogPolicy": {
@@ -207,8 +212,7 @@
       "Properties": {
         "PolicyName": "CoreStack_ActivityLogPolicy",
         "PolicyDocument": {
-          "Statement": [
-            {
+          "Statement": [{
               "Sid": "SimpleStorageService",
               "Action": [
                 "s3:CreateBucket",
@@ -258,11 +262,9 @@
             }
           ]
         },
-        "Users": [
-          {
-            "Ref": "User"
-          }
-        ]
+        "Users": [{
+          "Ref": "User"
+        }]
       }
     },
     "CloudWatchPolicy": {
@@ -271,26 +273,22 @@
       "Properties": {
         "PolicyName": "CoreStack_CloudWatchPolicy",
         "PolicyDocument": {
-          "Statement": [
-            {
-              "Sid": "CloudWatch",
-              "Action": [
-                "cloudwatch:DescribeAlarms",
-                "cloudwatch:DeleteAlarms",
-                "cloudwatch:GetMetricStatistics",
-                "cloudwatch:ListMetrics",
-                "cloudwatch:PutMetricAlarm"
-              ],
-              "Effect": "Allow",
-              "Resource": "*"
-            }
-          ]
+          "Statement": [{
+            "Sid": "CloudWatch",
+            "Action": [
+              "cloudwatch:DescribeAlarms",
+              "cloudwatch:DeleteAlarms",
+              "cloudwatch:GetMetricStatistics",
+              "cloudwatch:ListMetrics",
+              "cloudwatch:PutMetricAlarm"
+            ],
+            "Effect": "Allow",
+            "Resource": "*"
+          }]
         },
-        "Users": [
-          {
-            "Ref": "User"
-          }
-        ]
+        "Users": [{
+          "Ref": "User"
+        }]
       }
     },
     "AutoShutdownPolicy": {
@@ -299,23 +297,19 @@
       "Properties": {
         "PolicyName": "CoreStack_AutoShutdownPolicy",
         "PolicyDocument": {
-          "Statement": [
-            {
-              "Sid": "ElasticComputeCloud",
-              "Action": [
-                "ec2:StartInstances",
-                "ec2:StopInstances"
-              ],
-              "Effect": "Allow",
-              "Resource": "*"
-            }
-          ]
+          "Statement": [{
+            "Sid": "ElasticComputeCloud",
+            "Action": [
+              "ec2:StartInstances",
+              "ec2:StopInstances"
+            ],
+            "Effect": "Allow",
+            "Resource": "*"
+          }]
         },
-        "Users": [
-          {
-            "Ref": "User"
-          }
-        ]
+        "Users": [{
+          "Ref": "User"
+        }]
       }
     },
     "InspectorPolicy": {
@@ -324,32 +318,28 @@
       "Properties": {
         "PolicyName": "CoreStack_InspectorPolicy",
         "PolicyDocument": {
-          "Statement": [
-            {
-              "Sid": "Inspector",
-              "Action": [
-                "inspector:ListRulesPackages",
-                "inspector:DescribeRulesPackages",
-                "inspector:ListAssessmentRuns",
-                "inspector:ListAssessmentTemplates",
-                "inspector:ListFindings",
-                "inspector:DescribeFindings",
-                "inspector:DescribeAssessmentRuns",
-                "inspector:CreateResourceGroup",
-                "inspector:CreateAssessmentTarget",
-                "inspector:CreateAssessmentTemplate",
-                "inspector:StartAssessmentRun"
-              ],
-              "Effect": "Allow",
-              "Resource": "*"
-            }
-          ]
+          "Statement": [{
+            "Sid": "Inspector",
+            "Action": [
+              "inspector:ListRulesPackages",
+              "inspector:DescribeRulesPackages",
+              "inspector:ListAssessmentRuns",
+              "inspector:ListAssessmentTemplates",
+              "inspector:ListFindings",
+              "inspector:DescribeFindings",
+              "inspector:DescribeAssessmentRuns",
+              "inspector:CreateResourceGroup",
+              "inspector:CreateAssessmentTarget",
+              "inspector:CreateAssessmentTemplate",
+              "inspector:StartAssessmentRun"
+            ],
+            "Effect": "Allow",
+            "Resource": "*"
+          }]
         },
-        "Users": [
-          {
-            "Ref": "User"
-          }
-        ]
+        "Users": [{
+          "Ref": "User"
+        }]
       }
     },
     "CFNPolicy": {
@@ -358,92 +348,114 @@
       "Properties": {
         "PolicyName": "Corestack_CFNPolicy",
         "PolicyDocument": {
-          "Statement": [
-            {
-              "Sid": "CFN",
-              "Action": [
-                "cloudformation:CreateStack",
-                "cloudformation:DeleteStack",
-                "cloudformation:DescribeStackResource",
-                "cloudformation:DescribeStacks",
-                "cloudformation:UpdateStack"
-              ],
-              "Effect": "Allow",
-              "Resource": "*"
-            }
-          ]
+          "Statement": [{
+            "Sid": "CFN",
+            "Action": [
+              "cloudformation:CreateStack",
+              "cloudformation:DeleteStack",
+              "cloudformation:DescribeStackResource",
+              "cloudformation:DescribeStacks",
+              "cloudformation:UpdateStack"
+            ],
+            "Effect": "Allow",
+            "Resource": "*"
+          }]
         },
-        "Users": [
-          {
-            "Ref": "User"
-          }
-        ]
+        "Users": [{
+          "Ref": "User"
+        }]
       }
     },
     "GuardDutyPolicy": {
-        "Type": "AWS::IAM::Policy",
-        "Condition": "IncludeGuardDutyPolicy",
-        "Properties": {
-            "PolicyName": "Corestack_GuardDutyPolicy",
-            "PolicyDocument": {
-                "Statement": [{
-                    "Sid": "GuardDuty",
-                    "Effect": "Allow",
-                    "Action": [
-                        "s3:PutBucketNotification",
-                        "guardduty:GetFindings",
-                        "guardduty:ListDetectors",
-                        "guardduty:CreateDetector",
-                        "guardduty:UpdateDetector",
-                        "s3:ListBucket",
-                        "guardduty:DeleteDetector",
-                        "guardduty:CreatePublishingDestination",
-                        "guardduty:ListFindings",
-                        "guardduty:GetDetector",
-                        "guardduty:TagResource",
-                        "iam:TagRole"
-                    ],
-                    "Resource": "*"
-                }]
-            },
-            "Groups": [{
-                "Ref": "CorestackPoliciesGroup"
-            }]
-        }
+      "Type": "AWS::IAM::Policy",
+      "Condition": "IncludeGuardDutyPolicy",
+      "Properties": {
+        "PolicyName": "Corestack_GuardDutyPolicy",
+        "PolicyDocument": {
+          "Statement": [{
+            "Sid": "GuardDuty",
+            "Effect": "Allow",
+            "Action": [
+              "s3:PutBucketNotification",
+              "guardduty:GetFindings",
+              "guardduty:ListDetectors",
+              "guardduty:CreateDetector",
+              "guardduty:UpdateDetector",
+              "s3:ListBucket",
+              "guardduty:DeleteDetector",
+              "guardduty:CreatePublishingDestination",
+              "guardduty:ListFindings",
+              "guardduty:GetDetector",
+              "guardduty:TagResource",
+              "iam:TagRole"
+            ],
+            "Resource": "*"
+          }]
+        },
+        "Groups": [{
+          "Ref": "CorestackPoliciesGroup"
+        }]
+      }
     },
     "GuardDutyKMSPolicy": {
-        "Type": "AWS::IAM::Policy",
-        "Condition": "IncludeGuardDutyPolicy",
-        "Properties": {
-            "PolicyName": "Corestack_GuardDutyKMSPolicy",
-            "PolicyDocument": {
-                "Statement": [{
-                    "Sid": "KMS",
-                    "Effect": "Allow",
-                    "Action": [
-                        "kms:Create*",
-                        "kms:Describe*",
-                        "kms:Enable*",
-                        "kms:List*",
-                        "kms:Put*",
-                        "kms:Update*",
-                        "kms:Revoke*",
-                        "kms:Disable*",
-                        "kms:Get*",
-                        "kms:Delete*",
-                        "kms:TagResource",
-                        "kms:UntagResource",
-                        "kms:ScheduleKeyDeletion",
-                        "kms:CancelKeyDeletion"
+      "Type": "AWS::IAM::Policy",
+      "Condition": "IncludeGuardDutyPolicy",
+      "Properties": {
+        "PolicyName": "Corestack_GuardDutyKMSPolicy",
+        "PolicyDocument": {
+          "Statement": [{
+            "Sid": "KMS",
+            "Effect": "Allow",
+            "Action": [
+              "kms:Create*",
+              "kms:Describe*",
+              "kms:Enable*",
+              "kms:List*",
+              "kms:Put*",
+              "kms:Update*",
+              "kms:Revoke*",
+              "kms:Disable*",
+              "kms:Get*",
+              "kms:Delete*",
+              "kms:TagResource",
+              "kms:UntagResource",
+              "kms:ScheduleKeyDeletion",
+              "kms:CancelKeyDeletion"
 
-                    ],
-                    "Resource": "*"
-                }]
-            },
-            "Groups": [{
-                "Ref": "CorestackPoliciesGroup"
-            }]
-        }
+            ],
+            "Resource": "*"
+          }]
+        },
+        "Groups": [{
+          "Ref": "CorestackPoliciesGroup"
+        }]
+      }
+    },
+    "BudgetPolicy": {
+      "Type": "AWS::IAM::Policy",
+      "Condition": "IncludeBudgetPolicy",
+      "Properties": {
+        "PolicyName": "CoreStack_BudgetPolicy",
+        "PolicyDocument": {
+          "Statement": [{
+            "Sid": "Auth",
+            "Action": [
+              "aws-portal:ViewBilling",
+              "aws-portal:ModifyBilling",
+              "budgets:ViewBudget",
+              "budgets:ModifyBudget",
+              "tag:getResources",
+              "tag:getTagKeys",
+              "tag:getTagValues"
+            ],
+            "Effect": "Allow",
+            "Resource": "*"
+          }]
+        },
+        "Groups": [{
+          "Ref": "CorestackPoliciesGroup"
+        }]
+      }
     }
   },
   "Outputs": {

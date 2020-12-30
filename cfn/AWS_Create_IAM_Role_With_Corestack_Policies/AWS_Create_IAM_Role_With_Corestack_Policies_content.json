@@ -44,6 +44,15 @@
         "true",
         "false"
       ]
+    },
+    "IncludeBudgetPolicy": {
+      "Description": "Flag to include policies required to create and manage AWS Budget through Corestack",
+      "Type": "String",
+      "Default": "true",
+      "AllowedValues": [
+        "true",
+        "false"
+      ]
     }
   },
   "Conditions": {
@@ -64,6 +73,13 @@
     "IncludeGuardDutyPolicy": {
       "Fn::Equals": [{
           "Ref": "IncludeGuardDutyPolicy"
+        },
+        "true"
+      ]
+    },
+    "IncludeBudgetPolicy": {
+      "Fn::Equals": [{
+          "Ref": "IncludeBudgetPolicy"
         },
         "true"
       ]
@@ -391,6 +407,7 @@
     },
     "BudgetPolicy": {
       "Type": "AWS::IAM::Policy",
+      "Condition": "IncludeBudgetPolicy",
       "Properties": {
         "PolicyName": "CoreStack_BudgetPolicy",
         "PolicyDocument": {
