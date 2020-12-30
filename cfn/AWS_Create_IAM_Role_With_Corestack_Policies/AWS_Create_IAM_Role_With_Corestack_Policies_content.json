@@ -9,6 +9,26 @@
       "MinLength": "1",
       "MaxLength": "64"
     },
+    "ExternalId": {
+      "Type": "String",
+      "Description": "The external ID can be any word or number that is agreed upon between you and the third-party (Corestack - 028811834831) account.",
+      "MinLength": "1",
+      "MaxLength": "64"
+    },
+    "EnforceMFA": {
+      "Description": "Flag to enforce MFA (Multi-Factor Authentication) when Assuming the role.",
+      "Type": "String",
+      "Default": "false",
+      "AllowedValues": [
+        "true",
+        "false"
+      ]
+    },
+    "CoreStackAccountId": {
+      "Type": "String",
+      "Description": "The AWS Account ID of Corestack.",
+      "Default": "028811834831"
+    },
     "SettingsType": {
       "Description": "Please select 'None' if you do not want any governance automation. 'Express' settings helps you get started quickly with the default configuration prescribed by our cloud experts. 'Custom' Settings helps you define and select the level of automation you need for your enterprise.",
       "Type": "String",
@@ -56,22 +76,33 @@
     }
   },
   "Conditions": {
+    "IncludeMFACondition": {
+      "Fn::Equals": [
+        {
+          "Ref": "EnforceMFA"
+        },
+        "true"
+      ]
+    },
     "IncludeCFNPolicy": {
-      "Fn::Equals": [{
+      "Fn::Equals": [
+        {
           "Ref": "IncludeCFNPolicy"
         },
         "true"
       ]
     },
     "IncludeInspectorPolicy": {
-      "Fn::Equals": [{
+      "Fn::Equals": [
+        {
           "Ref": "IncludeInspectorPolicy"
         },
         "true"
       ]
     },
     "IncludeGuardDutyPolicy": {
-      "Fn::Equals": [{
+      "Fn::Equals": [
+        {
           "Ref": "IncludeGuardDutyPolicy"
         },
         "true"
@@ -85,7 +116,8 @@
       ]
     },
     "SettingsType": {
-      "Fn::Equals": [{
+      "Fn::Equals": [
+        {
           "Ref": "SettingsType"
         },
         "Express|Custom"
@@ -98,17 +130,50 @@
       "Properties": {
         "AssumeRolePolicyDocument": {
           "Version": "2012-10-17",
-          "Statement": [{
-            "Effect": "Allow",
-            "Principal": {
-              "AWS": {
-                "Ref": "AWS::AccountId"
-              }
-            },
-            "Action": [
-              "sts:AssumeRole"
-            ]
-          }]
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "AWS": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:aws:iam::",
+                      {
+                        "Ref": "CoreStackAccountId"
+                      },
+                      ":root"
+                    ]
+                  ]
+                }
+              },
+              "Condition": {
+                "Fn::If": [
+                  "IncludeMFACondition",
+                  {
+                    "StringEquals": {
+                      "sts:ExternalId": {
+                        "Ref": "ExternalId"
+                      }
+                    },
+                    "Bool": {
+                      "aws:MultiFactorAuthPresent": "true"
+                    }
+                  },
+                  {
+                    "StringEquals": {
+                      "sts:ExternalId": {
+                        "Ref": "ExternalId"
+                      }
+                    }
+                  }
+                ]
+              },
+              "Action": [
+                "sts:AssumeRole"
+              ]
+            }
+          ]
         },
         "Path": "/",
         "ManagedPolicyArns": [
@@ -125,37 +190,41 @@
         "ManagedPolicyName": "CoreStack_SelfservicePolicy",
         "PolicyDocument": {
           "Version": "2012-10-17",
-          "Statement": [{
-            "Sid": "ElasticComputeCloud",
-            "Effect": "Allow",
-            "Action": [
-              "ec2:DetachVolume",
-              "ec2:AttachVolume",
-              "ec2:AuthorizeSecurityGroupIngress",
-              "ec2:DeregisterImage",
-              "ec2:TerminateInstances",
-              "ec2:CreateTags",
-              "ec2:CreateImage",
-              "ec2:RunInstances",
-              "ec2:DescribeImages",
-              "ec2:DescribeInstances",
-              "ec2:AllocateAddress",
-              "ec2:CreateVolume",
-              "ec2:RevokeSecurityGroupIngress",
-              "ec2:DeleteVolume",
-              "ec2:DescribeVolumes",
-              "ec2:CreateSecurityGroup",
-              "ec2:DeleteSecurityGroup",
-              "ec2:CreateSnapshot",
-              "ec2:ModifyInstanceAttribute",
-              "ec2:AssociateAddress"
-            ],
-            "Resource": "*"
-          }]
+          "Statement": [
+            {
+              "Sid": "ElasticComputeCloud",
+              "Effect": "Allow",
+              "Action": [
+                "ec2:DetachVolume",
+                "ec2:AttachVolume",
+                "ec2:AuthorizeSecurityGroupIngress",
+                "ec2:DeregisterImage",
+                "ec2:TerminateInstances",
+                "ec2:CreateTags",
+                "ec2:CreateImage",
+                "ec2:RunInstances",
+                "ec2:DescribeImages",
+                "ec2:DescribeInstances",
+                "ec2:AllocateAddress",
+                "ec2:CreateVolume",
+                "ec2:RevokeSecurityGroupIngress",
+                "ec2:DeleteVolume",
+                "ec2:DescribeVolumes",
+                "ec2:CreateSecurityGroup",
+                "ec2:DeleteSecurityGroup",
+                "ec2:CreateSnapshot",
+                "ec2:ModifyInstanceAttribute",
+                "ec2:AssociateAddress"
+              ],
+              "Resource": "*"
+            }
+          ]
         },
-        "Roles": [{
-          "Ref": "Role"
-        }]
+        "Roles": [
+          {
+            "Ref": "Role"
+          }
+        ]
       }
     },
     "AuthorizationPolicy": {
@@ -163,21 +232,25 @@
       "Properties": {
         "PolicyName": "CoreStack_AuthorizationPolicy",
         "PolicyDocument": {
-          "Statement": [{
-            "Sid": "Auth",
-            "Action": [
-              "iam:SimulatePrincipalPolicy",
-              "organizations:ListAccounts",
-              "s3:HeadBucket",
-              "ec2:DescribeSubnets"
-            ],
-            "Effect": "Allow",
-            "Resource": "*"
-          }]
+          "Statement": [
+            {
+              "Sid": "Auth",
+              "Action": [
+                "iam:SimulatePrincipalPolicy",
+                "organizations:ListAccounts",
+                "s3:HeadBucket",
+                "ec2:DescribeSubnets"
+              ],
+              "Effect": "Allow",
+              "Resource": "*"
+            }
+          ]
         },
-        "Roles": [{
-          "Ref": "Role"
-        }]
+        "Roles": [
+          {
+            "Ref": "Role"
+          }
+        ]
       }
     },
     "ActivityLogPolicy": {
@@ -186,7 +259,8 @@
       "Properties": {
         "PolicyName": "CoreStack_ActivityLogPolicy",
         "PolicyDocument": {
-          "Statement": [{
+          "Statement": [
+            {
               "Sid": "SimpleStorageService",
               "Action": [
                 "s3:CreateBucket",
@@ -236,9 +310,11 @@
             }
           ]
         },
-        "Roles": [{
-          "Ref": "Role"
-        }]
+        "Roles": [
+          {
+            "Ref": "Role"
+          }
+        ]
       }
     },
     "CloudWatchPolicy": {
@@ -247,22 +323,26 @@
       "Properties": {
         "PolicyName": "CoreStack_CloudWatchPolicy",
         "PolicyDocument": {
-          "Statement": [{
-            "Sid": "CloudWatch",
-            "Action": [
-              "cloudwatch:DescribeAlarms",
-              "cloudwatch:DeleteAlarms",
-              "cloudwatch:GetMetricStatistics",
-              "cloudwatch:ListMetrics",
-              "cloudwatch:PutMetricAlarm"
-            ],
-            "Effect": "Allow",
-            "Resource": "*"
-          }]
+          "Statement": [
+            {
+              "Sid": "CloudWatch",
+              "Action": [
+                "cloudwatch:DescribeAlarms",
+                "cloudwatch:DeleteAlarms",
+                "cloudwatch:GetMetricStatistics",
+                "cloudwatch:ListMetrics",
+                "cloudwatch:PutMetricAlarm"
+              ],
+              "Effect": "Allow",
+              "Resource": "*"
+            }
+          ]
         },
-        "Roles": [{
-          "Ref": "Role"
-        }]
+        "Roles": [
+          {
+            "Ref": "Role"
+          }
+        ]
       }
     },
     "AutoShutdownPolicy": {
@@ -271,19 +351,23 @@
       "Properties": {
         "PolicyName": "CoreStack_AutoShutdownPolicy",
         "PolicyDocument": {
-          "Statement": [{
-            "Sid": "ElasticComputeCloud",
-            "Action": [
-              "ec2:StartInstances",
-              "ec2:StopInstances"
-            ],
-            "Effect": "Allow",
-            "Resource": "*"
-          }]
+          "Statement": [
+            {
+              "Sid": "ElasticComputeCloud",
+              "Action": [
+                "ec2:StartInstances",
+                "ec2:StopInstances"
+              ],
+              "Effect": "Allow",
+              "Resource": "*"
+            }
+          ]
         },
-        "Roles": [{
-          "Ref": "Role"
-        }]
+        "Roles": [
+          {
+            "Ref": "Role"
+          }
+        ]
       }
     },
     "InspectorPolicy": {
@@ -292,28 +376,32 @@
       "Properties": {
         "PolicyName": "CoreStack_InspectorPolicy",
         "PolicyDocument": {
-          "Statement": [{
-            "Sid": "Inspector",
-            "Action": [
-              "inspector:ListRulesPackages",
-              "inspector:DescribeRulesPackages",
-              "inspector:ListAssessmentRuns",
-              "inspector:ListAssessmentTemplates",
-              "inspector:ListFindings",
-              "inspector:DescribeFindings",
-              "inspector:DescribeAssessmentRuns",
-              "inspector:CreateResourceGroup",
-              "inspector:CreateAssessmentTarget",
-              "inspector:CreateAssessmentTemplate",
-              "inspector:StartAssessmentRun"
-            ],
-            "Effect": "Allow",
-            "Resource": "*"
-          }]
+          "Statement": [
+            {
+              "Sid": "Inspector",
+              "Action": [
+                "inspector:ListRulesPackages",
+                "inspector:DescribeRulesPackages",
+                "inspector:ListAssessmentRuns",
+                "inspector:ListAssessmentTemplates",
+                "inspector:ListFindings",
+                "inspector:DescribeFindings",
+                "inspector:DescribeAssessmentRuns",
+                "inspector:CreateResourceGroup",
+                "inspector:CreateAssessmentTarget",
+                "inspector:CreateAssessmentTemplate",
+                "inspector:StartAssessmentRun"
+              ],
+              "Effect": "Allow",
+              "Resource": "*"
+            }
+          ]
         },
-        "Roles": [{
-          "Ref": "Role"
-        }]
+        "Roles": [
+          {
+            "Ref": "Role"
+          }
+        ]
       }
     },
     "CFNPolicy": {
@@ -322,22 +410,26 @@
       "Properties": {
         "PolicyName": "Corestack_CFNPolicy",
         "PolicyDocument": {
-          "Statement": [{
-            "Sid": "CFN",
-            "Action": [
-              "cloudformation:CreateStack",
-              "cloudformation:DeleteStack",
-              "cloudformation:DescribeStackResource",
-              "cloudformation:DescribeStacks",
-              "cloudformation:UpdateStack"
-            ],
-            "Effect": "Allow",
-            "Resource": "*"
-          }]
+          "Statement": [
+            {
+              "Sid": "CFN",
+              "Action": [
+                "cloudformation:CreateStack",
+                "cloudformation:DeleteStack",
+                "cloudformation:DescribeStackResource",
+                "cloudformation:DescribeStacks",
+                "cloudformation:UpdateStack"
+              ],
+              "Effect": "Allow",
+              "Resource": "*"
+            }
+          ]
         },
-        "Roles": [{
-          "Ref": "Role"
-        }]
+        "Roles": [
+          {
+            "Ref": "Role"
+          }
+        ]
       }
     },
     "GuardDutyPolicy": {
@@ -346,29 +438,33 @@
       "Properties": {
         "PolicyName": "Corestack_GuardDutyPolicy",
         "PolicyDocument": {
-          "Statement": [{
-            "Sid": "GuardDuty",
-            "Effect": "Allow",
-            "Action": [
-              "s3:PutBucketNotification",
-              "guardduty:GetFindings",
-              "guardduty:ListDetectors",
-              "guardduty:CreateDetector",
-              "guardduty:UpdateDetector",
-              "s3:ListBucket",
-              "guardduty:DeleteDetector",
-              "guardduty:CreatePublishingDestination",
-              "guardduty:ListFindings",
-              "guardduty:GetDetector",
-              "guardduty:TagResource",
-              "iam:TagRole"
-            ],
-            "Resource": "*"
-          }]
+          "Statement": [
+            {
+              "Sid": "GuardDuty",
+              "Effect": "Allow",
+              "Action": [
+                "s3:PutBucketNotification",
+                "guardduty:GetFindings",
+                "guardduty:ListDetectors",
+                "guardduty:CreateDetector",
+                "guardduty:UpdateDetector",
+                "s3:ListBucket",
+                "guardduty:DeleteDetector",
+                "guardduty:CreatePublishingDestination",
+                "guardduty:ListFindings",
+                "guardduty:GetDetector",
+                "guardduty:TagResource",
+                "iam:TagRole"
+              ],
+              "Resource": "*"
+            }
+          ]
         },
-        "Roles": [{
-          "Ref": "Role"
-        }]
+        "Roles": [
+          {
+            "Ref": "Role"
+          }
+        ]
       }
     },
     "GuardDutyKMSPolicy": {
@@ -377,32 +473,35 @@
       "Properties": {
         "PolicyName": "Corestack_GuardDutyKMSPolicy",
         "PolicyDocument": {
-          "Statement": [{
-            "Sid": "KMS",
-            "Effect": "Allow",
-            "Action": [
-              "kms:Create*",
-              "kms:Describe*",
-              "kms:Enable*",
-              "kms:List*",
-              "kms:Put*",
-              "kms:Update*",
-              "kms:Revoke*",
-              "kms:Disable*",
-              "kms:Get*",
-              "kms:Delete*",
-              "kms:TagResource",
-              "kms:UntagResource",
-              "kms:ScheduleKeyDeletion",
-              "kms:CancelKeyDeletion"
-
-            ],
-            "Resource": "*"
-          }]
+          "Statement": [
+            {
+              "Sid": "KMS",
+              "Effect": "Allow",
+              "Action": [
+                "kms:Create*",
+                "kms:Describe*",
+                "kms:Enable*",
+                "kms:List*",
+                "kms:Put*",
+                "kms:Update*",
+                "kms:Revoke*",
+                "kms:Disable*",
+                "kms:Get*",
+                "kms:Delete*",
+                "kms:TagResource",
+                "kms:UntagResource",
+                "kms:ScheduleKeyDeletion",
+                "kms:CancelKeyDeletion"
+              ],
+              "Resource": "*"
+            }
+          ]
         },
-        "Roles": [{
-          "Ref": "Role"
-        }]
+        "Roles": [
+          {
+            "Ref": "Role"
+          }
+        ]
       }
     },
     "BudgetPolicy": {
@@ -411,24 +510,28 @@
       "Properties": {
         "PolicyName": "CoreStack_BudgetPolicy",
         "PolicyDocument": {
-          "Statement": [{
-            "Sid": "Auth",
-            "Action": [
-              "aws-portal:ViewBilling",
-              "aws-portal:ModifyBilling",
-              "budgets:ViewBudget",
-              "budgets:ModifyBudget",
-              "tag:getResources",
-              "tag:getTagKeys",
-              "tag:getTagValues"
-            ],
-            "Effect": "Allow",
-            "Resource": "*"
-          }]
+          "Statement": [
+            {
+              "Sid": "Auth",
+              "Action": [
+                "aws-portal:ViewBilling",
+                "aws-portal:ModifyBilling",
+                "budgets:ViewBudget",
+                "budgets:ModifyBudget",
+                "tag:getResources",
+                "tag:getTagKeys",
+                "tag:getTagValues"
+              ],
+              "Effect": "Allow",
+              "Resource": "*"
+            }
+          ]
         },
-        "Roles": [{
-          "Ref": "Role"
-        }]
+        "Roles": [
+          {
+            "Ref": "Role"
+          }
+        ]
       }
     }
   },
@@ -440,6 +543,18 @@
           "Role",
           "Arn"
         ]
+      }
+    },
+    "ExternalId": {
+      "Description": "ExternalId used in Role trusted policy.",
+      "Value": {
+        "Ref": "ExternalId"
+      }
+    },
+    "MFAEnabled": {
+      "Description": "Flag to identify MFA enforced for the role or not.",
+      "Value": {
+        "Ref": "EnforceMFA"
       }
     }
   }

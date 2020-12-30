@@ -8,6 +8,36 @@
       "AllowedPattern": "[\\w+=,.@-]{1,64}",
       "MinLength": "1",
       "MaxLength": "64"
+    },
+    "ExternalId": {
+      "Type": "String",
+      "Description": "The external ID can be any word or number that is agreed upon between you and the third-party (Corestack - 028811834831) account.",
+      "MinLength": "1",
+      "MaxLength": "64"
+    },
+    "EnforceMFA": {
+      "Description": "Flag to enforce MFA (Multi-Factor Authentication) when Assuming the role.",
+      "Type": "String",
+      "Default": "false",
+      "AllowedValues": [
+        "true",
+        "false"
+      ]
+    },
+    "CoreStackAccountId": {
+      "Type": "String",
+      "Description": "The AWS Account ID of Corestack.",
+      "Default": "028811834831"
+    }
+  },
+  "Conditions": {
+    "IncludeMFACondition": {
+      "Fn::Equals": [
+        {
+          "Ref": "EnforceMFA"
+        },
+        "true"
+      ]
     }
   },
   "Resources": {
@@ -16,17 +46,50 @@
       "Properties": {
         "AssumeRolePolicyDocument": {
           "Version": "2012-10-17",
-          "Statement": [{
-            "Effect": "Allow",
-            "Principal": {
-              "AWS": {
-                "Ref": "AWS::AccountId"
-              }
-            },
-            "Action": [
-              "sts:AssumeRole"
-            ]
-          }]
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "AWS": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:aws:iam::",
+                      {
+                        "Ref": "CoreStackAccountId"
+                      },
+                      ":root"
+                    ]
+                  ]
+                }
+              },
+              "Condition": {
+                "Fn::If": [
+                  "IncludeMFACondition",
+                  {
+                    "StringEquals": {
+                      "sts:ExternalId": {
+                        "Ref": "ExternalId"
+                      }
+                    },
+                    "Bool": {
+                      "aws:MultiFactorAuthPresent": "true"
+                    }
+                  },
+                  {
+                    "StringEquals": {
+                      "sts:ExternalId": {
+                        "Ref": "ExternalId"
+                      }
+                    }
+                  }
+                ]
+              },
+              "Action": [
+                "sts:AssumeRole"
+              ]
+            }
+          ]
         },
         "Path": "/",
         "ManagedPolicyArns": [
@@ -46,6 +109,18 @@
           "Role",
           "Arn"
         ]
+      }
+    },
+    "ExternalId": {
+      "Description": "ExternalId used in Role trusted policy.",
+      "Value": {
+        "Ref": "ExternalId"
+      }
+    },
+    "MFAEnabled": {
+      "Description": "Flag to identify MFA enforced for the role or not.",
+      "Value": {
+        "Ref": "EnforceMFA"
       }
     }
   }
