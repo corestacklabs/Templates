@@ -384,6 +384,8 @@
               "s3:ListBucket",
               "guardduty:DeleteDetector",
               "guardduty:CreatePublishingDestination",
+	      "guardduty:DeletePublishingDestination",
+	      "guardduty:DescribePublishingDestination",
               "guardduty:ListFindings",
               "guardduty:GetDetector",
               "guardduty:TagResource",
