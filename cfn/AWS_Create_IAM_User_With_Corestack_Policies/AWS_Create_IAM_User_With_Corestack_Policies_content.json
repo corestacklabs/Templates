@@ -376,12 +376,11 @@
             "Sid": "GuardDuty",
             "Effect": "Allow",
             "Action": [
-              "s3:PutBucketNotification",
+              "s3:*",
               "guardduty:GetFindings",
               "guardduty:ListDetectors",
               "guardduty:CreateDetector",
               "guardduty:UpdateDetector",
-              "s3:ListBucket",
               "guardduty:DeleteDetector",
               "guardduty:CreatePublishingDestination",
 	      "guardduty:DeletePublishingDestination",
@@ -389,7 +388,8 @@
               "guardduty:ListFindings",
               "guardduty:GetDetector",
               "guardduty:TagResource",
-              "iam:TagRole"
+              "iam:TagRole",
+	      "iam:CreateServiceLinkedRole"
             ],
             "Resource": "*"
           }]
