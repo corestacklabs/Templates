@@ -444,6 +444,7 @@
               "Effect": "Allow",
               "Action": [
                 "s3:PutBucketNotification",
+		"s3:PutBucketNotificationConfiguration",
                 "guardduty:GetFindings",
                 "guardduty:ListDetectors",
                 "guardduty:CreateDetector",
@@ -456,7 +457,8 @@
                 "guardduty:ListFindings",
                 "guardduty:GetDetector",
                 "guardduty:TagResource",
-                "iam:TagRole"
+                "iam:TagRole",
+		"iam:CreateServiceLinkedRole"
               ],
               "Resource": "*"
             }
