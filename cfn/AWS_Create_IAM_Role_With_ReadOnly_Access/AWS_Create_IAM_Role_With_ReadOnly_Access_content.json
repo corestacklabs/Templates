@@ -110,7 +110,13 @@
               "Sid": "Auth",
               "Action": [
 		"ce:GetReservationPurchaseRecommendation",
-                "ce:GetReservationUtilization"
+                "ce:GetReservationUtilization",
+	        "support":"DescribeTrustedAdvisorCheckResult",
+	        "budgets:CreateBudgetAction",
+		"budgets:DeleteBudgetAction",
+		"budgets:UpdateBudgetAction",
+		"budgets:ViewBudget",
+		"budgets:ModifyBudget"
               ],
               "Effect": "Allow",
               "Resource": "*"
