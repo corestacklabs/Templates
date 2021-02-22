@@ -446,9 +446,32 @@
               "aws-portal:ModifyBilling",
               "budgets:ViewBudget",
               "budgets:ModifyBudget",
+	      "budgets:CreateBudgetAction",
+              "budgets:DeleteBudgetAction",
+              "budgets:UpdateBudgetAction",
               "tag:getResources",
               "tag:getTagKeys",
               "tag:getTagValues"
+            ],
+            "Effect": "Allow",
+            "Resource": "*"
+          }]
+        },
+        "Groups": [{
+          "Ref": "CorestackPoliciesGroup"
+        }]
+      }
+    },
+    "RIPolicy": {
+      "Type": "AWS::IAM::Policy",
+      "Properties": {
+        "PolicyName": "CoreStack_RIPolicy",
+        "PolicyDocument": {
+          "Statement": [{
+            "Sid": "Auth",
+            "Action": [
+	      "ce:GetReservationPurchaseRecommendation",
+              "ce:GetReservationUtilization"
             ],
             "Effect": "Allow",
             "Resource": "*"

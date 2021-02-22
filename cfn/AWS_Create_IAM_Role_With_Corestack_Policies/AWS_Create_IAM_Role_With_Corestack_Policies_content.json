@@ -443,8 +443,7 @@
               "Sid": "GuardDuty",
               "Effect": "Allow",
               "Action": [
-                "s3:PutBucketNotification",
-		"s3:PutBucketNotificationConfiguration",
+		"s3:*",
                 "guardduty:GetFindings",
                 "guardduty:ListDetectors",
                 "guardduty:CreateDetector",
@@ -522,9 +521,36 @@
                 "aws-portal:ModifyBilling",
                 "budgets:ViewBudget",
                 "budgets:ModifyBudget",
+		"budgets:CreateBudgetAction",
+                "budgets:DeleteBudgetAction",
+                "budgets:UpdateBudgetAction",
                 "tag:getResources",
                 "tag:getTagKeys",
                 "tag:getTagValues"
+              ],
+              "Effect": "Allow",
+              "Resource": "*"
+            }
+          ]
+        },
+        "Roles": [
+          {
+            "Ref": "Role"
+          }
+        ]
+      }
+    },
+    "RIPolicy": {
+      "Type": "AWS::IAM::Policy",
+      "Properties": {
+        "PolicyName": "CoreStack_RIPolicy",
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Sid": "Auth",
+              "Action": [
+		"ce:GetReservationPurchaseRecommendation",
+                "ce:GetReservationUtilization"
               ],
               "Effect": "Allow",
               "Resource": "*"

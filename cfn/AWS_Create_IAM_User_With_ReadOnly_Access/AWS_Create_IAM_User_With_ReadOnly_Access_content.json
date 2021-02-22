@@ -27,6 +27,26 @@
           "Ref": "User"
         }
       }
+    },
+    "RIPolicy": {
+      "Type": "AWS::IAM::Policy",
+      "Properties": {
+        "PolicyName": "CoreStack_RIPolicy",
+        "PolicyDocument": {
+          "Statement": [{
+            "Sid": "Auth",
+            "Action": [
+	      "ce:GetReservationPurchaseRecommendation",
+              "ce:GetReservationUtilization"
+            ],
+            "Effect": "Allow",
+            "Resource": "*"
+          }]
+        },
+        "Users" : [{
+          "Ref": "User"
+        }]
+      }
     }
   },
   "Outputs": {
