@@ -37,7 +37,8 @@
             "Sid": "Auth",
             "Action": [
 	      "ce:GetReservationPurchaseRecommendation",
-              "ce:GetReservationUtilization"
+              "ce:GetReservationUtilization",
+	      "support:DescribeTrustedAdvisorCheckResult"
             ],
             "Effect": "Allow",
             "Resource": "*"
