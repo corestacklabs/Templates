@@ -111,7 +111,8 @@
               "Action": [
 		"ce:GetReservationPurchaseRecommendation",
                 "ce:GetReservationUtilization",
-		"support:DescribeTrustedAdvisorCheckResult"
+	        "support:DescribeTrustedAdvisorCheckResult",
+		"budgets:ViewBudget"
               ],
               "Effect": "Allow",
               "Resource": "*"

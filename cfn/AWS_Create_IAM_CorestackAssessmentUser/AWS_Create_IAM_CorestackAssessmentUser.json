@@ -135,6 +135,7 @@
                                         "cloudformation:Get*",
                                         "config:*",
                                         "iam:GetRole",
+					"iam:PassRole",
                                         "iam:GetRolePolicy",
                                         "iam:ListRolePolicies",
                                         "iam:ListRoles",
@@ -146,7 +147,15 @@
                                         "iam:CreateServiceLinkedRole",
                                         "logs:*",
                                         "cloudtrail:*",
-                                        "cloudwatch:*"
+                                        "cloudwatch:*",
+					"config:PutConfigRule",
+                                        "config:TagResource",
+                                        "config:PutEvaluations",
+                                        "config:DeleteConfigRule",
+                                        "lambda:AddPermission",
+                                        "lambda:CreateFunction",
+                                        "lambda:DeleteFunction"
+
                                     ],
                                     "Resource": "*"
                                 },
