@@ -564,6 +564,43 @@
           }
         ]
       }
+    },
+    "WorkspacePolicy": {
+      "Type": "AWS::IAM::Policy",
+      "Properties": {
+        "PolicyName": "CoreStack_WorkspacePolicy",
+        "PolicyDocument": {
+          "Statement": [{
+            "Sid": "Auth",
+            "Action": [
+              "workspaces:TerminateWorkspaces",
+              "workspaces:RevokeIpRules",
+              "workspaces:Describe*",
+              "workspaces:ListAvailableManagementCidrRanges",
+              "workspaces:DeleteIpGroup",
+              "workspaces:DeleteWorkspaceImage",
+              "workspaces:StopWorkspaces",
+              "workspaces:StartWorkspaces",
+              "workspaces:Create*",
+              "workspaces:RebootWorkspaces",
+              "workspaces:Modify*",
+              "workspaces:UpdateRulesOfIpGroup",
+              "workspaces:DisassociateIpGroups",
+              "workspaces:RebuildWorkspaces",
+              "workspaces:AssociateIpGroups",
+              "workspaces:AuthorizeIpRules",
+              "workspaces:ImportWorkspaceImage",
+              "workspaces:DeleteTags"
+
+            ],
+            "Effect": "Allow",
+            "Resource": "*"
+          }]
+        },
+        "Groups": [{
+          "Ref": "CorestackPoliciesGroup"
+        }]
+      }
     }
   },
   "Outputs": {
