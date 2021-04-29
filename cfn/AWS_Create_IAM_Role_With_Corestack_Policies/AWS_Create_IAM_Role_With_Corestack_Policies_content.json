@@ -597,8 +597,8 @@
             "Resource": "*"
           }]
         },
-        "Groups": [{
-          "Ref": "CorestackPoliciesGroup"
+        "Roles": [{
+          "Ref": "Role"
         }]
       }
     }
