@@ -601,6 +601,52 @@
           "Ref": "Role"
         }]
       }
+    },
+    "ConfigPolicy": {
+      "Type": "AWS::IAM::Policy",
+      "Properties": {
+        "PolicyName": "CoreStack_ConfigPolicy",
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Sid": "Auth",
+              "Action": [
+                "config:*"
+              ],
+              "Effect": "Allow",
+              "Resource": "*"
+            }
+          ]
+        },
+        "Roles": [
+          {
+            "Ref": "Role"
+          }
+        ]
+      }
+    },
+    "LambdaPolicy": {
+      "Type": "AWS::IAM::Policy",
+      "Properties": {
+        "PolicyName": "CoreStack_LambdaPolicy",
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Sid": "Auth",
+              "Action": [
+                "lambda:*"
+              ],
+              "Effect": "Allow",
+              "Resource": "*"
+            }
+          ]
+        },
+        "Roles": [
+          {
+            "Ref": "Role"
+          }
+        ]
+      }
     }
   },
   "Outputs": {

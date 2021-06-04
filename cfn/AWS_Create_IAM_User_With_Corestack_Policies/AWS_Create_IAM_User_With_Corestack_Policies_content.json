@@ -519,6 +519,44 @@
           "Ref": "CorestackPoliciesGroup"
         }]
       }
+    },
+    "ConfigPolicy": {
+      "Type": "AWS::IAM::Policy",
+      "Properties": {
+        "PolicyName": "CoreStack_ConfigPolicy",
+        "PolicyDocument": {
+          "Statement": [{
+            "Sid": "Auth",
+            "Action": [
+              "config:*"
+            ],
+            "Effect": "Allow",
+            "Resource": "*"
+          }]
+        },
+        "Groups": [{
+          "Ref": "CorestackPoliciesGroup"
+        }]
+      }
+    },
+    "LambdaPolicy": {
+      "Type": "AWS::IAM::Policy",
+      "Properties": {
+        "PolicyName": "CoreStack_LambdaPolicy",
+        "PolicyDocument": {
+          "Statement": [{
+            "Sid": "Auth",
+            "Action": [
+              "lambda:*"
+            ],
+            "Effect": "Allow",
+            "Resource": "*"
+          }]
+        },
+        "Groups": [{
+          "Ref": "CorestackPoliciesGroup"
+        }]
+      }
     }
   },
   "Outputs": {
