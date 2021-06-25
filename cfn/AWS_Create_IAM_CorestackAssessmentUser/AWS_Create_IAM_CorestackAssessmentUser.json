@@ -1,200 +1,282 @@
 {
-    "AWSTemplateFormatVersion": "2010-09-09",
-    "Description": "IAM User Corestack Governance ReadOnlyAccess",
-    "Parameters": {
-        "S3bucketname": {
-            "Type": "String",
-            "Description": "Predefined S3 bucket for AWS Config"
-        },
-        "Password": {
-            "Type": "String",
-            "NoEcho": true
-        }
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "IAM User Corestack Governance ReadOnlyAccess",
+  "Parameters": {
+    "S3bucketname": {
+      "Type": "String",
+      "Description": "Predefined S3 bucket for AWS Config"
     },
-    "Resources": {
-        "CFNUser": {
-            "Type": "AWS::IAM::User",
-            "Properties": {
-                "LoginProfile": {
-                    "Password": {"Ref": "Password"}
-                },
-                "UserName": "CorestackAssessmentUser"
-            }
-        },
-        "CFNUserGroup": {
-            "Type": "AWS::IAM::Group",
-            "Properties": {
-                "GroupName": "CorestackAssessmentGroup",
-                "ManagedPolicyArns": [
-                    "arn:aws:iam::aws:policy/ReadOnlyAccess",
-                    "arn:aws:iam::aws:policy/AWSLambdaFullAccess",
-                    "arn:aws:iam::aws:policy/service-role/AWSConfigRole",
-                    "arn:aws:iam::aws:policy/AWSCloudTrailReadOnlyAccess",
-                    "arn:aws:iam::aws:policy/AmazonInspectorFullAccess",
-                    "arn:aws:iam::aws:policy/CloudWatchEventsReadOnlyAccess",
-                    "arn:aws:iam::aws:policy/AmazonSNSFullAccess"
-                ]
-            }
-        },
-        "Users": {
-            "Type": "AWS::IAM::UserToGroupAddition",
-            "Properties": {
-                "GroupName": {
-                    "Ref": "CFNUserGroup"
-                },
-                "Users": [
-                    {
-                        "Ref": "CFNUser"
-                    }
-                ]
-            }
-        },
-        "CFNUserPolicies": {
-            "Type": "AWS::IAM::Policy",
-            "Properties": {
-                "PolicyName": "CoreStack_Assessment_Policies",
-                "PolicyDocument": {
-                    "Statement": [
-                        {
-                            "Effect": "Allow",
-                            "Action": [
-                                "cloudformation:Describe*",
-                                "cloudformation:List*",
-                                "cloudformation:Get*",
-                                "config:*",
-                                "iam:GetRole",
-                                "iam:GetRolePolicy",
-                                "iam:ListRolePolicies",
-                                "iam:ListRoles",
-                                "iam:PutRolePolicy",
-                                "iam:AttachRolePolicy",
-                                "iam:CreatePolicy",
-                                "iam:CreatePolicyVersion",
-                                "iam:DeletePolicyVersion",
-                                "iam:CreateServiceLinkedRole",
-                                "logs:*",
-                                "cloudtrail:*",
-                                "cloudwatch:*"
-                            ],
-                            "Resource": "*"
-                        },
-                        {
-                            "Effect": "Allow",
-                            "Action":["s3:*"],
-                            "Resource":{ "Fn::Join" : [ "", [ "arn:aws:s3:::", { "Ref" : "S3bucketname" }, "/*"]]}
-                        }
-                    ]
-                },
-                "Groups": [
-                    {
-                        "Ref": "CFNUserGroup"
-                    }
-                ]
-            }
-        },
-        "CFNUserRole": {
-            "Type" : "AWS::IAM::Role",
-            "Properties" : {
-                "AssumeRolePolicyDocument": {
-                    "Version": "2012-10-17",
-                    "Statement": [
-                      {
-                        "Effect": "Allow",
-                        "Principal": {
-                          "Service": [
-                            "lambda.amazonaws.com",
-                            "config.amazonaws.com"
-                          ]
-                        },
-                        "Action": "sts:AssumeRole"
-                      }
-                    ]
-                  },
-                "Description" : "IAM User Corestack Governance ReadOnlyAccess Role",
-                "ManagedPolicyArns" : [ 
-                    "arn:aws:iam::aws:policy/IAMReadOnlyAccess",
-                    "arn:aws:iam::aws:policy/AmazonEC2ReadOnlyAccess",
-                    "arn:aws:iam::aws:policy/AWSCloudTrailReadOnlyAccess",
-                    "arn:aws:iam::aws:policy/CloudWatchLogsReadOnlyAccess",
-                    "arn:aws:iam::aws:policy/CloudWatchReadOnlyAccess",
-                    "arn:aws:iam::aws:policy/AmazonSNSReadOnlyAccess",
-                    "arn:aws:iam::aws:policy/service-role/AWSConfigRole",
-                    "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
-                ],
-                "Path": "/",
-                "Policies" : [
-                    {
-                        "PolicyName": "CoreStack_Assessment_Policies",
-                        "PolicyDocument": {
-                            "Statement": [
-                                {
-                                    "Effect": "Allow",
-                                    "Action": [
-                                        "cloudformation:Describe*",
-                                        "cloudformation:List*",
-                                        "cloudformation:Get*",
-                                        "config:*",
-                                        "iam:GetRole",
-					"iam:PassRole",
-                                        "iam:GetRolePolicy",
-                                        "iam:ListRolePolicies",
-                                        "iam:ListRoles",
-                                        "iam:PutRolePolicy",
-                                        "iam:AttachRolePolicy",
-                                        "iam:CreatePolicy",
-                                        "iam:CreatePolicyVersion",
-                                        "iam:DeletePolicyVersion",
-                                        "iam:CreateServiceLinkedRole",
-                                        "logs:*",
-                                        "cloudtrail:*",
-                                        "cloudwatch:*",
-					"config:PutConfigRule",
-                                        "config:TagResource",
-                                        "config:PutEvaluations",
-                                        "config:DeleteConfigRule",
-                                        "lambda:AddPermission",
-                                        "lambda:CreateFunction",
-                                        "lambda:DeleteFunction"
-
-                                    ],
-                                    "Resource": "*"
-                                },
-                                {
-                                    "Effect": "Allow",
-                                    "Action":["s3:*"],
-                                    "Resource":{ "Fn::Join" : [ "", [ "arn:aws:s3:::", { "Ref" : "S3bucketname" }, "/*"]]}
-                                }
-                            ]
-                        }    
-                    }             
-                ],
-                "RoleName" : "CorestackConfigRole"
-              }
-        },
-        "CFNKeys": {
-            "Type": "AWS::IAM::AccessKey",
-            "Properties": {
-                "UserName": {
-                    "Ref": "CFNUser"
-                }
-            }
-        }
+    "Password": {
+      "Type": "String",
+      "NoEcho": true
     },
-    "Outputs": {
-        "AccessKey": {
-            "Value": {
-                "Ref": "CFNKeys"
-            },
-            "Description": "AWSAccessKeyId of new user"
-        },
-        "SecretKey": {
-            "Value": {
-                "Fn::GetAtt": [
-                    "CFNKeys",
-                    "SecretAccessKey"
-                ]
-            },
-            "Description": "AWSSecretAccessKey of new user"
-        }
+    "CoreStackAccountId": {
+      "Type": "String",
+      "Description": "The AWS Account ID of Corestack.",
+      "Default": "028811834831"
+    },
+    "ExternalId": {
+      "Type": "String",
+      "Description": "The external ID can be any word or number that is agreed upon between you and the third-party (Corestack -  028811834831)  account.",
+      "MinLength": "1",
+      "MaxLength": "64"
+    },
+    "EnforceMFA": {
+      "Description": "Flag to enforce MFA (Multi-Factor Authentication) when Assuming the role.",
+      "Type": "String",
+      "Default": "false",
+      "AllowedValues": [
+        "true",
+        "false"
+      ]
     }
+  },
+  "Conditions": {
+    "IncludeMFACondition": {
+      "Fn::Equals": [{
+          "Ref": "EnforceMFA"
+        },
+        "true"
+      ]
+    }
+  },
+  "Resources": {
+    "CFNUser": {
+      "Type": "AWS::IAM::User",
+      "Properties": {
+        "LoginProfile": {
+          "Password": {
+            "Ref": "Password"
+          }
+        },
+        "UserName": "CorestackAssessmentUser"
+      }
+    },
+    "CFNUserGroup": {
+      "Type": "AWS::IAM::Group",
+      "Properties": {
+        "GroupName": "CorestackAssessmentGroup",
+        "ManagedPolicyArns": [
+          "arn:aws:iam::aws:policy/ReadOnlyAccess",
+          "arn:aws:iam::aws:policy/AWSLambda_FullAccess",
+          "arn:aws:iam::aws:policy/service-role/AWSConfigRole",
+          "arn:aws:iam::aws:policy/AWSCloudTrailReadOnlyAccess",
+          "arn:aws:iam::aws:policy/AmazonInspectorFullAccess",
+          "arn:aws:iam::aws:policy/CloudWatchEventsReadOnlyAccess",
+          "arn:aws:iam::aws:policy/AmazonSNSFullAccess"
+        ]
+      }
+    },
+    "Users": {
+      "Type": "AWS::IAM::UserToGroupAddition",
+      "Properties": {
+        "GroupName": {
+          "Ref": "CFNUserGroup"
+        },
+        "Users": [{
+          "Ref": "CFNUser"
+        }]
+      }
+    },
+    "CFNUserPolicies": {
+      "Type": "AWS::IAM::Policy",
+      "Properties": {
+        "PolicyName": "CoreStack_Assessment_Policies",
+        "PolicyDocument": {
+          "Statement": [{
+              "Effect": "Allow",
+              "Action": [
+                "cloudformation:Describe*",
+                "cloudformation:List*",
+                "cloudformation:Get*",
+                "config:*",
+                "iam:GetRole",
+                "iam:GetRolePolicy",
+                "iam:ListRolePolicies",
+                "iam:ListRoles",
+                "iam:PutRolePolicy",
+                "iam:AttachRolePolicy",
+                "iam:CreatePolicy",
+                "iam:CreatePolicyVersion",
+                "iam:DeletePolicyVersion",
+                "iam:CreateServiceLinkedRole",
+                "logs:*",
+                "cloudtrail:*",
+                "cloudwatch:*"
+              ],
+              "Resource": "*"
+            },
+            {
+              "Effect": "Allow",
+              "Action": ["s3:*"],
+              "Resource": {
+                "Fn::Join": ["", ["arn:aws:s3:::", {
+                  "Ref": "S3bucketname"
+                }, "/*"]]
+              }
+            }
+          ]
+        },
+        "Groups": [{
+          "Ref": "CFNUserGroup"
+        }]
+      }
+    },
+    "CFNUserRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [{
+            "Effect": "Allow",
+            "Principal": {
+              "AWS": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:aws:iam::",
+                    {
+                      "Ref": "CoreStackAccountId"
+                    },
+                    ":root"
+                  ]
+                ]
+              }
+            },
+            "Condition": {
+              "Fn::If": [
+                "IncludeMFACondition",
+                {
+                  "StringEquals": {
+                    "sts:ExternalId": {
+                      "Ref": "ExternalId"
+                    }
+                  },
+                  "Bool": {
+                    "aws:MultiFactorAuthPresent": "true"
+                  }
+                },
+                {
+                  "StringEquals": {
+                    "sts:ExternalId": {
+                      "Ref": "ExternalId"
+                    }
+                  }
+                }
+              ]
+            },
+            "Action": [
+              "sts:AssumeRole"
+            ]
+          }]
+        },
+
+        "Description": "IAM User Corestack Governance ReadOnlyAccess Role",
+        "ManagedPolicyArns": [
+          "arn:aws:iam::aws:policy/IAMReadOnlyAccess",
+          "arn:aws:iam::aws:policy/AmazonEC2ReadOnlyAccess",
+          "arn:aws:iam::aws:policy/AWSCloudTrailReadOnlyAccess",
+          "arn:aws:iam::aws:policy/CloudWatchLogsReadOnlyAccess",
+          "arn:aws:iam::aws:policy/CloudWatchReadOnlyAccess",
+          "arn:aws:iam::aws:policy/AmazonSNSReadOnlyAccess",
+          "arn:aws:iam::aws:policy/service-role/AWSConfigRole",
+          "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+        ],
+        "Path": "/",
+        "Policies": [{
+          "PolicyName": "CoreStack_Assessment_Policies",
+          "PolicyDocument": {
+            "Statement": [{
+                "Effect": "Allow",
+                "Action": [
+                  "cloudformation:Describe*",
+                  "cloudformation:List*",
+                  "cloudformation:Get*",
+                  "config:*",
+                  "iam:GetRole",
+                  "iam:PassRole",
+                  "iam:GetRolePolicy",
+                  "iam:ListRolePolicies",
+                  "iam:ListRoles",
+                  "iam:PutRolePolicy",
+                  "iam:AttachRolePolicy",
+                  "iam:CreatePolicy",
+                  "iam:CreatePolicyVersion",
+                  "iam:DeletePolicyVersion",
+                  "iam:CreateServiceLinkedRole",
+                  "logs:*",
+                  "cloudtrail:*",
+                  "cloudwatch:*",
+                  "lambda:*"
+                ],
+                "Resource": "*"
+              },
+              {
+                "Effect": "Allow",
+                "Action": ["s3:*"],
+                "Resource": {
+                  "Fn::Join": ["", ["arn:aws:s3:::", {
+                    "Ref": "S3bucketname"
+                  }, "/*"]]
+                }
+              }
+            ]
+          }
+        }],
+        "RoleName": "CorestackConfigRole"
+      }
+    },
+    "CFNKeys": {
+      "Type": "AWS::IAM::AccessKey",
+      "Properties": {
+        "UserName": {
+          "Ref": "CFNUser"
+        }
+      }
+    }
+  },
+  "Outputs": {
+    "AccessKey": {
+      "Value": {
+        "Ref": "CFNKeys"
+      },
+      "Description": "AWSAccessKeyId of new user"
+    },
+    "SecretKey": {
+      "Value": {
+        "Fn::GetAtt": [
+          "CFNKeys",
+          "SecretAccessKey"
+        ]
+      },
+      "Description": "AWSSecretAccessKey of new user"
+    },
+    "RoleARN": {
+      "Description": "ARN of the newly created IAM Role.",
+      "Value": {
+        "Fn::GetAtt": [
+          "CFNUserRole",
+          "Arn"
+        ]
+      }
+    },
+    "ExternalId": {
+      "Description": "ExternalId used in Role trusted policy.",
+      "Value": {
+        "Ref": "ExternalId"
+      }
+    },
+    "MFAEnabled": {
+      "Description": "Flag to identify MFA enforced for the role or not.",
+      "Value": {
+        "Ref": "EnforceMFA"
+      }
+    },
+    "AWSAccountId": {
+      "Description": "Flag to identify MFA enforced for the role or not.",
+      "Value": {
+        "Ref": "CoreStackAccountId"
+      }
+    }
+  }
 }
