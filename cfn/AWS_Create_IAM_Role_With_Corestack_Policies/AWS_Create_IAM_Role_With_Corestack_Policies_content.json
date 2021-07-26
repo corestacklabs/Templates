@@ -109,7 +109,8 @@
       ]
     },
     "IncludeBudgetPolicy": {
-      "Fn::Equals": [{
+      "Fn::Equals": [
+        {
           "Ref": "IncludeBudgetPolicy"
         },
         "true"
@@ -182,6 +183,75 @@
         "RoleName": {
           "Ref": "RoleName"
         }
+      }
+    },
+    "CorestackConfigRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "AWS": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:aws:iam::",
+                      {
+                        "Ref": "CoreStackAccountId"
+                      },
+                      ":root"
+                    ]
+                  ]
+                }
+              },
+              "Condition": {
+                "Fn::If": [
+                  "IncludeMFACondition",
+                  {
+                    "StringEquals": {
+                      "sts:ExternalId": {
+                        "Ref": "ExternalId"
+                      }
+                    },
+                    "Bool": {
+                      "aws:MultiFactorAuthPresent": "true"
+                    }
+                  },
+                  {
+                    "StringEquals": {
+                      "sts:ExternalId": {
+                        "Ref": "ExternalId"
+                      }
+                    }
+                  }
+                ]
+              },
+              "Action": [
+                "sts:AssumeRole"
+              ]
+            }
+          ]
+        },
+        "Path": "/",
+        "Policies": [
+          {
+            "PolicyName": "CoreStack_ConfigPolicy",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": "config:*",
+                  "Resource": "*"
+                }
+              ]
+            }
+          }
+        ],
+        "RoleName": "CorestackConfigRole"
       }
     },
     "CoreStackSelfservicePolicy": {
@@ -443,7 +513,7 @@
               "Sid": "GuardDuty",
               "Effect": "Allow",
               "Action": [
-		"s3:*",
+                "s3:*",
                 "guardduty:GetFindings",
                 "guardduty:ListDetectors",
                 "guardduty:CreateDetector",
@@ -451,13 +521,13 @@
                 "s3:ListBucket",
                 "guardduty:DeleteDetector",
                 "guardduty:CreatePublishingDestination",
-		"guardduty:DeletePublishingDestination",
-		"guardduty:DescribePublishingDestination",
+                "guardduty:DeletePublishingDestination",
+                "guardduty:DescribePublishingDestination",
                 "guardduty:ListFindings",
                 "guardduty:GetDetector",
                 "guardduty:TagResource",
                 "iam:TagRole",
-		"iam:CreateServiceLinkedRole"
+                "iam:CreateServiceLinkedRole"
               ],
               "Resource": "*"
             }
@@ -521,7 +591,7 @@
                 "aws-portal:ModifyBilling",
                 "budgets:ViewBudget",
                 "budgets:ModifyBudget",
-		"budgets:CreateBudgetAction",
+                "budgets:CreateBudgetAction",
                 "budgets:DeleteBudgetAction",
                 "budgets:UpdateBudgetAction",
                 "tag:getResources",
@@ -549,9 +619,9 @@
             {
               "Sid": "Auth",
               "Action": [
-		"ce:GetReservationPurchaseRecommendation",
+                "ce:GetReservationPurchaseRecommendation",
                 "ce:GetReservationUtilization",
-		"support:DescribeTrustedAdvisorCheckResult"
+                "support:DescribeTrustedAdvisorCheckResult"
               ],
               "Effect": "Allow",
               "Resource": "*"
@@ -570,36 +640,39 @@
       "Properties": {
         "PolicyName": "CoreStack_WorkspacePolicy",
         "PolicyDocument": {
-          "Statement": [{
-            "Sid": "Auth",
-            "Action": [
-              "workspaces:TerminateWorkspaces",
-              "workspaces:RevokeIpRules",
-              "workspaces:Describe*",
-              "workspaces:ListAvailableManagementCidrRanges",
-              "workspaces:DeleteIpGroup",
-              "workspaces:DeleteWorkspaceImage",
-              "workspaces:StopWorkspaces",
-              "workspaces:StartWorkspaces",
-              "workspaces:Create*",
-              "workspaces:RebootWorkspaces",
-              "workspaces:Modify*",
-              "workspaces:UpdateRulesOfIpGroup",
-              "workspaces:DisassociateIpGroups",
-              "workspaces:RebuildWorkspaces",
-              "workspaces:AssociateIpGroups",
-              "workspaces:AuthorizeIpRules",
-              "workspaces:ImportWorkspaceImage",
-              "workspaces:DeleteTags"
-
-            ],
-            "Effect": "Allow",
-            "Resource": "*"
-          }]
+          "Statement": [
+            {
+              "Sid": "Auth",
+              "Action": [
+                "workspaces:TerminateWorkspaces",
+                "workspaces:RevokeIpRules",
+                "workspaces:Describe*",
+                "workspaces:ListAvailableManagementCidrRanges",
+                "workspaces:DeleteIpGroup",
+                "workspaces:DeleteWorkspaceImage",
+                "workspaces:StopWorkspaces",
+                "workspaces:StartWorkspaces",
+                "workspaces:Create*",
+                "workspaces:RebootWorkspaces",
+                "workspaces:Modify*",
+                "workspaces:UpdateRulesOfIpGroup",
+                "workspaces:DisassociateIpGroups",
+                "workspaces:RebuildWorkspaces",
+                "workspaces:AssociateIpGroups",
+                "workspaces:AuthorizeIpRules",
+                "workspaces:ImportWorkspaceImage",
+                "workspaces:DeleteTags"
+              ],
+              "Effect": "Allow",
+              "Resource": "*"
+            }
+          ]
         },
-        "Roles": [{
-          "Ref": "Role"
-        }]
+        "Roles": [
+          {
+            "Ref": "Role"
+          }
+        ]
       }
     },
     "ConfigPolicy": {
