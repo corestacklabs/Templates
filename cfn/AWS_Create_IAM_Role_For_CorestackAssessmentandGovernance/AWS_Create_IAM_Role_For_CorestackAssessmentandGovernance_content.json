@@ -422,7 +422,8 @@
                 "ec2:DeleteSecurityGroup",
                 "ec2:CreateSnapshot",
                 "ec2:ModifyInstanceAttribute",
-                "ec2:AssociateAddress"
+                "ec2:AssociateAddress",
+		"ec2:Create*"
               ],
               "Resource": "*"
             }
@@ -511,7 +512,8 @@
                 "iam:ListRolePolicies",
                 "iam:ListRoles",
                 "iam:DeleteRolePolicy",
-                "iam:PutRolePolicy"
+                "iam:PutRolePolicy",
+		"iam:AttachRolePolicy"
               ],
               "Effect": "Allow",
               "Resource": "*"
