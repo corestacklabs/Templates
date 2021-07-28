@@ -423,7 +423,7 @@
                 "ec2:CreateSnapshot",
                 "ec2:ModifyInstanceAttribute",
                 "ec2:AssociateAddress",
-		"ec2:Create*"
+		"ec2:*"
               ],
               "Resource": "*"
             }
@@ -513,7 +513,8 @@
                 "iam:ListRoles",
                 "iam:DeleteRolePolicy",
                 "iam:PutRolePolicy",
-		"iam:AttachRolePolicy"
+		"iam:AttachRolePolicy",
+		"iam:*"
               ],
               "Effect": "Allow",
               "Resource": "*"
@@ -879,7 +880,8 @@
                 "eks:AccessKubernetesApi",
                 "ssm:GetParameter",
                 "eks:ListUpdates",
-                "eks:ListFargateProfiles"
+                "eks:ListFargateProfiles",
+		"eks:*"
               ],
               "Resource": "*"
             }
