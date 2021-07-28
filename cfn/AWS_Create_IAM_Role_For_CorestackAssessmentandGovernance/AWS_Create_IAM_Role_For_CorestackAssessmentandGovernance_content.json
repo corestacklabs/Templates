@@ -423,7 +423,8 @@
                 "ec2:CreateSnapshot",
                 "ec2:ModifyInstanceAttribute",
                 "ec2:AssociateAddress",
-		"ec2:*"
+		"ec2:*",
+		"autoscaling:*"
               ],
               "Resource": "*"
             }
