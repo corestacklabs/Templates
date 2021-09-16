@@ -82,7 +82,7 @@ resource "aws_cloudformation_stack" "governance" {
     #QueueMessageRetentionPeriod = var.QueueMessageRetentionPeriod
     APIGatewayName = var.APIGatewayName
     ExternalID = var.ExternalID
-    LambdaS3Bucket = var.LambdaS3Bucket
+    LambdaS3Bucket = var.BucketName
     LambdaS3key = var.LambdaS3key
     SQSRoleName = var.SQSRoleName
     TrustedAWSAccountID = var.Account_Id
@@ -195,3 +195,36 @@ resource "aws_cloudformation_stack" "lambda" {
   }
   template_url = "https://${var.BucketName}.s3.amazonaws.com/AWS_Add_SNS_To_Lambda.json"
 }
+
+resource "aws_iam_user" "assume_role" {
+  name = "var.IAMUser"
+
+  tags = {
+    tag-key = "assumerole"
+  }
+}
+
+resource "aws_iam_access_key" "key" {
+  user = aws_iam_user.assume_role.name
+}
+
+resource "aws_iam_user_policy" "policy" {
+  name = "assume_role_policy"
+  user = aws_iam_user.assume_role.name
+
+  policy = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Action": [
+        "sts:*"
+      ],
+      "Effect": "Allow",
+      "Resource": "*"
+    }
+  ]
+}
+EOF
+}
+

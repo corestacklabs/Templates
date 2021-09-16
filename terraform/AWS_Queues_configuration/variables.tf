@@ -29,9 +29,9 @@ variable "QueueNamePrefix" {
   default = "CSNEW-alert"
 }
 
-#variable "QueueMessageRetentionPeriod" {
-#  default = "259200"
-#}
+variable "IAMUser" {
+  default = "CS-AssumeRole-User"
+}
 
 variable "APIGatewayName" {
   default = "CSNEW-alertAPI"
@@ -57,9 +57,9 @@ variable  "ExternalID" {
   default = "C0r3St@ck"
 }
 
-variable "LambdaS3Bucket" {
-  default = "sqs-templates"
-}
+#variable "LambdaS3Bucket" {
+#  default = "sqs-templates"
+#}
  
 variable  "LambdaS3key" {
   default = "governance_lambda.zip"
