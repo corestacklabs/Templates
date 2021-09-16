@@ -29,6 +29,6 @@ output "IAM_Secret_AccessKey" {
   value       = join("", aws_iam_access_key.key.*.secret)
   description = "The secret access key. This will be written to the state file in plain-text"
 }
-output = "IAM_AccessKey" {
+output "IAM_AccessKey" {
   value = "${aws_iam_access_key.key.id}"
 }
