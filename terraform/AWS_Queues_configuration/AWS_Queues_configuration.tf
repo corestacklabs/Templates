@@ -197,7 +197,7 @@ resource "aws_cloudformation_stack" "lambda" {
 }
 
 resource "aws_iam_user" "assume_role" {
-  name = "var.IAMUser"
+  name = "${var.IAMUser}"
 
   tags = {
     tag-key = "assumerole"
