@@ -1,8 +1,4 @@
 # Specify the provider and access details
-provider "aws" {
-  region = "${var.AWS_Region}"
-
-}
 
 data "aws_subnet" "selected" {
   id = "${var.subnet_ID}"
@@ -54,7 +50,7 @@ resource "aws_instance" "web" {
 
   # Lookup the correct AMI based on the region
   # we specified
-  ami = "${lookup(var.aws_AMIS, var.AWS_Region)}"
+  ami = "${lookup(var.aws_AMIS, var.region)}"
 
   # The name of our SSH keypair you've created and downloaded
   # from the AWS console.
@@ -81,7 +77,7 @@ resource "aws_instance" "web" {
   
 
   #Instance tags
-  tags {
+  tags = {
     Name = "${var.security_Group_Name}"
   } 			
 }
