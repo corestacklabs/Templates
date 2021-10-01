@@ -1,6 +1,3 @@
-provider "aws" {
-  region = "${var.region}"
-}
 resource "aws_db_instance" "default" {
   depends_on             = ["aws_security_group.default"]
   identifier             = "${var.identifier}"
