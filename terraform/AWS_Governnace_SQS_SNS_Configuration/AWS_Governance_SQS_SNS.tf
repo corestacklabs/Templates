@@ -39,6 +39,14 @@ resource "aws_sqs_queue" "deep_discovery_queue" {
     Environment = "production"
   }
 }
+resource "aws_sqs_queue" "automated_discovery_queue" {
+  name                      = "${var.QueueNamePrefix}-automateddiscovery"
+  message_retention_seconds = 1209600
+  tags = {
+    Environment = "production"
+  }
+}
+
 
 resource "aws_lambda_function" "governance_lambda" {
   depends_on = [aws_iam_role_policy.lambda_access_policy, aws_iam_role.lambda_access_role]
@@ -98,7 +106,7 @@ resource "aws_iam_role" "sqs_access_role" {
       }
       Condition = {
         StringEquals = {
-           "sts:ExternalId" = "corestack"
+           "sts:ExternalId" = var.ExternalId
         }
       }
       Action = "sts:AssumeRole"
