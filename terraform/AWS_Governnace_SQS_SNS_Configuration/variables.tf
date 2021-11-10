@@ -8,19 +8,19 @@ variable "SecretAccessKey" {
 }
 
 variable "LambdaFunctionName" { 
-  default = "kalaialert_func"
+  default = "CSalert_func"
 }
 
 variable "LambdaRoleName" {
-  default = "kalai-alert_func_role"
+  default = "CS-alert_func_role"
 }
 
 variable "SQSPolicyName" {
-  default = "kalai-SQS-policy"
+  default = "CS-SQS-policy"
 }
 
 variable "QueueNamePrefix" {
-  default = "kalai-alert"
+  default = "CS-alert"
 }
 
 #variable "QueueMessageRetentionPeriod" {
@@ -28,7 +28,7 @@ variable "QueueNamePrefix" {
 #}
 
 variable "APIGatewayName" {
-  default = "kalai-alertAPI"
+  default = "CS-alertAPI"
 }
 
 variable "AlertAPIPath" {
@@ -60,7 +60,7 @@ variable  "LambdaS3key" {
 }
 
 variable "SQSRoleName" {
-  default = "kalai-SQS-Role"
+  default = "CS-SQS-Role"
 }
 
 #variable "regions" {
