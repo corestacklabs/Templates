@@ -1,0 +1,506 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Creates a new IAM role for your AWS account with ReadOnlyAccess to S3-billingbucket and ReadOnlyAccess for rest of all AWS services.",
+  "Parameters": {
+    "RoleName": {
+      "Type": "String",
+      "Description": "The name of the IAM role to create. Use alphanumeric and '+=,.@-_' characters.",
+      "AllowedPattern": "[\\w+=,.@-]{1,64}",
+      "MinLength": "1",
+      "MaxLength": "64"
+    },
+    "ExternalId": {
+      "Type": "String",
+      "Description": "The external ID can be any word or number that is agreed upon between you and the third-party (Corestack - 028811834831) account.",
+      "MinLength": "1",
+      "MaxLength": "64"
+    },
+    "EnforceMFA": {
+      "Description": "Flag to enforce MFA (Multi-Factor Authentication) when Assuming the role.",
+      "Type": "String",
+      "Default": "false",
+      "AllowedValues": [
+        "true",
+        "false"
+      ]
+    },
+    "AWSBillingBucketName": {
+      "Type": "String",
+      "Description": "Enter the s3 bucket name which is configured to receive all billing reports."
+    },
+    "CoreStackAccountId": {
+      "Type": "String",
+      "Description": "The AWS Account ID of Corestack.",
+      "Default": "028811834831"
+    }
+  },
+  "Conditions": {
+    "IncludeMFACondition": {
+      "Fn::Equals": [{
+          "Ref": "EnforceMFA"
+        },
+        "true"
+      ]
+    }
+  },
+  "Resources": {
+    "Role": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [{
+            "Effect": "Allow",
+            "Principal": {
+              "AWS": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:aws:iam::",
+                    {
+                      "Ref": "CoreStackAccountId"
+                    },
+                    ":root"
+                  ]
+                ]
+              }
+            },
+            "Condition": {
+              "Fn::If": [
+                "IncludeMFACondition",
+                {
+                  "StringEquals": {
+                    "sts:ExternalId": {
+                      "Ref": "ExternalId"
+                    }
+                  },
+                  "Bool": {
+                    "aws:MultiFactorAuthPresent": "true"
+                  }
+                },
+                {
+                  "StringEquals": {
+                    "sts:ExternalId": {
+                      "Ref": "ExternalId"
+                    }
+                  }
+                }
+              ]
+            },
+            "Action": [
+              "sts:AssumeRole"
+            ]
+          }]
+        },
+        "Path": "/",
+        "ManagedPolicyArns": [
+          "arn:aws:iam::aws:policy/ReadOnlyAccess"
+        ],
+        "RoleName": {
+          "Ref": "RoleName"
+        }
+      }
+    },
+    "CorestackAWSReadOnlyPolicy": {
+      "Type": "AWS::IAM::Policy",
+      "Properties": {
+        "PolicyName": "CoreStack_AWS_ReadOnlyPolicy",
+        "PolicyDocument": {
+          "Statement": [{
+            "Sid": "Auth",
+            "Action": [
+              "synthetics:List*",
+              "appstream:Describe*",
+              "config:Get*",
+              "sso:Search*",
+              "iam:List*",
+              "servicecatalog:GetAttributeGroup",
+              "rds:Download*",
+              "route53-recovery-control-config:List*",
+              "wafv2:List*",
+              "cloudfront:Get*",
+              "connect:Describe*",
+              "sts:GetAccessKeyInfo",
+              "imagebuilder:Get*",
+              "codedeploy:List*",
+              "guardduty:List*",
+              "cloudwatch:Describe*",
+              "config:Describe*",
+              "config:SelectAggregateResourceConfig",
+              "appconfig:List*",
+              "discovery:Get*",
+              "storagegateway:List*",
+              "sso:List*",
+              "route53:Get*",
+              "cloudformation:Estimate*",
+              "route53domains:List*",
+              "elasticbeanstalk:Validate*",
+              "kinesisvideo:Describe*",
+              "kinesisvideo:List*",
+              "inspector:Get*",
+              "savingsplans:DescribeSavingsPlansOfferings",
+              "batch:Describe*",
+              "cloudtrail:LookupEvents",
+              "auditmanager:ValidateAssessmentReportIntegrity",
+              "lambda:List*",
+              "kms:Describe*",
+              "sqs:Receive*",
+              "dynamodb:List*",
+              "synthetics:Describe*",
+              "waf:List*",
+              "workspaces:Describe*",
+              "secretsmanager:List*",
+              "redshift:GetReservedNodeExchangeOfferings",
+              "pi:GetResourceMetrics",
+              "logs:ListTagsLogGroup",
+              "applicationinsights:Describe*",
+              "importexport:List*",
+              "swf:Count*",
+              "servicediscovery:List*",
+              "iam:Get*",
+              "applicationinsights:List*",
+              "lightsail:Get*",
+              "discovery:List*",
+              "sso-directory:Search*",
+              "route53-recovery-readiness:Get*",
+              "route53-recovery-readiness:List*",
+              "securityhub:Describe*",
+              "route53domains:Check*",
+              "ecr:BatchCheck*",
+              "kinesisanalytics:List*",
+              "chatbot:Get*",
+              "glacier:Describe*",
+              "ecr-public:GetRepositoryCatalogData",
+              "config:BatchGetAggregateResourceConfig",
+              "sso:Get*",
+              "cloudformation:Describe*",
+              "sso-directory:List*",
+              "ec2messages:Get*",
+              "ec2:Describe*",
+              "servicequotas:List*",
+              "codedeploy:Get*",
+              "glue:QuerySchemaVersionMetadata",
+              "sns:Check*",
+              "resource-groups:Get*",
+              "network-firewall:Describe*",
+              "connect:GetFederationToken",
+              "networkmanager:DescribeGlobalNetworks",
+              "cloudformation:Get*",
+              "ecr:Describe*",
+              "glue:CheckSchemaVersionValidity",
+              "kms:Get*",
+              "dynamodb:Describe*",
+              "ec2:SearchTransitGatewayRoutes",
+              "route53:List*",
+              "aws-portal:View*",
+              "auditmanager:Get*",
+              "personalize:Get*",
+              "apigateway:GET",
+              "trustedadvisor:Describe*",
+              "elasticbeanstalk:Request*",
+              "dynamodb:Scan",
+              "swf:Describe*",
+              "sqs:List*",
+              "lightsail:Is*",
+              "cloudfront:DescribeFunction",
+              "organizations:Describe*",
+              "resource-groups:Search*",
+              "glue:Get*",
+              "redshift:Describe*",
+              "chatbot:Describe*",
+              "servicecatalog:Search*",
+              "organizations:List*",
+              "sso:Describe*",
+              "cloudsearch:List*",
+              "elasticbeanstalk:Retrieve*",
+              "pi:GetDimensionKeyDetails",
+              "elasticbeanstalk:Check*",
+              "autoscaling:Describe*",
+              "elasticmapreduce:GetBlockPublicAccessConfiguration",
+              "kinesisanalytics:Get*",
+              "route53resolver:List*",
+              "cloudformation:Detect*",
+              "personalize:List*",
+              "iam:Generate*",
+              "budgets:View*",
+              "securityhub:Get*",
+              "sns:Get*",
+              "pi:DescribeDimensionKeys",
+              "imagebuilder:List*",
+              "cloudwatch:Get*",
+              "eks:Describe*",
+              "ecs:List*",
+              "savingsplans:DescribeSavingsPlanRates",
+              "ecr-public:DescribeImageTags",
+              "kinesisanalytics:Discover*",
+              "application-autoscaling:Describe*",
+              "kinesis:List*",
+              "kinesisanalytics:Describe*",
+              "savingsplans:DescribeSavingsPlans",
+              "synthetics:Get*",
+              "iam:Simulate*",
+              "personalize:Describe*",
+              "ses:Describe*",
+              "ce:Describe*",
+              "sns:List*",
+              "ecr-public:DescribeRepositories",
+              "cloudhsm:Describe*",
+              "inspector:Preview*",
+              "budgets:Describe*",
+              "guardduty:DescribeOrganizationConfiguration",
+              "route53-recovery-cluster:Get*",
+              "ram:List*",
+              "route53domains:View*",
+              "appstream:List*",
+              "kinesis:Get*",
+              "athena:List*",
+              "logs:StartQuery",
+              "cloud9:List*",
+              "resource-groups:List*",
+              "sts:GetSessionToken",
+              "rds:Describe*",
+              "route53-recovery-control-config:Describe*",
+              "secretsmanager:Describe*",
+              "wafv2:Get*",
+              "logs:FilterLogEvents",
+              "eks:List*",
+              "inspector:Describe*",
+              "config:Deliver*",
+              "cloudfront:List*",
+              "wafv2:CheckCapacity",
+              "glacier:List*",
+              "swf:Get*",
+              "glue:List*",
+              "support:DescribeCases",
+              "appconfig:Get*",
+              "logs:Get*",
+              "clouddirectory:LookupPolicy",
+              "ecr:List*",
+              "servicecatalog:Describe*",
+              "servicecatalog:GetApplication",
+              "elasticbeanstalk:List*",
+              "importexport:Get*",
+              "kinesis:Describe*",
+              "cloudhsm:List*",
+              "ram:Get*",
+              "glue:Batch*",
+              "config:SelectResourceConfig",
+              "swf:List*",
+              "route53domains:Get*",
+              "clouddirectory:List*",
+              "compute-optimizer:Get*",
+              "elasticmapreduce:List*",
+              "route53:Test*",
+              "guardduty:DescribePublishingDestination",
+              "servicecatalog:Scan*",
+              "ecr:Get*",
+              "ecr-public:GetAuthorizationToken",
+              "cloudsearch:Describe*",
+              "ecs:Describe*",
+              "guardduty:Get*",
+              "logs:TestMetricFilter",
+              "dynamodb:Query",
+              "elasticache:Describe*",
+              "sqs:Get*",
+              "access-analyzer:List*",
+              "secretsmanager:GetResourcePolicy",
+              "network-firewall:List*",
+              "ce:Get*",
+              "route53resolver:Get*",
+              "cloudtrail:Get*",
+              "waf-regional:Get*",
+              "dynamodb:BatchGet*",
+              "kms:List*",
+              "logs:Describe*",
+              "waf-regional:List*",
+              "ecr-public:DescribeRegistries",
+              "ses:List*",
+              "elasticmapreduce:Describe*",
+              "discovery:Describe*",
+              "savingsplans:DescribeSavingsPlansOfferingRates",
+              "athena:Batch*",
+              "clouddirectory:Get*",
+              "elasticloadbalancing:Describe*",
+              "sso-directory:Describe*",
+              "cloud9:Describe*",
+              "ecr:BatchGet*",
+              "cloudformation:List*",
+              "servicequotas:Get*",
+              "autoscaling-plans:Describe*",
+              "ec2:Get*",
+              "savingsplans:ListTagsForResource",
+              "ses:Get*",
+              "elasticfilesystem:Describe*",
+              "compute-optimizer:Describe*",
+              "opsworks:Describe*",
+              "cloudtrail:Describe*",
+              "logs:StopQuery",
+              "elasticbeanstalk:Describe*",
+              "ce:ListCostCategoryDefinitions",
+              "ecr-public:GetRepositoryPolicy",
+              "redshift:View*",
+              "servicediscovery:Get*",
+              "batch:List*",
+              "wafv2:Describe*",
+              "ecr-public:ListTagsForResource",
+              "servicecatalog:List*",
+              "codedeploy:BatchGet*",
+              "rds:List*",
+              "dynamodb:Get*",
+              "storagegateway:Describe*",
+              "networkmanager:Get*",
+              "config:BatchGetResourceConfig",
+              "tag:Get*",
+              "glacier:Get*",
+              "elasticache:List*",
+              "access-analyzer:ValidatePolicy",
+              "connect:List*",
+              "waf:Get*",
+              "cloudtrail:List*",
+              "ecr-public:DescribeImages",
+              "elasticmapreduce:View*",
+              "cloudwatch:List*",
+              "lambda:Get*",
+              "cloudhsm:Get*",
+              "inspector:List*",
+              "access-analyzer:Get*",
+              "config:List*",
+              "athena:Get*",
+              "securityhub:List*",
+              "auditmanager:List*",
+              "ecr-public:GetRegistryCatalogData",
+              "autoscaling-plans:GetScalingPlanResourceForecastData",
+              "opsworks:Get*",
+              "sts:GetCallerIdentity",
+              "clouddirectory:BatchRead",
+              "ecr-public:BatchCheckLayerAvailability",
+              "kinesisvideo:Get*"
+            ],
+            "Effect": "Allow",
+            "Resource": "*"
+          }]
+        },
+        "Roles": [{
+          "Ref": "Role"
+        }]
+      }
+    },
+    "S3BucketPolicy": {
+      "Type": "AWS::IAM::Policy",
+      "Properties": {
+        "PolicyName": "CoreStack_AWS_BillingBucket_ReadOnlyPolicy",
+        "PolicyDocument": {
+          "Statement": [{
+            "Sid": "Auth",
+            "Action": [
+              "s3:GetObjectVersionTagging",
+              "s3:GetStorageLensConfigurationTagging",
+              "s3:GetObjectAcl",
+              "s3:GetBucketObjectLockConfiguration",
+              "s3:GetIntelligentTieringConfiguration",
+              "s3:GetObjectVersionAcl",
+              "s3:GetObjectRetention",
+              "s3:GetBucketWebsite",
+              "s3:GetJobTagging",
+              "s3:GetMultiRegionAccessPoint",
+              "s3:GetObjectLegalHold",
+              "s3:GetBucketNotification",
+              "s3:GetReplicationConfiguration",
+              "s3:ListMultipartUploadParts",
+              "s3:GetObject",
+              "s3:DescribeJob",
+              "s3:GetAnalyticsConfiguration",
+              "s3:GetObjectVersionForReplication",
+              "s3:GetAccessPointForObjectLambda",
+              "s3:GetStorageLensDashboard",
+              "s3:GetLifecycleConfiguration",
+              "s3:GetInventoryConfiguration",
+              "s3:GetBucketTagging",
+              "s3:GetAccessPointPolicyForObjectLambda",
+              "s3:GetBucketLogging",
+              "s3:ListBucketVersions",
+              "s3:ListBucket",
+              "s3:GetAccelerateConfiguration",
+              "s3:GetBucketPolicy",
+              "s3:GetEncryptionConfiguration",
+              "s3:GetObjectVersionTorrent",
+              "s3:GetBucketRequestPayment",
+              "s3:GetAccessPointPolicyStatus",
+              "s3:GetObjectTagging",
+              "s3:GetMetricsConfiguration",
+              "s3:GetBucketOwnershipControls",
+              "s3:GetBucketPublicAccessBlock",
+              "s3:GetMultiRegionAccessPointPolicyStatus",
+              "s3:ListBucketMultipartUploads",
+              "s3:GetMultiRegionAccessPointPolicy",
+              "s3:GetAccessPointPolicyStatusForObjectLambda",
+              "s3:GetBucketVersioning",
+              "s3:GetBucketAcl",
+              "s3:GetAccessPointConfigurationForObjectLambda",
+              "s3:GetObjectTorrent",
+              "s3:GetStorageLensConfiguration",
+              "s3:GetBucketCORS",
+              "s3:GetBucketLocation",
+              "s3:GetAccessPointPolicy",
+              "s3:GetObjectVersion"
+            ],
+            "Effect": "Allow",
+            "Resource": {
+              "Fn::Join": ["", ["arn:aws:s3:::", {
+                "Ref": "AWSBillingBucketName"
+              }, "/*"]]
+            }
+          }]
+        },
+        "Roles": [{
+          "Ref": "Role"
+        }]
+      }
+    },
+    "RIPolicy": {
+      "Type": "AWS::IAM::Policy",
+      "Properties": {
+        "PolicyName": "CoreStack_RIPolicy",
+        "PolicyDocument": {
+          "Statement": [{
+            "Sid": "Auth",
+            "Action": [
+              "ce:GetReservationPurchaseRecommendation",
+              "ce:GetReservationUtilization",
+              "support:DescribeTrustedAdvisorCheckResult",
+              "budgets:ViewBudget"
+            ],
+            "Effect": "Allow",
+            "Resource": "*"
+          }]
+        },
+        "Roles": [{
+          "Ref": "Role"
+        }]
+      }
+    }
+  },
+  "Outputs": {
+    "RoleARN": {
+      "Description": "ARN of the IAM Role.",
+      "Value": {
+        "Fn::GetAtt": [
+          "Role",
+          "Arn"
+        ]
+      }
+    },
+    "ExternalId": {
+      "Description": "ExternalId used in Role trusted policy.",
+      "Value": {
+        "Ref": "ExternalId"
+      }
+    },
+    "MFAEnabled": {
+      "Description": "Flag to identify MFA enforced for the role or not.",
+      "Value": {
+        "Ref": "EnforceMFA"
+      }
+    }
+  }
+}
