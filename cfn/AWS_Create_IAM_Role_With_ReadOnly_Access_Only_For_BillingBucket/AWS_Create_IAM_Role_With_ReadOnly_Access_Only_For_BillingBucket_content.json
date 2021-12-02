@@ -93,9 +93,6 @@
           }]
         },
         "Path": "/",
-        "ManagedPolicyArns": [
-          "arn:aws:iam::aws:policy/ReadOnlyAccess"
-        ],
         "RoleName": {
           "Ref": "RoleName"
         }
