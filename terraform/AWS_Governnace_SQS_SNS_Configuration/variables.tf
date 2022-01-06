@@ -2,7 +2,7 @@ variable "TrustedAWSAccountID" {
   default = "521663498212"
 }
 variable "AccessKey" {
-  default     = "AKIAXS5MRI7SPFJU3GWV"
+  default     = ""
 }
 
 variable "BucketName" {
@@ -10,7 +10,7 @@ variable "BucketName" {
 }
 
 variable "SecretAccessKey" {
-  default = "2bJGaI6ptjerZ+fDDAcpfRlKforC/YmPo+YKu7w4"
+  default = ""
 }
 
 variable "LambdaFunctionName" { 
