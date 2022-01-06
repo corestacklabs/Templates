@@ -1,6 +1,6 @@
 {
   "AWSTemplateFormatVersion": "2010-09-09",
-  "Description": "Creates a new IAM role for your AWS account with permissions to asses through Corestack.",
+  "Description": "Creates a new IAM role for your AWS account with permissions to access through Corestack.",
   "Parameters": {
     "RoleName": {
       "Type": "String",
