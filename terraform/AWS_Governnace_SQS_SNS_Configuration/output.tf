@@ -47,7 +47,7 @@ output "LambdaARN" {
 }
 
 output "ExternalID" {
-  value = var.ExternalID
+  value = var.ExternalId
 }
 
 output "TopicName" {

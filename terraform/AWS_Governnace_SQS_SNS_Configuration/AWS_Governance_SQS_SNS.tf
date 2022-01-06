@@ -56,7 +56,7 @@ resource "aws_lambda_function" "governance_lambda" {
   s3_bucket = var.LambdaS3Bucket
   s3_key = var.LambdaS3key
   timeout = 300
-  runtime = "python2.7"
+  runtime = "python3.9"
   environment {
     variables = {
       Queue_Name = "${var.QueueNamePrefix}-alert"
@@ -106,7 +106,7 @@ resource "aws_iam_role" "sqs_access_role" {
       }
       Condition = {
         StringEquals = {
-           "sts:ExternalId" = var.ExternalId
+           "sts:ExternalId" = "${var.ExternalId}"
         }
       }
       Action = "sts:AssumeRole"
@@ -487,6 +487,10 @@ resource "aws_api_gateway_integration_response" "schedule_response" {
 }
 
 resource "aws_sns_topic" "topic" {
+#SNS topic on Multiple region not supported 
+  #for_each = var.regions
+  #region   = "${each.value}"
+
   name = var.TopicName
 }
 
