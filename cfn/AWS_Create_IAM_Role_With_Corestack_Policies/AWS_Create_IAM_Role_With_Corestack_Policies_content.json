@@ -377,6 +377,14 @@
               ],
               "Effect": "Allow",
               "Resource": "*"
+            },
+	    {
+              "Sid": "ComputeOptimizer",
+              "Action": [
+                "compute-optimizer:*"
+              ],
+              "Effect": "Allow",
+              "Resource": "*"
             }
           ]
         },
