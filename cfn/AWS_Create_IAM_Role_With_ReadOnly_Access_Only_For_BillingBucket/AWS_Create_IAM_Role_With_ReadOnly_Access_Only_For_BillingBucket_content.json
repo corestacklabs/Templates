@@ -93,9 +93,6 @@
           }]
         },
         "Path": "/",
-        "ManagedPolicyArns": [
-          "arn:aws:iam::aws:policy/ReadOnlyAccess"
-        ],
         "RoleName": {
           "Ref": "RoleName"
         }
@@ -393,6 +390,7 @@
           "Statement": [{
             "Sid": "Auth",
             "Action": [
+<<<<<<< HEAD
               "s3:GetObjectVersionTagging",
               "s3:GetStorageLensConfigurationTagging",
               "s3:GetObjectAcl",
@@ -450,6 +448,24 @@
                 "Ref": "AWSBillingBucketName"
               }, "/*"]]
             }
+=======
+              "s3:DescribeJob",
+              "s3:Get*",
+              "s3:List*"
+            ],
+            "Effect": "Allow",
+            "Resource": [{
+                "Fn::Join": ["", ["arn:aws:s3:::", {
+                  "Ref": "AWSBillingBucketName"
+                }]]
+              },
+              {
+                "Fn::Join": ["", ["arn:aws:s3:::", {
+                  "Ref": "AWSBillingBucketName"
+                }, "/*"]]
+              }
+            ]
+>>>>>>> 558aa43e22b44eef2ad6a7d918aa6f0a81d9a0f5
           }]
         },
         "Roles": [{

@@ -1,26 +1,32 @@
 variable "TrustedAWSAccountID" {
+  default = "521663498212"
 }
 variable "AccessKey" {
+  default     = ""
 }
 
+variable "BucketName" {
+  default = "cfntestfile"
+}
 
 variable "SecretAccessKey" {
+  default = ""
 }
 
 variable "LambdaFunctionName" { 
-  default = "CSalert_func"
+  default = "CS-Testalert_func"
 }
 
 variable "LambdaRoleName" {
-  default = "CS-alert_func_role"
+  default = "CS-Test-alert_func_role"
 }
 
 variable "SQSPolicyName" {
-  default = "CS-SQS-policy"
+  default = "CS-Test-SQS-policy"
 }
 
 variable "QueueNamePrefix" {
-  default = "CS-alert"
+  default = "CS-Test-alert"
 }
 
 #variable "QueueMessageRetentionPeriod" {
@@ -28,7 +34,7 @@ variable "QueueNamePrefix" {
 #}
 
 variable "APIGatewayName" {
-  default = "CS-alertAPI"
+  default = "CS-Test-alertAPI"
 }
 
 variable "AlertAPIPath" {
@@ -47,7 +53,7 @@ variable "DeploymentStage" {
   default = "NewStageName"
 }
  
-variable  "ExternalID" {
+variable  "ExternalId" {
   default = "C0r3St@ck"
 }
 
@@ -60,22 +66,25 @@ variable  "LambdaS3key" {
 }
 
 variable "SQSRoleName" {
-  default = "CS-SQS-Role"
+  default = "CS-Test-SQS-Role"
 }
 
-#variable "regions" {
-#  type        = set(string)
-#  default = ["us-east-1", "us-east-2"]
-#}
+variable "regions" {
+  type        = set(string)
+  default = ["us-east-1"]
+}
 
 variable "TopicName" {
-  default = "CS-SNS-NEW-TOPIC"
+  default = "CS-Test-TOPIC-us-east-1"
 }
 
 variable "LambdaPolicyName" {
-  default = "CS-New-alert-policy"
+  default = "CS-Test-alert-policy"
 }
 
+variable "FolderPath" {
+  default = "cfn-files"
+}
 
 variable "IAMUser" {
   default = "CS-AssumeRole-User"
