@@ -98,24 +98,21 @@
   },
   "Conditions": {
     "EnableAWSConfigRecorder": {
-      "Fn::Equals": [
-        {
+      "Fn::Equals": [{
           "Ref": "EnableAWSConfigRecorder"
         },
         "true"
       ]
     },
     "DeliveryChannelExists": {
-      "Fn::Equals": [
-        {
+      "Fn::Equals": [{
           "Ref": "DeliveryChannelExists"
         },
         "false"
       ]
     },
     "CreateDeliveryChannel": {
-      "Fn::And": [
-        {
+      "Fn::And": [{
           "Condition": "EnableAWSConfigRecorder"
         },
         {
@@ -124,48 +121,42 @@
       ]
     },
     "IncludeMFACondition": {
-      "Fn::Equals": [
-        {
+      "Fn::Equals": [{
           "Ref": "EnforceMFA"
         },
         "true"
       ]
     },
     "IncludeCFNPolicy": {
-      "Fn::Equals": [
-        {
+      "Fn::Equals": [{
           "Ref": "IncludeCFNPolicy"
         },
         "true"
       ]
     },
     "IncludeInspectorPolicy": {
-      "Fn::Equals": [
-        {
+      "Fn::Equals": [{
           "Ref": "IncludeInspectorPolicy"
         },
         "true"
       ]
     },
     "IncludeGuardDutyPolicy": {
-      "Fn::Equals": [
-        {
+      "Fn::Equals": [{
           "Ref": "IncludeGuardDutyPolicy"
         },
         "true"
       ]
     },
     "IncludeBudgetPolicy": {
-      "Fn::Equals": [
-        {
+      "Fn::Equals": [{
           "Ref": "IncludeBudgetPolicy"
         },
         "true"
       ]
     },
     "SettingsType": {
-      "Fn::Equals": [
-        {
+      "Fn::Equals": [{
           "Ref": "SettingsType"
         },
         "Express|Custom"
@@ -183,78 +174,73 @@
       "Properties": {
         "AssumeRolePolicyDocument": {
           "Version": "2012-10-17",
-          "Statement": [
-            {
-              "Effect": "Allow",
-              "Principal": {
-                "Service": [
-                  "config.amazonaws.com"
-                ]
-              },
-              "Action": [
-                "sts:AssumeRole"
+          "Statement": [{
+            "Effect": "Allow",
+            "Principal": {
+              "Service": [
+                "config.amazonaws.com"
               ]
-            }
-          ]
+            },
+            "Action": [
+              "sts:AssumeRole"
+            ]
+          }]
         },
         "ManagedPolicyArns": [
           "arn:aws:iam::aws:policy/service-role/AWSConfigRole"
         ],
-        "Policies": [
-          {
-            "PolicyName": "root",
-            "PolicyDocument": {
-              "Version": "2012-10-17",
-              "Statement": [
-                {
-                  "Effect": "Allow",
-                  "Action": "s3:GetBucketAcl",
-                  "Resource": {
-                    "Fn::Join": [
-                      "",
-                      [
-                        "arn:aws:s3:::",
-                        {
-                          "Ref": "ConfigBucket"
-                        }
-                      ]
+        "Policies": [{
+          "PolicyName": "root",
+          "PolicyDocument": {
+            "Version": "2012-10-17",
+            "Statement": [{
+                "Effect": "Allow",
+                "Action": "s3:GetBucketAcl",
+                "Resource": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:aws:s3:::",
+                      {
+                        "Ref": "ConfigBucket"
+                      }
                     ]
-                  }
-                },
-                {
-                  "Effect": "Allow",
-                  "Action": "s3:PutObject",
-                  "Resource": {
-                    "Fn::Join": [
-                      "",
-                      [
-                        "arn:aws:s3:::",
-                        {
-                          "Ref": "ConfigBucket"
-                        },
-                        "/AWSLogs/",
-                        {
-                          "Ref": "AWS::AccountId"
-                        },
-                        "/*"
-                      ]
-                    ]
-                  },
-                  "Condition": {
-                    "StringEquals": {
-                      "s3:x-amz-acl": "bucket-owner-full-control"
-                    }
-                  }
-                },
-                {
-                  "Effect": "Allow",
-                  "Action": "config:Put*",
-                  "Resource": "*"
+                  ]
                 }
-              ]
-            }
+              },
+              {
+                "Effect": "Allow",
+                "Action": "s3:PutObject",
+                "Resource": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:aws:s3:::",
+                      {
+                        "Ref": "ConfigBucket"
+                      },
+                      "/AWSLogs/",
+                      {
+                        "Ref": "AWS::AccountId"
+                      },
+                      "/*"
+                    ]
+                  ]
+                },
+                "Condition": {
+                  "StringEquals": {
+                    "s3:x-amz-acl": "bucket-owner-full-control"
+                  }
+                }
+              },
+              {
+                "Effect": "Allow",
+                "Action": "config:Put*",
+                "Resource": "*"
+              }
+            ]
           }
-        ]
+        }]
       }
     },
     "ConfigRecorder": {
@@ -291,45 +277,39 @@
       "Properties": {
         "AssumeRolePolicyDocument": {
           "Version": "2012-10-17",
-          "Statement": [
-            {
-              "Effect": "Allow",
-              "Principal": {
-                "Service": [
-                  "lambda.amazonaws.com",
-                  "config.amazonaws.com"
-                ]
-              },
-              "Action": "sts:AssumeRole"
-            }
-          ]
+          "Statement": [{
+            "Effect": "Allow",
+            "Principal": {
+              "Service": [
+                "lambda.amazonaws.com",
+                "config.amazonaws.com"
+              ]
+            },
+            "Action": "sts:AssumeRole"
+          }]
         },
         "Description": "IAM User Corestack Governance ReadOnlyAccess Role",
         "ManagedPolicyArns": [
           "arn:aws:iam::aws:policy/ReadOnlyAccess"
         ],
         "Path": "/",
-        "Policies": [
-          {
-            "PolicyName": "CoreStack_Assessment_Policies",
-            "PolicyDocument": {
-              "Statement": [
-                {
-                  "Effect": "Allow",
-                  "Action": [
-                    "logs:*",
-                    "s3:*",
-                    "cloudtrail:*",
-                    "cloudwatch:*",
-                    "config:*",
-                    "lambda:*"
-                  ],
-                  "Resource": "*"
-                }
-              ]
-            }
+        "Policies": [{
+          "PolicyName": "CoreStack_Assessment_Policies",
+          "PolicyDocument": {
+            "Statement": [{
+              "Effect": "Allow",
+              "Action": [
+                "logs:*",
+                "s3:*",
+                "cloudtrail:*",
+                "cloudwatch:*",
+                "config:*",
+                "lambda:*"
+              ],
+              "Resource": "*"
+            }]
           }
-        ],
+        }],
         "RoleName": "CorestackConfigRole"
       }
     },
@@ -338,50 +318,48 @@
       "Properties": {
         "AssumeRolePolicyDocument": {
           "Version": "2012-10-17",
-          "Statement": [
-            {
-              "Effect": "Allow",
-              "Principal": {
-                "AWS": {
-                  "Fn::Join": [
-                    "",
-                    [
-                      "arn:aws:iam::",
-                      {
-                        "Ref": "CoreStackAccountId"
-                      },
-                      ":root"
-                    ]
-                  ]
-                }
-              },
-              "Condition": {
-                "Fn::If": [
-                  "IncludeMFACondition",
-                  {
-                    "StringEquals": {
-                      "sts:ExternalId": {
-                        "Ref": "ExternalId"
-                      }
+          "Statement": [{
+            "Effect": "Allow",
+            "Principal": {
+              "AWS": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:aws:iam::",
+                    {
+                      "Ref": "CoreStackAccountId"
                     },
-                    "Bool": {
-                      "aws:MultiFactorAuthPresent": "true"
+                    ":root"
+                  ]
+                ]
+              }
+            },
+            "Condition": {
+              "Fn::If": [
+                "IncludeMFACondition",
+                {
+                  "StringEquals": {
+                    "sts:ExternalId": {
+                      "Ref": "ExternalId"
                     }
                   },
-                  {
-                    "StringEquals": {
-                      "sts:ExternalId": {
-                        "Ref": "ExternalId"
-                      }
+                  "Bool": {
+                    "aws:MultiFactorAuthPresent": "true"
+                  }
+                },
+                {
+                  "StringEquals": {
+                    "sts:ExternalId": {
+                      "Ref": "ExternalId"
                     }
                   }
-                ]
-              },
-              "Action": [
-                "sts:AssumeRole"
+                }
               ]
-            }
-          ]
+            },
+            "Action": [
+              "sts:AssumeRole"
+            ]
+          }]
         },
         "Path": "/",
         "ManagedPolicyArns": [
@@ -398,43 +376,39 @@
         "ManagedPolicyName": "CoreStack_SelfservicePolicy",
         "PolicyDocument": {
           "Version": "2012-10-17",
-          "Statement": [
-            {
-              "Sid": "ElasticComputeCloud",
-              "Effect": "Allow",
-              "Action": [
-                "ec2:DetachVolume",
-                "ec2:AttachVolume",
-                "ec2:AuthorizeSecurityGroupIngress",
-                "ec2:DeregisterImage",
-                "ec2:TerminateInstances",
-                "ec2:CreateTags",
-                "ec2:CreateImage",
-                "ec2:RunInstances",
-                "ec2:DescribeImages",
-                "ec2:DescribeInstances",
-                "ec2:AllocateAddress",
-                "ec2:CreateVolume",
-                "ec2:RevokeSecurityGroupIngress",
-                "ec2:DeleteVolume",
-                "ec2:DescribeVolumes",
-                "ec2:CreateSecurityGroup",
-                "ec2:DeleteSecurityGroup",
-                "ec2:CreateSnapshot",
-                "ec2:ModifyInstanceAttribute",
-                "ec2:AssociateAddress",
-		"ec2:*",
-		"autoscaling:*"
-              ],
-              "Resource": "*"
-            }
-          ]
+          "Statement": [{
+            "Sid": "ElasticComputeCloud",
+            "Effect": "Allow",
+            "Action": [
+              "ec2:DetachVolume",
+              "ec2:AttachVolume",
+              "ec2:AuthorizeSecurityGroupIngress",
+              "ec2:DeregisterImage",
+              "ec2:TerminateInstances",
+              "ec2:CreateTags",
+              "ec2:CreateImage",
+              "ec2:RunInstances",
+              "ec2:DescribeImages",
+              "ec2:DescribeInstances",
+              "ec2:AllocateAddress",
+              "ec2:CreateVolume",
+              "ec2:RevokeSecurityGroupIngress",
+              "ec2:DeleteVolume",
+              "ec2:DescribeVolumes",
+              "ec2:CreateSecurityGroup",
+              "ec2:DeleteSecurityGroup",
+              "ec2:CreateSnapshot",
+              "ec2:ModifyInstanceAttribute",
+              "ec2:AssociateAddress",
+              "ec2:*",
+              "autoscaling:*"
+            ],
+            "Resource": "*"
+          }]
         },
-        "Roles": [
-          {
-            "Ref": "Role"
-          }
-        ]
+        "Roles": [{
+          "Ref": "Role"
+        }]
       }
     },
     "AuthorizationPolicy": {
@@ -442,25 +416,21 @@
       "Properties": {
         "PolicyName": "CoreStack_AuthorizationPolicy",
         "PolicyDocument": {
-          "Statement": [
-            {
-              "Sid": "Auth",
-              "Action": [
-                "iam:SimulatePrincipalPolicy",
-                "organizations:ListAccounts",
-                "s3:HeadBucket",
-                "ec2:DescribeSubnets"
-              ],
-              "Effect": "Allow",
-              "Resource": "*"
-            }
-          ]
+          "Statement": [{
+            "Sid": "Auth",
+            "Action": [
+              "iam:SimulatePrincipalPolicy",
+              "organizations:ListAccounts",
+              "s3:HeadBucket",
+              "ec2:DescribeSubnets"
+            ],
+            "Effect": "Allow",
+            "Resource": "*"
+          }]
         },
-        "Roles": [
-          {
-            "Ref": "Role"
-          }
-        ]
+        "Roles": [{
+          "Ref": "Role"
+        }]
       }
     },
     "ActivityLogPolicy": {
@@ -469,8 +439,7 @@
       "Properties": {
         "PolicyName": "CoreStack_ActivityLogPolicy",
         "PolicyDocument": {
-          "Statement": [
-            {
+          "Statement": [{
               "Sid": "SimpleStorageService",
               "Action": [
                 "s3:CreateBucket",
@@ -514,19 +483,25 @@
                 "iam:ListRoles",
                 "iam:DeleteRolePolicy",
                 "iam:PutRolePolicy",
-		"iam:AttachRolePolicy",
-		"iam:*"
+                "iam:AttachRolePolicy",
+                "iam:*"
+              ],
+              "Effect": "Allow",
+              "Resource": "*"
+            },
+            {
+              "Sid": "ComputeOptimizer",
+              "Action": [
+                "compute-optimizer:*"
               ],
               "Effect": "Allow",
               "Resource": "*"
             }
           ]
         },
-        "Roles": [
-          {
-            "Ref": "Role"
-          }
-        ]
+        "Roles": [{
+          "Ref": "Role"
+        }]
       }
     },
     "CloudWatchPolicy": {
@@ -535,26 +510,22 @@
       "Properties": {
         "PolicyName": "CoreStack_CloudWatchPolicy",
         "PolicyDocument": {
-          "Statement": [
-            {
-              "Sid": "CloudWatch",
-              "Action": [
-                "cloudwatch:DescribeAlarms",
-                "cloudwatch:DeleteAlarms",
-                "cloudwatch:GetMetricStatistics",
-                "cloudwatch:ListMetrics",
-                "cloudwatch:PutMetricAlarm"
-              ],
-              "Effect": "Allow",
-              "Resource": "*"
-            }
-          ]
+          "Statement": [{
+            "Sid": "CloudWatch",
+            "Action": [
+              "cloudwatch:DescribeAlarms",
+              "cloudwatch:DeleteAlarms",
+              "cloudwatch:GetMetricStatistics",
+              "cloudwatch:ListMetrics",
+              "cloudwatch:PutMetricAlarm"
+            ],
+            "Effect": "Allow",
+            "Resource": "*"
+          }]
         },
-        "Roles": [
-          {
-            "Ref": "Role"
-          }
-        ]
+        "Roles": [{
+          "Ref": "Role"
+        }]
       }
     },
     "AutoShutdownPolicy": {
@@ -563,23 +534,19 @@
       "Properties": {
         "PolicyName": "CoreStack_AutoShutdownPolicy",
         "PolicyDocument": {
-          "Statement": [
-            {
-              "Sid": "ElasticComputeCloud",
-              "Action": [
-                "ec2:StartInstances",
-                "ec2:StopInstances"
-              ],
-              "Effect": "Allow",
-              "Resource": "*"
-            }
-          ]
+          "Statement": [{
+            "Sid": "ElasticComputeCloud",
+            "Action": [
+              "ec2:StartInstances",
+              "ec2:StopInstances"
+            ],
+            "Effect": "Allow",
+            "Resource": "*"
+          }]
         },
-        "Roles": [
-          {
-            "Ref": "Role"
-          }
-        ]
+        "Roles": [{
+          "Ref": "Role"
+        }]
       }
     },
     "InspectorPolicy": {
@@ -588,32 +555,28 @@
       "Properties": {
         "PolicyName": "CoreStack_InspectorPolicy",
         "PolicyDocument": {
-          "Statement": [
-            {
-              "Sid": "Inspector",
-              "Action": [
-                "inspector:ListRulesPackages",
-                "inspector:DescribeRulesPackages",
-                "inspector:ListAssessmentRuns",
-                "inspector:ListAssessmentTemplates",
-                "inspector:ListFindings",
-                "inspector:DescribeFindings",
-                "inspector:DescribeAssessmentRuns",
-                "inspector:CreateResourceGroup",
-                "inspector:CreateAssessmentTarget",
-                "inspector:CreateAssessmentTemplate",
-                "inspector:StartAssessmentRun"
-              ],
-              "Effect": "Allow",
-              "Resource": "*"
-            }
-          ]
+          "Statement": [{
+            "Sid": "Inspector",
+            "Action": [
+              "inspector:ListRulesPackages",
+              "inspector:DescribeRulesPackages",
+              "inspector:ListAssessmentRuns",
+              "inspector:ListAssessmentTemplates",
+              "inspector:ListFindings",
+              "inspector:DescribeFindings",
+              "inspector:DescribeAssessmentRuns",
+              "inspector:CreateResourceGroup",
+              "inspector:CreateAssessmentTarget",
+              "inspector:CreateAssessmentTemplate",
+              "inspector:StartAssessmentRun"
+            ],
+            "Effect": "Allow",
+            "Resource": "*"
+          }]
         },
-        "Roles": [
-          {
-            "Ref": "Role"
-          }
-        ]
+        "Roles": [{
+          "Ref": "Role"
+        }]
       }
     },
     "CFNPolicy": {
@@ -622,26 +585,22 @@
       "Properties": {
         "PolicyName": "Corestack_CFNPolicy",
         "PolicyDocument": {
-          "Statement": [
-            {
-              "Sid": "CFN",
-              "Action": [
-                "cloudformation:CreateStack",
-                "cloudformation:DeleteStack",
-                "cloudformation:DescribeStackResource",
-                "cloudformation:DescribeStacks",
-                "cloudformation:UpdateStack"
-              ],
-              "Effect": "Allow",
-              "Resource": "*"
-            }
-          ]
+          "Statement": [{
+            "Sid": "CFN",
+            "Action": [
+              "cloudformation:CreateStack",
+              "cloudformation:DeleteStack",
+              "cloudformation:DescribeStackResource",
+              "cloudformation:DescribeStacks",
+              "cloudformation:UpdateStack"
+            ],
+            "Effect": "Allow",
+            "Resource": "*"
+          }]
         },
-        "Roles": [
-          {
-            "Ref": "Role"
-          }
-        ]
+        "Roles": [{
+          "Ref": "Role"
+        }]
       }
     },
     "GuardDutyPolicy": {
@@ -650,36 +609,32 @@
       "Properties": {
         "PolicyName": "Corestack_GuardDutyPolicy",
         "PolicyDocument": {
-          "Statement": [
-            {
-              "Sid": "GuardDuty",
-              "Effect": "Allow",
-              "Action": [
-                "s3:*",
-                "guardduty:GetFindings",
-                "guardduty:ListDetectors",
-                "guardduty:CreateDetector",
-                "guardduty:UpdateDetector",
-                "s3:ListBucket",
-                "guardduty:DeleteDetector",
-                "guardduty:CreatePublishingDestination",
-                "guardduty:DeletePublishingDestination",
-                "guardduty:DescribePublishingDestination",
-                "guardduty:ListFindings",
-                "guardduty:GetDetector",
-                "guardduty:TagResource",
-                "iam:TagRole",
-                "iam:CreateServiceLinkedRole"
-              ],
-              "Resource": "*"
-            }
-          ]
+          "Statement": [{
+            "Sid": "GuardDuty",
+            "Effect": "Allow",
+            "Action": [
+              "s3:*",
+              "guardduty:GetFindings",
+              "guardduty:ListDetectors",
+              "guardduty:CreateDetector",
+              "guardduty:UpdateDetector",
+              "s3:ListBucket",
+              "guardduty:DeleteDetector",
+              "guardduty:CreatePublishingDestination",
+              "guardduty:DeletePublishingDestination",
+              "guardduty:DescribePublishingDestination",
+              "guardduty:ListFindings",
+              "guardduty:GetDetector",
+              "guardduty:TagResource",
+              "iam:TagRole",
+              "iam:CreateServiceLinkedRole"
+            ],
+            "Resource": "*"
+          }]
         },
-        "Roles": [
-          {
-            "Ref": "Role"
-          }
-        ]
+        "Roles": [{
+          "Ref": "Role"
+        }]
       }
     },
     "GuardDutyKMSPolicy": {
@@ -688,35 +643,31 @@
       "Properties": {
         "PolicyName": "Corestack_GuardDutyKMSPolicy",
         "PolicyDocument": {
-          "Statement": [
-            {
-              "Sid": "KMS",
-              "Effect": "Allow",
-              "Action": [
-                "kms:Create*",
-                "kms:Describe*",
-                "kms:Enable*",
-                "kms:List*",
-                "kms:Put*",
-                "kms:Update*",
-                "kms:Revoke*",
-                "kms:Disable*",
-                "kms:Get*",
-                "kms:Delete*",
-                "kms:TagResource",
-                "kms:UntagResource",
-                "kms:ScheduleKeyDeletion",
-                "kms:CancelKeyDeletion"
-              ],
-              "Resource": "*"
-            }
-          ]
+          "Statement": [{
+            "Sid": "KMS",
+            "Effect": "Allow",
+            "Action": [
+              "kms:Create*",
+              "kms:Describe*",
+              "kms:Enable*",
+              "kms:List*",
+              "kms:Put*",
+              "kms:Update*",
+              "kms:Revoke*",
+              "kms:Disable*",
+              "kms:Get*",
+              "kms:Delete*",
+              "kms:TagResource",
+              "kms:UntagResource",
+              "kms:ScheduleKeyDeletion",
+              "kms:CancelKeyDeletion"
+            ],
+            "Resource": "*"
+          }]
         },
-        "Roles": [
-          {
-            "Ref": "Role"
-          }
-        ]
+        "Roles": [{
+          "Ref": "Role"
+        }]
       }
     },
     "BudgetPolicy": {
@@ -725,31 +676,27 @@
       "Properties": {
         "PolicyName": "CoreStack_BudgetPolicy",
         "PolicyDocument": {
-          "Statement": [
-            {
-              "Sid": "Auth",
-              "Action": [
-                "aws-portal:ViewBilling",
-                "aws-portal:ModifyBilling",
-                "budgets:ViewBudget",
-                "budgets:ModifyBudget",
-                "budgets:CreateBudgetAction",
-                "budgets:DeleteBudgetAction",
-                "budgets:UpdateBudgetAction",
-                "tag:getResources",
-                "tag:getTagKeys",
-                "tag:getTagValues"
-              ],
-              "Effect": "Allow",
-              "Resource": "*"
-            }
-          ]
+          "Statement": [{
+            "Sid": "Auth",
+            "Action": [
+              "aws-portal:ViewBilling",
+              "aws-portal:ModifyBilling",
+              "budgets:ViewBudget",
+              "budgets:ModifyBudget",
+              "budgets:CreateBudgetAction",
+              "budgets:DeleteBudgetAction",
+              "budgets:UpdateBudgetAction",
+              "tag:getResources",
+              "tag:getTagKeys",
+              "tag:getTagValues"
+            ],
+            "Effect": "Allow",
+            "Resource": "*"
+          }]
         },
-        "Roles": [
-          {
-            "Ref": "Role"
-          }
-        ]
+        "Roles": [{
+          "Ref": "Role"
+        }]
       }
     },
     "RIPolicy": {
@@ -757,24 +704,20 @@
       "Properties": {
         "PolicyName": "CoreStack_RIPolicy",
         "PolicyDocument": {
-          "Statement": [
-            {
-              "Sid": "Auth",
-              "Action": [
-                "ce:GetReservationPurchaseRecommendation",
-                "ce:GetReservationUtilization",
-                "support:DescribeTrustedAdvisorCheckResult"
-              ],
-              "Effect": "Allow",
-              "Resource": "*"
-            }
-          ]
+          "Statement": [{
+            "Sid": "Auth",
+            "Action": [
+              "ce:GetReservationPurchaseRecommendation",
+              "ce:GetReservationUtilization",
+              "support:DescribeTrustedAdvisorCheckResult"
+            ],
+            "Effect": "Allow",
+            "Resource": "*"
+          }]
         },
-        "Roles": [
-          {
-            "Ref": "Role"
-          }
-        ]
+        "Roles": [{
+          "Ref": "Role"
+        }]
       }
     },
     "WorkspacePolicy": {
@@ -782,39 +725,35 @@
       "Properties": {
         "PolicyName": "CoreStack_WorkspacePolicy",
         "PolicyDocument": {
-          "Statement": [
-            {
-              "Sid": "Auth",
-              "Action": [
-                "workspaces:TerminateWorkspaces",
-                "workspaces:RevokeIpRules",
-                "workspaces:Describe*",
-                "workspaces:ListAvailableManagementCidrRanges",
-                "workspaces:DeleteIpGroup",
-                "workspaces:DeleteWorkspaceImage",
-                "workspaces:StopWorkspaces",
-                "workspaces:StartWorkspaces",
-                "workspaces:Create*",
-                "workspaces:RebootWorkspaces",
-                "workspaces:Modify*",
-                "workspaces:UpdateRulesOfIpGroup",
-                "workspaces:DisassociateIpGroups",
-                "workspaces:RebuildWorkspaces",
-                "workspaces:AssociateIpGroups",
-                "workspaces:AuthorizeIpRules",
-                "workspaces:ImportWorkspaceImage",
-                "workspaces:DeleteTags"
-              ],
-              "Effect": "Allow",
-              "Resource": "*"
-            }
-          ]
+          "Statement": [{
+            "Sid": "Auth",
+            "Action": [
+              "workspaces:TerminateWorkspaces",
+              "workspaces:RevokeIpRules",
+              "workspaces:Describe*",
+              "workspaces:ListAvailableManagementCidrRanges",
+              "workspaces:DeleteIpGroup",
+              "workspaces:DeleteWorkspaceImage",
+              "workspaces:StopWorkspaces",
+              "workspaces:StartWorkspaces",
+              "workspaces:Create*",
+              "workspaces:RebootWorkspaces",
+              "workspaces:Modify*",
+              "workspaces:UpdateRulesOfIpGroup",
+              "workspaces:DisassociateIpGroups",
+              "workspaces:RebuildWorkspaces",
+              "workspaces:AssociateIpGroups",
+              "workspaces:AuthorizeIpRules",
+              "workspaces:ImportWorkspaceImage",
+              "workspaces:DeleteTags"
+            ],
+            "Effect": "Allow",
+            "Resource": "*"
+          }]
         },
-        "Roles": [
-          {
-            "Ref": "Role"
-          }
-        ]
+        "Roles": [{
+          "Ref": "Role"
+        }]
       }
     },
     "ConfigPolicy": {
@@ -822,22 +761,18 @@
       "Properties": {
         "PolicyName": "CoreStack_ConfigPolicy",
         "PolicyDocument": {
-          "Statement": [
-            {
-              "Sid": "Auth",
-              "Action": [
-                "config:*"
-              ],
-              "Effect": "Allow",
-              "Resource": "*"
-            }
-          ]
+          "Statement": [{
+            "Sid": "Auth",
+            "Action": [
+              "config:*"
+            ],
+            "Effect": "Allow",
+            "Resource": "*"
+          }]
         },
-        "Roles": [
-          {
-            "Ref": "Role"
-          }
-        ]
+        "Roles": [{
+          "Ref": "Role"
+        }]
       }
     },
     "LambdaPolicy": {
@@ -845,22 +780,18 @@
       "Properties": {
         "PolicyName": "CoreStack_LambdaPolicy",
         "PolicyDocument": {
-          "Statement": [
-            {
-              "Sid": "Auth",
-              "Action": [
-                "lambda:*"
-              ],
-              "Effect": "Allow",
-              "Resource": "*"
-            }
-          ]
+          "Statement": [{
+            "Sid": "Auth",
+            "Action": [
+              "lambda:*"
+            ],
+            "Effect": "Allow",
+            "Resource": "*"
+          }]
         },
-        "Roles": [
-          {
-            "Ref": "Role"
-          }
-        ]
+        "Roles": [{
+          "Ref": "Role"
+        }]
       }
     },
     "EKSPolicy": {
@@ -869,30 +800,26 @@
       "Properties": {
         "PolicyName": "Corestack_EKSPolicy",
         "PolicyDocument": {
-          "Statement": [
-            {
-              "Sid": "EKS",
-              "Effect": "Allow",
-              "Action": [
-                "eks:DescribeNodegroup",
-                "eks:ListNodegroups",
-                "eks:DescribeCluster",
-                "eks:ListClusters",
-                "eks:AccessKubernetesApi",
-                "ssm:GetParameter",
-                "eks:ListUpdates",
-                "eks:ListFargateProfiles",
-		"eks:*"
-              ],
-              "Resource": "*"
-            }
-          ]
+          "Statement": [{
+            "Sid": "EKS",
+            "Effect": "Allow",
+            "Action": [
+              "eks:DescribeNodegroup",
+              "eks:ListNodegroups",
+              "eks:DescribeCluster",
+              "eks:ListClusters",
+              "eks:AccessKubernetesApi",
+              "ssm:GetParameter",
+              "eks:ListUpdates",
+              "eks:ListFargateProfiles",
+              "eks:*"
+            ],
+            "Resource": "*"
+          }]
         },
-        "Roles": [
-          {
-            "Ref": "Role"
-          }
-        ]
+        "Roles": [{
+          "Ref": "Role"
+        }]
       }
     },
     "ECSPolicy": {
@@ -901,35 +828,31 @@
       "Properties": {
         "PolicyName": "Corestack_ECSPolicy",
         "PolicyDocument": {
-          "Statement": [
-            {
-              "Sid": "ECS",
-              "Effect": "Allow",
-              "Action": [
-                "ecs:DeleteCluster",
-                "ecs:DeregisterContainerInstance",
-                "ecs:ListContainerInstances",
-                "ecs:RegisterContainerInstance",
-                "ecs:SubmitContainerStateChange",
-                "ecs:SubmitTaskStateChange",
-                "ecs:DescribeContainerInstances",
-                "ecs:DescribeTasks",
-                "ecs:ListTasks",
-                "ecs:UpdateContainerAgent",
-                "ecs:StartTask",
-                "ecs:StopTask",
-                "ecs:RunTask",
-                "ecs:CreateService"
-              ],
-              "Resource": "*"
-            }
-          ]
+          "Statement": [{
+            "Sid": "ECS",
+            "Effect": "Allow",
+            "Action": [
+              "ecs:DeleteCluster",
+              "ecs:DeregisterContainerInstance",
+              "ecs:ListContainerInstances",
+              "ecs:RegisterContainerInstance",
+              "ecs:SubmitContainerStateChange",
+              "ecs:SubmitTaskStateChange",
+              "ecs:DescribeContainerInstances",
+              "ecs:DescribeTasks",
+              "ecs:ListTasks",
+              "ecs:UpdateContainerAgent",
+              "ecs:StartTask",
+              "ecs:StopTask",
+              "ecs:RunTask",
+              "ecs:CreateService"
+            ],
+            "Resource": "*"
+          }]
         },
-        "Roles": [
-          {
-            "Ref": "Role"
-          }
-        ]
+        "Roles": [{
+          "Ref": "Role"
+        }]
       }
     },
     "DynamoDBPolicy": {
@@ -937,35 +860,31 @@
       "Properties": {
         "PolicyName": "CoreStack_DynamoDBPolicy",
         "PolicyDocument": {
-          "Statement": [
-            {
-              "Sid": "Auth",
-              "Action": [
-                "dynamodb:DescribeTable",
-                "dynamodb:Query",
-                "dynamodb:Scan",
-                "dynamodb:BatchGet*",
-                "dynamodb:DescribeStream",
-                "dynamodb:DescribeTable",
-                "dynamodb:Get*",
-                "dynamodb:Query",
-                "dynamodb:Scan",
-                "dynamodb:BatchWrite*",
-                "dynamodb:CreateTable",
-                "dynamodb:Delete*",
-                "dynamodb:Update*",
-                "dynamodb:PutItem"
-              ],
-              "Effect": "Allow",
-              "Resource": "*"
-            }
-          ]
+          "Statement": [{
+            "Sid": "Auth",
+            "Action": [
+              "dynamodb:DescribeTable",
+              "dynamodb:Query",
+              "dynamodb:Scan",
+              "dynamodb:BatchGet*",
+              "dynamodb:DescribeStream",
+              "dynamodb:DescribeTable",
+              "dynamodb:Get*",
+              "dynamodb:Query",
+              "dynamodb:Scan",
+              "dynamodb:BatchWrite*",
+              "dynamodb:CreateTable",
+              "dynamodb:Delete*",
+              "dynamodb:Update*",
+              "dynamodb:PutItem"
+            ],
+            "Effect": "Allow",
+            "Resource": "*"
+          }]
         },
-        "Roles": [
-          {
-            "Ref": "Role"
-          }
-        ]
+        "Roles": [{
+          "Ref": "Role"
+        }]
       }
     }
   },
