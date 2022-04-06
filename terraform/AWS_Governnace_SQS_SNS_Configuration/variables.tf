@@ -71,11 +71,11 @@ variable "SQSRoleName" {
 
 variable "regions" {
   type        = set(string)
-  default = ["us-east-1"]
+  default = ["us-gov-east-1"]
 }
 
 variable "TopicName" {
-  default = "CS-Test-TOPIC-us-east-1"
+  default = "CS-Test-TOPIC-us-gov-east-1"
 }
 
 variable "LambdaPolicyName" {
