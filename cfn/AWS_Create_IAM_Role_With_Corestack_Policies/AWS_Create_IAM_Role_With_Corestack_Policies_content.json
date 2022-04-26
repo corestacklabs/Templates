@@ -373,7 +373,9 @@
                 "iam:ListRolePolicies",
                 "iam:ListRoles",
                 "iam:DeleteRolePolicy",
-                "iam:PutRolePolicy"
+                "iam:PutRolePolicy",
+		"iam:PassRole"
+
               ],
               "Effect": "Allow",
               "Resource": "*"
