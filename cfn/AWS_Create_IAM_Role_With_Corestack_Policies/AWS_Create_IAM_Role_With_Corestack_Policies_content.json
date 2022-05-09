@@ -38,6 +38,15 @@
         "Express|Custom"
       ]
     },
+    "CreateCorestackConfigRole": {
+      "Description": "Flag to create role which is required to execute AWS Config custom policies through Corestack",
+      "Type": "String",
+      "Default": "true",
+      "AllowedValues": [
+        "true",
+        "false"
+      ]
+    },
     "IncludeCFNPolicy": {
       "Description": "Flag to include policies required to execute CFN templates through Corestack",
       "Type": "String",
@@ -122,6 +131,14 @@
           "Ref": "SettingsType"
         },
         "Express|Custom"
+      ]
+    },
+    "CreateCorestackConfigRole": {
+      "Fn::Equals": [
+        {
+          "Ref": "CreateCorestackConfigRole"
+        },
+        "true"
       ]
     }
   },
@@ -696,6 +713,48 @@
             "Ref": "Role"
           }
         ]
+      }
+    },
+    "CorestackConfigRole": {
+      "Condition": "CreateCorestackConfigRole",
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [{
+            "Effect": "Allow",
+            "Principal": {
+              "Service": [
+                "lambda.amazonaws.com",
+                "config.amazonaws.com"
+              ]
+            },
+            "Action": "sts:AssumeRole"
+          }]
+        },
+        "Description": "Role to execute AWS Config custom policies through Corestack",
+        "ManagedPolicyArns": [
+          "arn:aws:iam::aws:policy/ReadOnlyAccess"
+        ],
+        "Path": "/",
+        "Policies": [{
+          "PolicyName": "CoreStack_Assessment_Policies",
+          "PolicyDocument": {
+            "Statement": [{
+              "Effect": "Allow",
+              "Action": [
+                "logs:*",
+                "s3:*",
+                "cloudtrail:*",
+                "cloudwatch:*",
+                "config:*",
+                "lambda:*"
+              ],
+              "Resource": "*"
+            }]
+          }
+        }],
+        "RoleName": "CorestackConfigRole"
       }
     }
   },
