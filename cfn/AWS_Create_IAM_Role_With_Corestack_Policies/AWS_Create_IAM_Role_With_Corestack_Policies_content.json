@@ -758,6 +758,7 @@
       }
     },
     "CorestackConfigIAMPassRolePolicy": {
+      "Condition": "CreateCorestackConfigRole",
       "Type": "AWS::IAM::Policy",
       "Properties": {
         "PolicyName": "CoreStack_Config_IAM_PassRole_Policy",
