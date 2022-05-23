@@ -748,7 +748,8 @@
                 "cloudtrail:*",
                 "cloudwatch:*",
                 "config:*",
-                "lambda:*"
+                "lambda:*",
+		"iam:PassRole"
               ],
               "Resource": "*"
             }]
