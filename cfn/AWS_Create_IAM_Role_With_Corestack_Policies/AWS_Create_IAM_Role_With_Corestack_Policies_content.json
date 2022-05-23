@@ -748,14 +748,41 @@
                 "cloudtrail:*",
                 "cloudwatch:*",
                 "config:*",
-                "lambda:*",
-		"iam:PassRole"
+                "lambda:*"
               ],
               "Resource": "*"
             }]
           }
         }],
         "RoleName": "CorestackConfigRole"
+      }
+    },
+    "CorestackConfigIAMPassRolePolicy": {
+      "Type": "AWS::IAM::Policy",
+      "Properties": {
+        "PolicyName": "CoreStack_Config_IAM_PassRole_Policy",
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Sid": "Auth",
+              "Action": [
+                "iam:PassRole"
+              ],
+              "Effect": "Allow",
+              "Resource": {
+                "Fn::GetAtt": [
+                  "CorestackConfigRole",
+                  "Arn"
+                ]
+              }    
+            }
+          ]
+        },
+        "Roles": [
+          {
+            "Ref": "Role"
+          }
+        ]
       }
     }
   },
