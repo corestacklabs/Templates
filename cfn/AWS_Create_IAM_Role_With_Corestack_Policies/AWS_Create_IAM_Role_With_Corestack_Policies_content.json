@@ -735,6 +735,7 @@
         "Description": "Role to execute AWS Config custom policies through Corestack",
         "ManagedPolicyArns": [
           "arn:aws:iam::aws:policy/ReadOnlyAccess"
+	  "arn:aws:iam::aws:policy/service-role/AWS_ConfigRole"
         ],
         "Path": "/",
         "Policies": [{
