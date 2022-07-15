@@ -1,0 +1,815 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Creates a new IAM role for your AWS account with permissions to access through Corestack.",
+  "Parameters": {
+    "RoleName": {
+      "Type": "String",
+      "Description": "The name of the IAM role to create. Use alphanumeric and '+=,.@-_' characters.",
+      "AllowedPattern": "[\\w+=,.@-]{1,64}",
+      "MinLength": "1",
+      "MaxLength": "64"
+    },
+    "ExternalId": {
+      "Type": "String",
+      "Description": "The external ID can be any word or number that is agreed upon between you and the third-party (Corestack - 028811834831) account.",
+      "MinLength": "1",
+      "MaxLength": "64"
+    },
+    "EnforceMFA": {
+      "Description": "Flag to enforce MFA (Multi-Factor Authentication) when Assuming the role.",
+      "Type": "String",
+      "Default": "false",
+      "AllowedValues": [
+        "true",
+        "false"
+      ]
+    },
+    "CoreStackAccountId": {
+      "Type": "String",
+      "Description": "The AWS Account ID of Corestack.",
+      "Default": "028811834831"
+    },
+    "SettingsType": {
+      "Description": "Please select 'None' if you do not want any governance automation. 'Express' settings helps you get started quickly with the default configuration prescribed by our cloud experts. 'Custom' Settings helps you define and select the level of automation you need for your enterprise.",
+      "Type": "String",
+      "Default": "Express|Custom",
+      "AllowedValues": [
+        "None",
+        "Express|Custom"
+      ]
+    },
+    "PolicyEngine": {
+			"Description": "Preferred policy engine to add respective custom policies in order to run policy through Corestack",
+			"Type": "String",
+			"Default": "aws_config",
+			"AllowedValues": [
+				"aws_config",
+				"corestack_policy"
+			]
+
+		},
+    "IncludeCFNPolicy": {
+      "Description": "Flag to include policies required to execute CFN templates through Corestack",
+      "Type": "String",
+      "Default": "true",
+      "AllowedValues": [
+        "true",
+        "false"
+      ]
+    },
+    "IncludeInspectorPolicy": {
+      "Description": "Flag to include policies required to manage AWS Inspector through Corestack",
+      "Type": "String",
+      "Default": "true",
+      "AllowedValues": [
+        "true",
+        "false"
+      ]
+    },
+    "IncludeGuardDutyPolicy": {
+      "Description": "Flag to include policies required to manage AWS GuardDuty through Corestack",
+      "Type": "String",
+      "Default": "true",
+      "AllowedValues": [
+        "true",
+        "false"
+      ]
+    },
+    "IncludeBudgetPolicy": {
+      "Description": "Flag to include policies required to create and manage AWS Budget through Corestack",
+      "Type": "String",
+      "Default": "true",
+      "AllowedValues": [
+        "true",
+        "false"
+      ]
+    }
+  },
+  "Conditions": {
+    "IncludeMFACondition": {
+      "Fn::Equals": [
+        {
+          "Ref": "EnforceMFA"
+        },
+        "true"
+      ]
+    },
+    "IncludeCFNPolicy": {
+      "Fn::Equals": [
+        {
+          "Ref": "IncludeCFNPolicy"
+        },
+        "true"
+      ]
+    },
+    "IncludeInspectorPolicy": {
+      "Fn::Equals": [
+        {
+          "Ref": "IncludeInspectorPolicy"
+        },
+        "true"
+      ]
+    },
+    "IncludeGuardDutyPolicy": {
+      "Fn::Equals": [
+        {
+          "Ref": "IncludeGuardDutyPolicy"
+        },
+        "true"
+      ]
+    },
+    "IncludeBudgetPolicy": {
+      "Fn::Equals": [
+        {
+          "Ref": "IncludeBudgetPolicy"
+        },
+        "true"
+      ]
+    },
+    "SettingsType": {
+      "Fn::Equals": [
+        {
+          "Ref": "SettingsType"
+        },
+        "Express|Custom"
+      ]
+    },
+    "IncludeConfigPolicyCondition": {
+      "Fn::Equals": [
+        {
+          "Ref": "PolicyEngine"
+        },
+        "aws_config"
+      ]
+    }
+  },
+  "Resources": {
+    "Role": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "AWS": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:aws:iam::",
+                      {
+                        "Ref": "CoreStackAccountId"
+                      },
+                      ":root"
+                    ]
+                  ]
+                }
+              },
+              "Condition": {
+                "Fn::If": [
+                  "IncludeMFACondition",
+                  {
+                    "StringEquals": {
+                      "sts:ExternalId": {
+                        "Ref": "ExternalId"
+                      }
+                    },
+                    "Bool": {
+                      "aws:MultiFactorAuthPresent": "true"
+                    }
+                  },
+                  {
+                    "StringEquals": {
+                      "sts:ExternalId": {
+                        "Ref": "ExternalId"
+                      }
+                    }
+                  }
+                ]
+              },
+              "Action": [
+                "sts:AssumeRole"
+              ]
+            }
+          ]
+        },
+        "Path": "/",
+        "ManagedPolicyArns": [
+          "arn:aws:iam::aws:policy/ReadOnlyAccess"
+        ],
+        "RoleName": {
+          "Ref": "RoleName"
+        }
+      }
+    },
+    "CoreStackSelfservicePolicy": {
+      "Type": "AWS::IAM::ManagedPolicy",
+      "Properties": {
+        "ManagedPolicyName": "CoreStack_SelfservicePolicy",
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Sid": "ElasticComputeCloud",
+              "Effect": "Allow",
+              "Action": [
+                "ec2:DetachVolume",
+                "ec2:AttachVolume",
+                "ec2:AuthorizeSecurityGroupIngress",
+                "ec2:DeregisterImage",
+                "ec2:TerminateInstances",
+                "ec2:CreateTags",
+                "ec2:CreateImage",
+                "ec2:RunInstances",
+                "ec2:DescribeImages",
+                "ec2:DescribeInstances",
+                "ec2:AllocateAddress",
+                "ec2:CreateVolume",
+                "ec2:RevokeSecurityGroupIngress",
+                "ec2:DeleteVolume",
+                "ec2:DescribeVolumes",
+                "ec2:CreateSecurityGroup",
+                "ec2:DeleteSecurityGroup",
+                "ec2:CreateSnapshot",
+                "ec2:ModifyInstanceAttribute",
+                "ec2:AssociateAddress"
+              ],
+              "Resource": "*"
+            }
+          ]
+        },
+        "Roles": [
+          {
+            "Ref": "Role"
+          }
+        ]
+      }
+    },
+    "AuthorizationPolicy": {
+      "Type": "AWS::IAM::Policy",
+      "Properties": {
+        "PolicyName": "CoreStack_AuthorizationPolicy",
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Sid": "Auth",
+              "Action": [
+                "iam:SimulatePrincipalPolicy",
+                "organizations:ListAccounts",
+                "s3:HeadBucket",
+                "ec2:DescribeSubnets"
+              ],
+              "Effect": "Allow",
+              "Resource": "*"
+            }
+          ]
+        },
+        "Roles": [
+          {
+            "Ref": "Role"
+          }
+        ]
+      }
+    },
+    "ActivityLogPolicy": {
+      "Type": "AWS::IAM::Policy",
+      "Condition": "SettingsType",
+      "Properties": {
+        "PolicyName": "CoreStack_ActivityLogPolicy",
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Sid": "SimpleStorageService",
+              "Action": [
+                "s3:CreateBucket",
+                "s3:HeadBucket",
+                "s3:DeleteObject",
+                "s3:DeleteBucket",
+                "s3:GetBucketLocation",
+                "s3:GetBucketTagging",
+                "s3:GetObject",
+                "s3:ListObjects",
+                "s3:PutBucketPolicy",
+                "s3:PutBucketTagging",
+                "s3:PutEncryptionConfiguration"
+              ],
+              "Effect": "Allow",
+              "Resource": "*"
+            },
+            {
+              "Sid": "CloudTrail",
+              "Action": [
+                "cloudtrail:AddTags",
+                "cloudtrail:CreateTrail",
+                "cloudtrail:DeleteTrail",
+                "cloudtrail:DescribeTrails",
+                "cloudtrail:GetTrailStatus",
+                "cloudtrail:ListTags",
+                "cloudtrail:PutEventSelectors",
+                "cloudtrail:StartLogging",
+                "cloudtrail:UpdateTrail"
+              ],
+              "Effect": "Allow",
+              "Resource": "*"
+            },
+            {
+              "Sid": "IAM",
+              "Action": [
+                "iam:CreateRole",
+                "iam:DeleteRole",
+                "iam:GetRole",
+                "iam:ListRolePolicies",
+                "iam:ListRoles",
+                "iam:DeleteRolePolicy",
+                "iam:PutRolePolicy",
+		"iam:PassRole"
+
+              ],
+              "Effect": "Allow",
+              "Resource": "*"
+            },
+	    {
+              "Sid": "ComputeOptimizer",
+              "Action": [
+                "compute-optimizer:*"
+              ],
+              "Effect": "Allow",
+              "Resource": "*"
+            }
+          ]
+        },
+        "Roles": [
+          {
+            "Ref": "Role"
+          }
+        ]
+      }
+    },
+    "CloudWatchPolicy": {
+      "Type": "AWS::IAM::Policy",
+      "Condition": "SettingsType",
+      "Properties": {
+        "PolicyName": "CoreStack_CloudWatchPolicy",
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Sid": "CloudWatch",
+              "Action": [
+                "cloudwatch:DescribeAlarms",
+                "cloudwatch:DeleteAlarms",
+                "cloudwatch:GetMetricStatistics",
+                "cloudwatch:ListMetrics",
+                "cloudwatch:PutMetricAlarm"
+              ],
+              "Effect": "Allow",
+              "Resource": "*"
+            }
+          ]
+        },
+        "Roles": [
+          {
+            "Ref": "Role"
+          }
+        ]
+      }
+    },
+    "AutoShutdownPolicy": {
+      "Type": "AWS::IAM::Policy",
+      "Condition": "SettingsType",
+      "Properties": {
+        "PolicyName": "CoreStack_AutoShutdownPolicy",
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Sid": "ElasticComputeCloud",
+              "Action": [
+                "ec2:StartInstances",
+                "ec2:StopInstances"
+              ],
+              "Effect": "Allow",
+              "Resource": "*"
+            }
+          ]
+        },
+        "Roles": [
+          {
+            "Ref": "Role"
+          }
+        ]
+      }
+    },
+    "InspectorPolicy": {
+      "Type": "AWS::IAM::Policy",
+      "Condition": "IncludeInspectorPolicy",
+      "Properties": {
+        "PolicyName": "CoreStack_InspectorPolicy",
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Sid": "Inspector",
+              "Action": [
+                "inspector:ListRulesPackages",
+                "inspector:DescribeRulesPackages",
+                "inspector:ListAssessmentRuns",
+                "inspector:ListAssessmentTemplates",
+                "inspector:ListFindings",
+                "inspector:DescribeFindings",
+                "inspector:DescribeAssessmentRuns",
+                "inspector:CreateResourceGroup",
+                "inspector:CreateAssessmentTarget",
+                "inspector:CreateAssessmentTemplate",
+                "inspector:StartAssessmentRun"
+              ],
+              "Effect": "Allow",
+              "Resource": "*"
+            }
+          ]
+        },
+        "Roles": [
+          {
+            "Ref": "Role"
+          }
+        ]
+      }
+    },
+    "CFNPolicy": {
+      "Type": "AWS::IAM::Policy",
+      "Condition": "IncludeCFNPolicy",
+      "Properties": {
+        "PolicyName": "Corestack_CFNPolicy",
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Sid": "CFN",
+              "Action": [
+                "cloudformation:CreateStack",
+                "cloudformation:DeleteStack",
+                "cloudformation:DescribeStackResource",
+                "cloudformation:DescribeStacks",
+                "cloudformation:UpdateStack"
+              ],
+              "Effect": "Allow",
+              "Resource": "*"
+            }
+          ]
+        },
+        "Roles": [
+          {
+            "Ref": "Role"
+          }
+        ]
+      }
+    },
+    "GuardDutyPolicy": {
+      "Type": "AWS::IAM::Policy",
+      "Condition": "IncludeGuardDutyPolicy",
+      "Properties": {
+        "PolicyName": "Corestack_GuardDutyPolicy",
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Sid": "GuardDuty",
+              "Effect": "Allow",
+              "Action": [
+                "s3:*",
+                "guardduty:GetFindings",
+                "guardduty:ListDetectors",
+                "guardduty:CreateDetector",
+                "guardduty:UpdateDetector",
+                "s3:ListBucket",
+                "guardduty:DeleteDetector",
+                "guardduty:CreatePublishingDestination",
+                "guardduty:DeletePublishingDestination",
+                "guardduty:DescribePublishingDestination",
+                "guardduty:ListFindings",
+                "guardduty:GetDetector",
+                "guardduty:TagResource",
+                "iam:TagRole",
+                "iam:CreateServiceLinkedRole"
+              ],
+              "Resource": "*"
+            }
+          ]
+        },
+        "Roles": [
+          {
+            "Ref": "Role"
+          }
+        ]
+      }
+    },
+    "GuardDutyKMSPolicy": {
+      "Type": "AWS::IAM::Policy",
+      "Condition": "IncludeGuardDutyPolicy",
+      "Properties": {
+        "PolicyName": "Corestack_GuardDutyKMSPolicy",
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Sid": "KMS",
+              "Effect": "Allow",
+              "Action": [
+                "kms:Create*",
+                "kms:Describe*",
+                "kms:Enable*",
+                "kms:List*",
+                "kms:Put*",
+                "kms:Update*",
+                "kms:Revoke*",
+                "kms:Disable*",
+                "kms:Get*",
+                "kms:Delete*",
+                "kms:TagResource",
+                "kms:UntagResource",
+                "kms:ScheduleKeyDeletion",
+                "kms:CancelKeyDeletion"
+              ],
+              "Resource": "*"
+            }
+          ]
+        },
+        "Roles": [
+          {
+            "Ref": "Role"
+          }
+        ]
+      }
+    },
+    "BudgetPolicy": {
+      "Type": "AWS::IAM::Policy",
+      "Condition": "IncludeBudgetPolicy",
+      "Properties": {
+        "PolicyName": "CoreStack_BudgetPolicy",
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Sid": "Auth",
+              "Action": [
+                "aws-portal:ViewBilling",
+                "aws-portal:ModifyBilling",
+                "budgets:ViewBudget",
+                "budgets:ModifyBudget",
+                "budgets:CreateBudgetAction",
+                "budgets:DeleteBudgetAction",
+                "budgets:UpdateBudgetAction",
+                "tag:getResources",
+                "tag:getTagKeys",
+                "tag:getTagValues"
+              ],
+              "Effect": "Allow",
+              "Resource": "*"
+            }
+          ]
+        },
+        "Roles": [
+          {
+            "Ref": "Role"
+          }
+        ]
+      }
+    },
+    "RIPolicy": {
+      "Type": "AWS::IAM::Policy",
+      "Properties": {
+        "PolicyName": "CoreStack_RIPolicy",
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Sid": "Auth",
+              "Action": [
+                "ce:GetReservationPurchaseRecommendation",
+                "ce:GetReservationUtilization",
+                "support:DescribeTrustedAdvisorCheckResult"
+              ],
+              "Effect": "Allow",
+              "Resource": "*"
+            }
+          ]
+        },
+        "Roles": [
+          {
+            "Ref": "Role"
+          }
+        ]
+      }
+    },
+    "WorkspacePolicy": {
+      "Type": "AWS::IAM::Policy",
+      "Properties": {
+        "PolicyName": "CoreStack_WorkspacePolicy",
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Sid": "Auth",
+              "Action": [
+                "workspaces:TerminateWorkspaces",
+                "workspaces:RevokeIpRules",
+                "workspaces:Describe*",
+                "workspaces:ListAvailableManagementCidrRanges",
+                "workspaces:DeleteIpGroup",
+                "workspaces:DeleteWorkspaceImage",
+                "workspaces:StopWorkspaces",
+                "workspaces:StartWorkspaces",
+                "workspaces:Create*",
+                "workspaces:RebootWorkspaces",
+                "workspaces:Modify*",
+                "workspaces:UpdateRulesOfIpGroup",
+                "workspaces:DisassociateIpGroups",
+                "workspaces:RebuildWorkspaces",
+                "workspaces:AssociateIpGroups",
+                "workspaces:AuthorizeIpRules",
+                "workspaces:ImportWorkspaceImage",
+                "workspaces:DeleteTags"
+              ],
+              "Effect": "Allow",
+              "Resource": "*"
+            }
+          ]
+        },
+        "Roles": [
+          {
+            "Ref": "Role"
+          }
+        ]
+      }
+    },
+    "ConfigPolicy": {
+      "Type": "AWS::IAM::Policy",
+      "Properties": {
+        "PolicyName": "CoreStack_ConfigPolicy",
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Sid": "Auth",
+              "Action": [
+                "config:*"
+              ],
+              "Effect": "Allow",
+              "Resource": "*"
+            }
+          ]
+        },
+        "Roles": [
+          {
+            "Ref": "Role"
+          }
+        ]
+      }
+    },
+    "LambdaPolicy": {
+      "Type": "AWS::IAM::Policy",
+      "Properties": {
+        "PolicyName": "CoreStack_LambdaPolicy",
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Sid": "Auth",
+              "Action": [
+                "lambda:*"
+              ],
+              "Effect": "Allow",
+              "Resource": "*"
+            }
+          ]
+        },
+        "Roles": [
+          {
+            "Ref": "Role"
+          }
+        ]
+      }
+    },
+    "DynamoDBPolicy": {
+      "Type": "AWS::IAM::Policy",
+      "Properties": {
+        "PolicyName": "CoreStack_DynamoDBPolicy",
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Sid": "Auth",
+              "Action": [
+                "dynamodb:DescribeTable",
+                "dynamodb:Query",
+                "dynamodb:Scan",
+                "dynamodb:BatchGet*",
+                "dynamodb:DescribeStream",
+                "dynamodb:DescribeTable",
+                "dynamodb:Get*",
+                "dynamodb:Query",
+                "dynamodb:Scan",
+                "dynamodb:BatchWrite*",
+                "dynamodb:CreateTable",
+                "dynamodb:Delete*",
+                "dynamodb:Update*",
+                "dynamodb:PutItem"
+              ],
+              "Effect": "Allow",
+              "Resource": "*"
+            }
+          ]
+        },
+        "Roles": [
+          {
+            "Ref": "Role"
+          }
+        ]
+      }
+    },
+    "CorestackConfigRole": {
+      "Condition": "IncludeConfigPolicyCondition",
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [{
+            "Effect": "Allow",
+            "Principal": {
+              "Service": [
+                "lambda.amazonaws.com",
+                "config.amazonaws.com"
+              ]
+            },
+            "Action": "sts:AssumeRole"
+          }]
+        },
+        "Description": "Role to execute AWS Config custom policies through Corestack",
+        "ManagedPolicyArns": [
+          "arn:aws:iam::aws:policy/ReadOnlyAccess",
+	  "arn:aws:iam::aws:policy/service-role/AWS_ConfigRole"
+        ],
+        "Path": "/",
+        "Policies": [{
+          "PolicyName": "CoreStack_Assessment_Policies",
+          "PolicyDocument": {
+            "Statement": [{
+              "Effect": "Allow",
+              "Action": [
+                "logs:*",
+                "s3:*",
+                "cloudtrail:*",
+                "cloudwatch:*",
+                "config:*",
+                "lambda:*"
+              ],
+              "Resource": "*"
+            }]
+          }
+        }],
+        "RoleName": "CorestackConfigRole"
+      }
+    },
+    "CorestackConfigIAMPassRolePolicy": {
+      "Condition": "IncludeConfigPolicyCondition",
+      "Type": "AWS::IAM::Policy",
+      "Properties": {
+        "PolicyName": "CoreStack_Config_IAM_PassRole_Policy",
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Sid": "Auth",
+              "Action": [
+                "iam:PassRole"
+              ],
+              "Effect": "Allow",
+              "Resource": {
+                "Fn::GetAtt": [
+                  "CorestackConfigRole",
+                  "Arn"
+                ]
+              }    
+            }
+          ]
+        },
+        "Roles": [
+          {
+            "Ref": "Role"
+          }
+        ]
+      }
+    }
+  },
+  "Outputs": {
+    "RoleARN": {
+      "Description": "ARN of the IAM Role.",
+      "Value": {
+        "Fn::GetAtt": [
+          "Role",
+          "Arn"
+        ]
+      }
+    },
+    "ExternalId": {
+      "Description": "ExternalId used in Role trusted policy.",
+      "Value": {
+        "Ref": "ExternalId"
+      }
+    },
+    "MFAEnabled": {
+      "Description": "Flag to identify MFA enforced for the role or not.",
+      "Value": {
+        "Ref": "EnforceMFA"
+      }
+    }
+  }
+}
