@@ -1,0 +1,317 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "Creates a new IAM role for your AWS account with ReadOnlyAccess permissions.",
+    "Parameters": {
+        "RoleName": {
+            "Type": "String",
+            "Description": "The name of the IAM role to create. Use alphanumeric and '+=,.@-_' characters.",
+            "AllowedPattern": "[\\w+=,.@-]{1,64}",
+            "MinLength": "1",
+            "MaxLength": "64"
+        },
+        "ExternalId": {
+            "Type": "String",
+            "Description": "The external ID can be any word or number that is agreed upon between you and the third-party (Corestack - 028811834831) account.",
+            "MinLength": "1",
+            "MaxLength": "64"
+        },
+        "EnforceMFA": {
+            "Description": "Flag to enforce MFA (Multi-Factor Authentication) when Assuming the role.",
+            "Type": "String",
+            "Default": "false",
+            "AllowedValues": [
+                "true",
+                "false"
+            ]
+        },
+        "CoreStackAccountId": {
+            "Type": "String",
+            "Description": "The AWS Account ID of Corestack.",
+            "Default": "028811834831"
+        },
+        "PolicyEngine": {
+            "Description": "Preferred policy engine to add respective custom policies in order to run policy through Corestack",
+            "Type": "String",
+            "Default": "corestack_policy",
+            "AllowedValues": [
+                "aws_config",
+                "corestack_policy"
+            ]
+        }
+    },
+    "Conditions": {
+        "IncludeMFACondition": {
+            "Fn::Equals": [
+                {
+                    "Ref": "EnforceMFA"
+                },
+                "true"
+            ]
+        },
+        "IncludeConfigPolicyCondition": {
+            "Fn::Equals": [
+                {
+                    "Ref": "PolicyEngine"
+                },
+                "aws_config"
+            ]
+        }
+    },
+    "Resources": {
+        "Role": {
+            "Type": "AWS::IAM::Role",
+            "Properties": {
+                "AssumeRolePolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                        {
+                            "Effect": "Allow",
+                            "Principal": {
+                                "AWS": {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "arn:aws:iam::",
+                                            {
+                                                "Ref": "CoreStackAccountId"
+                                            },
+                                            ":root"
+                                        ]
+                                    ]
+                                }
+                            },
+                            "Condition": {
+                                "Fn::If": [
+                                    "IncludeMFACondition",
+                                    {
+                                        "StringEquals": {
+                                            "sts:ExternalId": {
+                                                "Ref": "ExternalId"
+                                            }
+                                        },
+                                        "Bool": {
+                                            "aws:MultiFactorAuthPresent": "true"
+                                        }
+                                    },
+                                    {
+                                        "StringEquals": {
+                                            "sts:ExternalId": {
+                                                "Ref": "ExternalId"
+                                            }
+                                        }
+                                    }
+                                ]
+                            },
+                            "Action": [
+                                "sts:AssumeRole"
+                            ]
+                        }
+                    ]
+                },
+                "Path": "/",
+                "ManagedPolicyArns": [
+                    "arn:aws:iam::aws:policy/ReadOnlyAccess"
+                ],
+                "RoleName": {
+                    "Ref": "RoleName"
+                }
+            }
+        },
+        "RIPolicy": {
+            "Type": "AWS::IAM::Policy",
+            "Properties": {
+                "PolicyName": "CoreStack_RIPolicy",
+                "PolicyDocument": {
+                    "Statement": [
+                        {
+                            "Sid": "Auth",
+                            "Action": [
+                                "ce:GetReservationPurchaseRecommendation",
+                                "ce:GetReservationUtilization",
+                                "support:DescribeTrustedAdvisorCheckResult",
+                                "budgets:ViewBudget"
+                            ],
+                            "Effect": "Allow",
+                            "Resource": "*"
+                        }
+                    ]
+                },
+                "Roles": [
+                    {
+                        "Ref": "Role"
+                    }
+                ]
+            }
+        },
+        "ConfigPolicyRole": {
+            "Condition": "IncludeConfigPolicyCondition",
+            "Type": "AWS::IAM::Role",
+            "Properties": {
+                "AssumeRolePolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                        {
+                            "Effect": "Allow",
+                            "Principal": {
+                                "Service": [
+                                    "lambda.amazonaws.com",
+                                    "config.amazonaws.com"
+                                ]
+                            },
+                            "Action": "sts:AssumeRole"
+                        }
+                    ]
+                },
+                "Description": "Role to execute AWS Config custom policies through Corestack",
+                "ManagedPolicyArns": [
+                    "arn:aws:iam::aws:policy/ReadOnlyAccess",
+                    "arn:aws:iam::aws:policy/service-role/AWS_ConfigRole"
+                ],
+                "Path": "/",
+                "Policies": [
+                    {
+                        "PolicyName": "CoreStack_Assessment_Policies",
+                        "PolicyDocument": {
+                            "Statement": [
+                                {
+                                    "Effect": "Allow",
+                                    "Action": [
+                                        "logs:*",
+                                        "s3:*",
+                                        "cloudtrail:*",
+                                        "cloudwatch:*",
+                                        "config:*",
+                                        "lambda:*"
+                                    ],
+                                    "Resource": "*"
+                                }
+                            ]
+                        }
+                    }
+                ],
+                "RoleName": "CorestackConfigRole"
+            }
+        },
+        "ConfigPolicy": {
+            "Type": "AWS::IAM::Policy",
+            "Properties": {
+                "PolicyName": "CoreStack_ConfigPolicy",
+                "PolicyDocument": {
+                    "Statement": [
+                        {
+                            "Sid": "Auth",
+                            "Action": [
+                                "config:*"
+                            ],
+                            "Effect": "Allow",
+                            "Resource": "*"
+                        }
+                    ]
+                },
+                "Roles": [
+                    {
+                        "Ref": "Role"
+                    }
+                ]
+            }
+        },
+        "LambdaPolicy": {
+            "Type": "AWS::IAM::Policy",
+            "Properties": {
+                "PolicyName": "CoreStack_LambdaPolicy",
+                "PolicyDocument": {
+                    "Statement": [
+                        {
+                            "Sid": "Auth",
+                            "Action": [
+                                "lambda:*"
+                            ],
+                            "Effect": "Allow",
+                            "Resource": "*"
+                        }
+                    ]
+                },
+                "Roles": [
+                    {
+                        "Ref": "Role"
+                    }
+                ]
+            }
+        },
+        "CorestackConfigIAMPassRolePolicy": {
+            "Condition": "IncludeConfigPolicyCondition",
+            "Type": "AWS::IAM::Policy",
+            "Properties": {
+                "PolicyName": "CoreStack_Config_IAM_PassRole_Policy",
+                "PolicyDocument": {
+                    "Statement": [
+                        {
+                            "Sid": "Auth",
+                            "Action": [
+                                "iam:PassRole"
+                            ],
+                            "Effect": "Allow",
+                            "Resource": {
+                                "Fn::GetAtt": [
+                                    "ConfigPolicyRole",
+                                    "Arn"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                "Roles": [
+                    {
+                        "Ref": "Role"
+                    }
+                ]
+            }
+        },
+        "WAFSyncPolicy": {
+            "Type": "AWS::IAM::Policy",
+            "Properties": {
+                "PolicyName": "CoreStack_WAF_Policy",
+                "PolicyDocument": {
+                    "Statement": [
+                        {
+                            "Sid": "Auth",
+                            "Action": [
+                                "wellarchitected:*"
+                            ],
+                            "Effect": "Allow",
+                            "Resource": "*"
+                        }
+                    ]
+                },
+                "Roles": [
+                    {
+                        "Ref": "Role"
+                    }
+                ]
+            }
+        }
+    },
+    "Outputs": {
+        "RoleARN": {
+            "Description": "ARN of the IAM Role.",
+            "Value": {
+                "Fn::GetAtt": [
+                    "Role",
+                    "Arn"
+                ]
+            }
+        },
+        "ExternalId": {
+            "Description": "ExternalId used in Role trusted policy.",
+            "Value": {
+                "Ref": "ExternalId"
+            }
+        },
+        "MFAEnabled": {
+            "Description": "Flag to identify MFA enforced for the role or not.",
+            "Value": {
+                "Ref": "EnforceMFA"
+            }
+        }
+    }
+}
