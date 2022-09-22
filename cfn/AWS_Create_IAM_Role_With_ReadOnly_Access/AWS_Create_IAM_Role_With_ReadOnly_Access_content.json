@@ -32,10 +32,9 @@
         "PolicyEngine": {
             "Description": "Preferred policy engine to add respective custom policies in order to run policy through Corestack",
             "Type": "String",
-            "Default": "corestack_policy",
+            "Default": "aws_config",
             "AllowedValues": [
-                "aws_config",
-                "corestack_policy"
+                "aws_config"
             ]
         }
     },
