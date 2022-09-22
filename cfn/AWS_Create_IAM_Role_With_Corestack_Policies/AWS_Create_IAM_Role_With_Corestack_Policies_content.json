@@ -43,8 +43,7 @@
       "Type": "String",
       "Default": "aws_config",
       "AllowedValues": [
-        "aws_config",
-        "corestack_policy"
+        "aws_config"
       ]
     },
     "IncludeCFNPolicy": {
