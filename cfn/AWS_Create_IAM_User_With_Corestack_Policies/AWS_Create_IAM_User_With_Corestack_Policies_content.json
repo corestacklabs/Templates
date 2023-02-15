@@ -255,7 +255,8 @@
                 "iam:ListRolePolicies",
                 "iam:ListRoles",
                 "iam:DeleteRolePolicy",
-                "iam:PutRolePolicy"
+                "iam:PutRolePolicy",
+		"iam:CreateInstanceProfile",
               ],
               "Effect": "Allow",
               "Resource": "*"
