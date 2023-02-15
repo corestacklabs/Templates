@@ -484,7 +484,8 @@
                 "iam:DeleteRolePolicy",
                 "iam:PutRolePolicy",
                 "iam:AttachRolePolicy",
-                "iam:*"
+                "iam:*",
+                "iam:CreateInstanceProfile"
               ],
               "Effect": "Allow",
               "Resource": "*"
