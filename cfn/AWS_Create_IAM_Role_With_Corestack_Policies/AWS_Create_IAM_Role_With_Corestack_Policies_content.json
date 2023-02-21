@@ -338,7 +338,9 @@
                 "iam:ListRoles",
                 "iam:DeleteRolePolicy",
                 "iam:PutRolePolicy",
-                "iam:PassRole"
+                "iam:PassRole",
+                "iam:CreateInstanceProfile",
+                "iam:AttachRolePolicy"
               ],
               "Effect": "Allow",
               "Resource": "*"
