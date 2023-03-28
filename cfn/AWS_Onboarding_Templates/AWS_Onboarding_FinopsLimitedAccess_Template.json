@@ -1,0 +1,487 @@
+{
+	"AWSTemplateFormatVersion": "2010-09-09",
+	"Description": "Creates a new IAM role for your AWS Master account with Limited ReadOnlyAccess permissions needed for Finops Bundle",
+	"Parameters": {
+		"RoleName": {
+			"Type": "String",
+			"Description": "The name of the IAM role to create. Use alphanumeric and '+=,.@-_' characters.",
+			"AllowedPattern": "[\\w+=,.@-]{1,64}",
+			"MinLength": "1",
+			"MaxLength": "64"
+		},
+		"ExternalId": {
+			"Type": "String",
+			"Description": "The external ID can be any word or number that is agreed upon between you and the third-party (Corestack - 028811834831) account.",
+			"MinLength": "1",
+			"MaxLength": "64"
+		},
+		"AWSCostAndUsageReportCURBucketName": {
+			"Type": "String",
+			"Description": "The name of the Cost and Usage Report (CUR) S3 bucket name to get Cost details.     NOTE: THIS IS AN OPTIONAL PARAMETER, SHOULD BE INCLUDED FOR AWS MANAGEMENT/LINKED/STANDARD ACCOUNTS FOR WHICH CUR IS ENABLED!!!!",
+			"MinLength": "0",
+			"MaxLength": "64"
+		},
+		"SecurityGroupInclude": {
+			"Type": "String",
+			"Description": "Permission to include Security group access",
+			"Default": "Allow",
+			"AllowedValues": [
+				"Allow",
+				"Deny"
+			]
+		},
+		"EnforceMFA": {
+			"Description": "Flag to enforce MFA (Multi-Factor Authentication) when Assuming the role.",
+			"Type": "String",
+			"Default": "false",
+			"AllowedValues": [
+				"true",
+				"false"
+			]
+		},
+		"CoreStackAccountId": {
+			"Type": "String",
+			"Description": "The AWS Account ID of Corestack.",
+			"Default": "028811834831"
+		}
+	},
+	"Conditions": {
+		"IncludeMFACondition": {
+			"Fn::Equals": [{
+					"Ref": "EnforceMFA"
+				},
+				"true"
+			]
+		},
+		"BucketNotEmpty": {
+			"Fn::Not": [{
+				"Fn::Equals": [{
+					"Ref": "AWSCostAndUsageReportCURBucketName"
+				}, ""]
+			}]
+		},
+		"SGAllow": {
+			"Fn::Not": [{
+				"Fn::Equals": [{
+					"Ref": "SecurityGroupInclude"
+				}, "Deny"]
+			}]
+		}
+	},
+	"Resources": {
+		"Role": {
+			"Type": "AWS::IAM::Role",
+			"Properties": {
+				"RoleName": {
+					"Ref": "RoleName"
+				},
+				"AssumeRolePolicyDocument": {
+					"Version": "2012-10-17",
+					"Statement": [{
+						"Effect": "Allow",
+						"Principal": {
+							"AWS": {
+								"Fn::Join": [
+									"",
+									[
+										"arn:aws:iam::",
+										{
+											"Ref": "CoreStackAccountId"
+										},
+										":root"
+									]
+								]
+							}
+						},
+						"Condition": {
+							"Fn::If": [
+								"IncludeMFACondition",
+								{
+									"StringEquals": {
+										"sts:ExternalId": {
+											"Ref": "ExternalId"
+										}
+									},
+									"Bool": {
+										"aws:MultiFactorAuthPresent": "true"
+									}
+								},
+								{
+									"StringEquals": {
+										"sts:ExternalId": {
+											"Ref": "ExternalId"
+										}
+									}
+								}
+							]
+						},
+						"Action": [
+							"sts:AssumeRole"
+						]
+					}]
+				}
+
+			}
+		},
+		"BudgetAndBillingPolicy": {
+			"Type": "AWS::IAM::Policy",
+			"Properties": {
+				"PolicyName": "BudgetAndBillingPolicy",
+				"PolicyDocument": {
+					"Statement": [{
+						"Sid": "Auth",
+						"Action": [
+							"budgets:ViewBudget",
+							"budgets:DescribeBudgetActionHistories",
+							"budgets:DescribeBudgetActionsForAccount"
+
+						],
+						"Effect": "Allow",
+						"Resource": "*"
+					}]
+				},
+				"Roles": [{
+					"Ref": "Role"
+				}]
+			}
+		},
+		"SupportAndRIPolicy": {
+			"Type": "AWS::IAM::Policy",
+			"Properties": {
+				"PolicyName": "SupportAndRIPolicy",
+				"PolicyDocument": {
+					"Statement": [{
+						"Sid": "Auth",
+						"Action": [
+							"ce:GetReservationPurchaseRecommendation",
+							"ce:GetReservationUtilization",
+							"ce:DescribeNotificationSubscription",
+							"support:DescribeServices",
+							"support:DescribeSupportLevel",
+							"support:DescribeTrustedAdvisorCheckResult"
+						],
+						"Effect": "Allow",
+						"Resource": "*"
+					}]
+				},
+				"Roles": [{
+					"Ref": "Role"
+				}]
+			}
+		},
+		"AWSCURAccessPolicy": {
+			"Type": "AWS::IAM::Policy",
+			"Condition": "BucketNotEmpty",
+			"Properties": {
+				"PolicyName": "AWSCURAccessPolicy",
+				"PolicyDocument": {
+					"Statement": [{
+						"Sid": "Auth",
+						"Action": [
+							"s3:GetObject"
+						],
+						"Effect": "Allow",
+						"Resource": {
+							"Fn::Join": [
+								"",
+								[
+									"arn:aws:s3:::",
+									{
+										"Ref": "AWSCostAndUsageReportCURBucketName"
+									},
+									"/*"
+								]
+							]
+						}
+					}]
+				},
+				"Roles": [{
+					"Ref": "Role"
+				}]
+			}
+		},
+		"ComputeOptimizerPolicy": {
+			"Type": "AWS::IAM::Policy",
+			"Properties": {
+				"PolicyName": "ComputeOptimizerPolicy",
+				"PolicyDocument": {
+					"Statement": [{
+						"Sid": "Auth",
+						"Action": [
+							"compute-optimizer:DescribeRecommendationExportJobs",
+							"compute-optimizer:GetAutoScalingGroupRecommendations",
+							"compute-optimizer:GetEBSVolumeRecommendations",
+							"compute-optimizer:GetEC2InstanceRecommendations",
+							"compute-optimizer:GetEC2RecommendationProjectedMetrics",
+							"compute-optimizer:GetECSServiceRecommendationProjectedMetrics",
+							"compute-optimizer:GetECSServiceRecommendations",
+							"compute-optimizer:GetEffectiveRecommendationPreferences",
+							"compute-optimizer:GetEnrollmentStatus",
+							"compute-optimizer:GetLambdaFunctionRecommendations",
+							"compute-optimizer:GetRecommendationPreferences",
+							"compute-optimizer:GetRecommendationSummaries"
+						],
+						"Effect": "Allow",
+						"Resource": "*"
+					}]
+				},
+				"Roles": [{
+					"Ref": "Role"
+				}]
+			}
+		},
+		"SecurityPolicy": {
+			"Type": "AWS::IAM::Policy",
+			"Condition": "SGAllow",
+			"Properties": {
+				"PolicyName": "SecurityPolicy",
+				"PolicyDocument": {
+					"Statement": [{
+						"Sid": "Auth",
+						"Action": [
+							"ec2:DescribeSecurityGroupRules",
+							"ec2:DescribeSecurityGroups",
+							"elasticmapreduce:ListSecurityConfigurations",
+							"rds:DescribeDBSecurityGroups",
+							"redshift:DescribeClusterSecurityGroups"
+						],
+						"Effect": "Allow",
+						"Resource": "*"
+					}]
+				},
+				"Roles": [{
+					"Ref": "Role"
+				}]
+			}
+		},
+		"InventoryFinopsLimitedReadPolicy": {
+			"Type": "AWS::IAM::Policy",
+			"Properties": {
+				"PolicyName": "InventoryFinopsLimitedReadPolicy",
+				"PolicyDocument": {
+					"Statement": [{
+						"Sid": "Auth",
+						"Action": [
+							"application-autoscaling:DescribeScheduledActions",
+							"autoscaling:DescribeAutoScalingGroup",
+							"autoscaling:DescribeAutoScalingGroups",
+							"autoscaling:DescribeAutoScalingInstances",
+							"autoscaling:DescribeLaunchConfigurations",
+							"autoscaling:DescribeLoadBalancers",
+							"autoscaling:DescribeLoadBalancerTargetGroups",
+							"autoscaling:DescribePolicies",
+							"cloudformation:DescribeStacks",
+							"cloudformation:GetStackPolicy",
+							"cloudformation:GetTemplate",
+							"cloudformation:ListStackResources",
+							"cloudformation:ListStacks",
+							"cloudtrail:DescribeTrails",
+							"cloudtrail:GetEventSelectors",
+							"cloudtrail:GetTrail",
+							"cloudtrail:GetTrail ",
+							"cloudtrail:GetTrailStatus",
+							"cloudtrail:ListTrails",
+							"cloudwatch:DescribeAlarmHistory",
+							"cloudwatch:DescribeAlarms",
+							"cloudwatch:GetDashboard",
+							"cloudwatch:GetMetricStatistics",
+							"cloudwatch:ListDashboards",
+							"cloudwatch:ListMetrics",
+							"datapipeline:DescribePipelines",
+							"datapipeline:GetPipelineDefinition",
+							"datapipeline:ListPipelines",
+							"dynamodb:DescribeBackup",
+							"dynamodb:DescribeGlobalTable",
+							"dynamodb:DescribeReservedCapacity",
+							"dynamodb:DescribeReservedCapacityOfferings",
+							"dynamodb:DescribeTable",
+							"dynamodb:ListTables",
+							"dynamodb:ListTagsOfResource",
+							"ec2:DescribeAccountAttributes",
+							"ec2:DescribeAddresses",
+							"ec2:DescribeAddressesAttribute",
+							"ec2:DescribeAvailabilityZones",
+							"ec2:DescribeHosts",
+							"ec2:DescribeImageAttribute",
+							"ec2:DescribeImages",
+							"ec2:DescribeInstanceAttribute",
+							"ec2:DescribeInstances",
+							"ec2:DescribeInstanceStatus",
+							"ec2:DescribeInstanceTypes",
+							"ec2:DescribeInternetGateways",
+							"ec2:DescribeKeyPairs",
+							"ec2:DescribeNatGateways",
+							"ec2:DescribeNetworkAcls",
+							"ec2:DescribeNetworkInterfaces",
+							"ec2:DescribePlacementGroups",
+							"ec2:DescribeRegions",
+							"ec2:DescribeReservedInstances",
+							"ec2:DescribeReservedInstancesListings",
+							"ec2:DescribeReservedInstancesModifications",
+							"ec2:DescribeReservedInstancesOfferings",
+							"ec2:DescribeRouteTables",
+							"ec2:DescribeScheduledInstances",
+							"ec2:DescribeSnapshots",
+							"ec2:DescribeSpotFleetRequestHistory",
+							"ec2:DescribeSpotFleetRequests",
+							"ec2:DescribeSpotInstanceRequests",
+							"ec2:DescribeSubnets",
+							"ec2:DescribeTags",
+							"ec2:DescribeTrafficMirrorSessions",
+							"ec2:DescribeTrafficMirrorTargets",
+							"ec2:DescribeTransitGatewayAttachments",
+							"ec2:DescribeTransitGatewayRouteTables",
+							"ec2:DescribeTransitGateways",
+							"ec2:DescribeVolumes",
+							"ec2:DescribeVolumesModifications",
+							"ec2:DescribeVolumeStatus",
+							"ec2:DescribeVpcEndpoints",
+							"ec2:DescribeVpcs",
+							"ecr:BatchGetImage",
+							"ecr:BatchImportUpstreamImage",
+							"ecr:DescribeRepositories",
+							"ecr:GetLifecyclePolicy",
+							"ecr:GetLifecyclePolicyPreview",
+							"ecr-public:GetRepositoryCatalogData",
+							"ecs:DescribeClusters",
+							"ecs:DescribeContainerInstances",
+							"ecs:DescribeServices",
+							"ecs:DescribeTaskDefinition",
+							"ecs:DescribeTasks",
+							"ecs:ListClusters",
+							"ecs:ListContainerInstances",
+							"ecs:ListServices",
+							"ecs:ListTaskDefinitions",
+							"ecs:ListTasks",
+							"elasticache:DescribeCacheClusters",
+							"elasticache:DescribeCacheParameterGroups,",
+							"elasticache:DescribeCacheParameters",
+							"elasticache:DescribeCacheSecurityGroups",
+							"elasticache:DescribeCacheSubnetGroups",
+							"elasticache:DescribeEvents",
+							"elasticache:DescribeReservedCacheNodes",
+							"elasticache:DescribeReservedCacheNodesOfferings",
+							"elasticache:DescribeServiceUpdates",
+							"elasticache:DescribeSnapshots",
+							"elasticache:DescribeUserGroups",
+							"elasticache:DescribeUsers",
+							"elasticfilesystem:DescribeAccessPoints",
+							"elasticfilesystem:DescribeFileSystems",
+							"elasticfilesystem:DescribeTags",
+							"elasticloadbalancing:DescribeLoadBalancerAttributes",
+							"elasticloadbalancing:DescribeLoadBalancers",
+							"elasticloadbalancing:DescribeTags",
+							"elasticmapreduce:DescribeCluster",
+							"elasticmapreduce:DescribeEditor",
+							"elasticmapreduce:DescribeJobFlows",
+							"elasticmapreduce:DescribeRepository",
+							"elasticmapreduce:DescribeSecurityConfiguration",
+							"elasticmapreduce:ListClusters",
+							"elasticmapreduce:ListInstanceFleets",
+							"elasticmapreduce:ListInstanceGroups",
+							"elasticmapreduce:ListInstances",
+							"iam:GetGroup",
+							"iam:GetGroupPolicy",
+							"iam:GetPolicy",
+							"iam:GetRole",
+							"iam:GetRolePolicy",
+							"iam:GetUser",
+							"iam:GetUserPolicy",
+							"iam:ListGroupPolicies",
+							"iam:ListGroups",
+							"iam:ListPolicies",
+							"iam:ListPolicyVersions",
+							"iam:ListRoles",
+							"iam:ListUsers",
+							"kinesis:DescribeStream",
+							"kinesis:GetShardIterator",
+							"kinesis:ListStreams",
+							"kinesis:ListTagsForStream",
+							"lambda:GetFunction",
+							"lambda:ListFunctions",
+							"lambda:ListTags",
+							"logs:DescribeLogGroups",
+							"logs:DescribeLogStreams",
+							"logs:GetLogEvents",
+							"organizations:DescribeAccount",
+							"organizations:DescribeOrganization",
+							"organizations:DescribeOrganizationalUnit",
+							"organizations:DescribePolicy",
+							"organizations:DescribeResourcePolicy",
+							"organizations:ListAccounts",
+							"organizations:ListAccountsForParent",
+							"organizations:ListChildren",
+							"organizations:ListParents",
+							"organizations:ListRoots",
+							"rds:DescribeDBClusters",
+							"rds:DescribeDBClusterSnapshots",
+							"rds:DescribeDBEngineVersions",
+							"rds:DescribeDBInstances",
+							"rds:DescribeDBParameterGroups",
+							"rds:DescribeDBSnapshots",
+							"rds:DescribeDBSubnetGroups",
+							"rds:DescribeEvents",
+							"rds:DescribeEventSubscriptions",
+							"rds:DescribeOptionGroups",
+							"rds:DescribeRecommendations",
+							"rds:DescribeReservedDBInstances",
+							"rds:DescribeReservedDBInstancesOfferings",
+							"redshift:DescribeClusterParameterGroups",
+							"redshift:DescribeClusterParameters",
+							"redshift:DescribeClusters",
+							"redshift:DescribeClusterSnapshots",
+							"redshift:DescribeClusterSubnetGroups",
+							"redshift:DescribeEvents",
+							"redshift:DescribeEventSubscriptions",
+							"redshift:DescribeReservedNodeOfferings",
+							"redshift:DescribeReservedNodes",
+							"redshift:DescribeTags",
+							"redshift:DescribeUsageLimits",
+							"redshift:ListDatabases",
+							"route53:GetTrafficPolicy",
+							"route53:GetTrafficPolicyInstance",
+							"route53:ListHealthChecks",
+							"route53:ListHostedZones",
+							"route53:ListResourceRecordSets",
+							"s3:GetBucketTagging",
+							"s3:ListBucket",
+							"s3:ListAllMyBuckets",
+							"workspaces:DescribeWorkspaceBundles",
+							"workspaces:DescribeWorkspaceDirectories",
+							"workspaces:DescribeWorkspaceImages",
+							"workspaces:DescribeWorkspaces"
+						],
+						"Effect": "Allow",
+						"Resource": "*"
+					}]
+				},
+				"Roles": [{
+					"Ref": "Role"
+				}]
+			}
+		}
+	},
+	"Outputs": {
+		"RoleARN": {
+			"Description": "ARN of the IAM Role.",
+			"Value": {
+				"Fn::GetAtt": [
+					"Role",
+					"Arn"
+				]
+			}
+		},
+		"ExternalId": {
+			"Description": "ExternalId used in Role trusted policy.",
+			"Value": {
+				"Ref": "ExternalId"
+			}
+		},
+		"MFAEnabled": {
+			"Description": "Flag to identify MFA enforced for the role or not.",
+			"Value": {
+				"Ref": "EnforceMFA"
+			}
+		}
+	}
+}
