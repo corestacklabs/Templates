@@ -90,14 +90,20 @@
 							"sts:AssumeRole"
 						]
 					}]
-				}
+				},
+			"Tags": [
+          {
+            "Key": "Purpose",
+            "Value": "CoreStack"
+          }
+        ]
 
 			}
 		},
 		"InventoryCloudopsPolicy": {
 			"Type": "AWS::IAM::Policy",
 			"Properties": {
-				"PolicyName": "InventoryCloudopsPolicy",
+				"PolicyName": "CoreStack_InventoryCloudopsPolicy",
 				"PolicyDocument": {
 					"Statement": [{
 						"Sid": "Auth",
@@ -126,7 +132,7 @@
 							"cloudtrail:DescribeTrails",
 							"cloudtrail:Get*",
 							"cloudtrail:ListTrails",
-							"cloudwatch:DescribeAlarmHistory",
+							"cloudwatch:Describe*",
 							"cloudwatch:GetDashboard",
 							"cloudwatch:GetMetricData",
 							"cloudwatch:ListDashboards",
@@ -177,10 +183,7 @@
 							"iam:GetRolePolicy",
 							"iam:GetUser",
 							"iam:GetUserPolicy",
-							"iam:ListGroupPolicies",
-							"iam:ListGroups",
-							"iam:ListPolicies",
-							"iam:ListUsers",
+							"iam:List*",
 							"iam:SimulatePrincipalPolicy",
 							"inspector:Describe*",
 							"inspector:List*",
@@ -270,7 +273,7 @@
 		"ActivityPolicy": {
 			"Type": "AWS::IAM::Policy",
 			"Properties": {
-				"PolicyName": "ActivityPolicy",
+				"PolicyName": "CoreStack_ActivityPolicy",
 				"PolicyDocument": {
 					"Statement": [{
 						"Sid": "Auth",
@@ -302,7 +305,7 @@
 		"AlertPolicy": {
 			"Type": "AWS::IAM::Policy",
 			"Properties": {
-				"PolicyName": "AlertPolicy",
+				"PolicyName": "CoreStack_AlertPolicy",
 				"PolicyDocument": {
 					"Statement": [{
 						"Sid": "Auth",

@@ -119,14 +119,20 @@
 							"sts:AssumeRole"
 						]
 					}]
-				}
+				},
+			"Tags": [
+          {
+            "Key": "Purpose",
+            "Value": "CoreStack"
+          }
+        ]
 
 			}
 		},
 		"BudgetAndBillingPolicy": {
 			"Type": "AWS::IAM::Policy",
 			"Properties": {
-				"PolicyName": "BudgetAndBillingPolicy",
+				"PolicyName": "CoreStack_BudgetAndBillingPolicy",
 				"PolicyDocument": {
 					"Statement": [{
 						"Sid": "Auth",
@@ -148,7 +154,7 @@
 		"SupportAndRIPolicy": {
 			"Type": "AWS::IAM::Policy",
 			"Properties": {
-				"PolicyName": "SupportAndRIPolicy",
+				"PolicyName": "CoreStack_SupportAndRIPolicy",
 				"PolicyDocument": {
 					"Statement": [{
 						"Sid": "Auth",
@@ -173,7 +179,7 @@
 			"Type": "AWS::IAM::Policy",
 			"Condition": "BucketNotEmpty",
 			"Properties": {
-				"PolicyName": "AWSCURAccessPolicy",
+				"PolicyName": "CoreStack_AWSCURAccessPolicy",
 				"PolicyDocument": {
 					"Statement": [{
 						"Sid": "Auth",
@@ -203,7 +209,7 @@
 		"ComputeOptimizerPolicy": {
 			"Type": "AWS::IAM::Policy",
 			"Properties": {
-				"PolicyName": "ComputeOptimizerPolicy",
+				"PolicyName": "CoreStack_ComputeOptimizerPolicy",
 				"PolicyDocument": {
 					"Statement": [{
 						"Sid": "Auth",
@@ -234,7 +240,7 @@
 			"Type": "AWS::IAM::Policy",
 			"Condition": "SGAllow",
 			"Properties": {
-				"PolicyName": "SecurityPolicy",
+				"PolicyName": "CoreStack_SecurityGroupPolicy",
 				"PolicyDocument": {
 					"Statement": [{
 						"Sid": "Auth",
@@ -257,7 +263,7 @@
 		"InventoryFinopsLimitedReadPolicy": {
 			"Type": "AWS::IAM::Policy",
 			"Properties": {
-				"PolicyName": "InventoryFinopsLimitedReadPolicy",
+				"PolicyName": "CoreStack_InventoryFinopsLimitedReadPolicy",
 				"PolicyDocument": {
 					"Statement": [{
 						"Sid": "Auth",
@@ -281,8 +287,7 @@
 							"cloudtrail:GetTrail ",
 							"cloudtrail:GetTrailStatus",
 							"cloudtrail:ListTrails",
-							"cloudwatch:DescribeAlarmHistory",
-							"cloudwatch:DescribeAlarms",
+							"cloudwatch:Describe*",
 							"cloudwatch:GetDashboard",
 							"cloudwatch:GetMetricStatistics",
 							"cloudwatch:ListDashboards",
@@ -387,12 +392,7 @@
 							"iam:GetRolePolicy",
 							"iam:GetUser",
 							"iam:GetUserPolicy",
-							"iam:ListGroupPolicies",
-							"iam:ListGroups",
-							"iam:ListPolicies",
-							"iam:ListPolicyVersions",
-							"iam:ListRoles",
-							"iam:ListUsers",
+							"iam:List*",
 							"kinesis:DescribeStream",
 							"kinesis:GetShardIterator",
 							"kinesis:ListStreams",

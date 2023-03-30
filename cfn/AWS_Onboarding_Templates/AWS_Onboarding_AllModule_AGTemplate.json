@@ -119,14 +119,20 @@
 							"sts:AssumeRole"
 						]
 					}]
-				}
+				},
+			"Tags": [
+          {
+            "Key": "Purpose",
+            "Value": "CoreStack"
+          }
+        ]
 
 			}
 		},
 		"BudgetAndBillingPolicy": {
 			"Type": "AWS::IAM::Policy",
 			"Properties": {
-				"PolicyName": "BudgetAndBillingPolicy",
+				"PolicyName": "CoreStack_BudgetAndBillingPolicy",
 				"PolicyDocument": {
 					"Statement": [{
 						"Sid": "Auth",
@@ -148,7 +154,7 @@
 		"SupportAndRIPolicy": {
 			"Type": "AWS::IAM::Policy",
 			"Properties": {
-				"PolicyName": "SupportAndRIPolicy",
+				"PolicyName": "CoreStack_SupportAndRIPolicy",
 				"PolicyDocument": {
 					"Statement": [{
 						"Sid": "Auth",
@@ -173,7 +179,7 @@
 			"Type": "AWS::IAM::Policy",
 			"Condition": "BucketNotEmpty",
 			"Properties": {
-				"PolicyName": "CostPolicy",
+				"PolicyName": "CoreStack_CostPolicy",
 				"PolicyDocument": {
 					"Statement": [{
 						"Sid": "Auth",
@@ -203,7 +209,7 @@
 		"ComputeOptimizerPolicy": {
 			"Type": "AWS::IAM::Policy",
 			"Properties": {
-				"PolicyName": "ComputeOptimizerPolicy",
+				"PolicyName": "CoreStack_ComputeOptimizerPolicy",
 				"PolicyDocument": {
 					"Statement": [{
 						"Sid": "Auth",
@@ -233,7 +239,7 @@
 		"ThreatManagement": {
 			"Type": "AWS::IAM::Policy",
 			"Properties": {
-				"PolicyName": "ThreatManagementPolicy",
+				"PolicyName": "CoreStack_ThreatManagementPolicy",
 				"PolicyDocument": {
 					"Statement": [{
 						"Sid": "Auth",
@@ -266,7 +272,7 @@
 		"VulnerabilityAssessments": {
 			"Type": "AWS::IAM::Policy",
 			"Properties": {
-				"PolicyName": "VulnerabilityAssessmentPolicy",
+				"PolicyName": "CoreStack_VulnerabilityAssessmentPolicy",
 				"PolicyDocument": {
 					"Statement": [{
 						"Sid": "Auth",
@@ -294,7 +300,7 @@
 			"Type": "AWS::IAM::Policy",
 			"Condition": "IAMAllow",
 			"Properties": {
-				"PolicyName": "IAMWritePermission",
+				"PolicyName": "CoreStack_IAMWritePermission",
 				"PolicyDocument": {
 					"Statement": [{
 						"Sid": "Auth",
@@ -317,7 +323,7 @@
 		"InventoryWritePolicy": {
 			"Type": "AWS::IAM::Policy",
 			"Properties": {
-				"PolicyName": "InventoryWritePolicy",
+				"PolicyName": "CoreStack_InventoryWritePolicy",
 				"PolicyDocument": {
 					"Statement": [{
 						"Sid": "Auth",
@@ -423,7 +429,7 @@
 		"InventoryReadPolicy": {
 			"Type": "AWS::IAM::Policy",
 			"Properties": {
-				"PolicyName": "InventoryReadPolicy",
+				"PolicyName": "CoreStack_InventoryReadPolicy",
 				"PolicyDocument": {
 					"Statement": [{
 						"Sid": "Auth",
@@ -452,7 +458,7 @@
 							"cloudtrail:DescribeTrails",
 							"cloudtrail:Get*",
 							"cloudtrail:ListTrails",
-							"cloudwatch:DescribeAlarmHistory",
+							"cloudwatch:Describe*",
 							"cloudwatch:GetDashboard",
 							"cloudwatch:ListDashboards",
 							"cloudwatch:GetMetricData",
@@ -501,12 +507,7 @@
 							"iam:GetRolePolicy",
 							"iam:GetUser",
 							"iam:GetUserPolicy",
-							"iam:ListGroupPolicies",
-							"iam:ListGroups",
-							"iam:ListPolicies",
-							"iam:ListPolicyVersions",
-							"iam:ListRoles",
-							"iam:ListUsers",
+							"iam:List*",
 							"iam:SimulatePrincipalPolicy",
 							"iot:DescribeThing",
 							"iot:ListThings",
@@ -594,7 +595,7 @@
 		"ActivityPolicy": {
 			"Type": "AWS::IAM::Policy",
 			"Properties": {
-				"PolicyName": "ActivityPolicy",
+				"PolicyName": "CoreStack_ActivityPolicy",
 				"PolicyDocument": {
 					"Statement": [{
 						"Sid": "Auth",
@@ -626,7 +627,7 @@
 		"AlertPolicy": {
 			"Type": "AWS::IAM::Policy",
 			"Properties": {
-				"PolicyName": "AlertPolicy",
+				"PolicyName": "CoreStack_AlertPolicy",
 				"PolicyDocument": {
 					"Statement": [{
 						"Sid": "Auth",

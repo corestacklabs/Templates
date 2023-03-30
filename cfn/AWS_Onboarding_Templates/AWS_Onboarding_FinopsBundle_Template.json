@@ -103,14 +103,20 @@
 							"sts:AssumeRole"
 						]
 					}]
-				}
+				},
+			"Tags": [
+          {
+            "Key": "Purpose",
+            "Value": "CoreStack"
+          }
+        ]
 
 			}
 		},
 		"BudgetAndBillingPolicy": {
 			"Type": "AWS::IAM::Policy",
 			"Properties": {
-				"PolicyName": "BudgetAndBillingPolicy",
+				"PolicyName": "CoreStack_BudgetAndBillingPolicy",
 				"PolicyDocument": {
 					"Statement": [{
 						"Sid": "Auth",
@@ -132,7 +138,7 @@
 		"SupportAndRIPolicy": {
 			"Type": "AWS::IAM::Policy",
 			"Properties": {
-				"PolicyName": "SupportAndRIPolicy",
+				"PolicyName": "CoreStack_SupportAndRIPolicy",
 				"PolicyDocument": {
 					"Statement": [{
 						"Sid": "Auth",
@@ -157,7 +163,7 @@
 			"Type": "AWS::IAM::Policy",
 			"Condition": "BucketNotEmpty",
 			"Properties": {
-				"PolicyName": "AWSCURAccessPolicy",
+				"PolicyName": "CoreStack_AWSCURAccessPolicy",
 				"PolicyDocument": {
 					"Statement": [{
 						"Sid": "Auth",
@@ -187,7 +193,7 @@
 		"ComputeOptimizerPolicy": {
 			"Type": "AWS::IAM::Policy",
 			"Properties": {
-				"PolicyName": "ComputeOptimizerPolicy",
+				"PolicyName": "CoreStack_ComputeOptimizerPolicy",
 				"PolicyDocument": {
 					"Statement": [{
 						"Sid": "Auth",
@@ -217,7 +223,7 @@
 		"InventoryFinopsReadPolicy": {
 			"Type": "AWS::IAM::Policy",
 			"Properties": {
-				"PolicyName": "InventoryFinopsReadPolicy",
+				"PolicyName": "CoreStack_InventoryFinopsReadPolicy",
 				"PolicyDocument": {
 					"Statement": [{
 						"Sid": "Auth",
@@ -246,8 +252,7 @@
 							"cloudtrail:DescribeTrails",
 							"cloudtrail:Get*",
 							"cloudtrail:ListTrails",
-							"cloudwatch:DescribeAlarmHistory",
-							"cloudwatch:DescribeAlarms",
+							"cloudwatch:Describe*",
 							"cloudwatch:GetDashboard",
 							"cloudwatch:GetMetricStatistics",
 							"cloudwatch:ListDashboards",
@@ -302,12 +307,7 @@
 							"iam:GetRolePolicy",
 							"iam:GetUser",
 							"iam:GetUserPolicy",
-							"iam:ListGroupPolicies",
-							"iam:ListGroups",
-							"iam:ListPolicies",
-							"iam:ListPolicyVersions",
-							"iam:ListRoles",
-							"iam:ListUsers",
+							"iam:List*",
 							"iam:SimulatePrincipalPolicy",
 							"inspector:Describe*",
 							"inspector:List*",

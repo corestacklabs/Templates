@@ -90,14 +90,20 @@
 							"sts:AssumeRole"
 						]
 					}]
-				}
+				},
+			"Tags": [
+          {
+            "Key": "Purpose",
+            "Value": "CoreStack"
+          }
+        ]
 
 			}
 		},
 		"InventorySecopsReadPolicy": {
 			"Type": "AWS::IAM::Policy",
 			"Properties": {
-				"PolicyName": "InventoryReadPolicy",
+				"PolicyName": "CoreStack_InventoryReadPolicy",
 				"PolicyDocument": {
 					"Statement": [{
 						"Sid": "Auth",
@@ -125,8 +131,7 @@
 							"cloudhsm:List*",
 							"cloudtrail:Get*",
 							"cloudtrail:ListTrails",
-							"cloudwatch:DescribeAlarmHistory",
-							"cloudwatch:DescribeAlarms",
+							"cloudwatch:Describe*",
 							"cloudwatch:GetDashboard",
 							"cloudwatch:GetMetricStatistics",
 							"cloudwatch:ListDashboards",
@@ -264,7 +269,7 @@
 		"ThreatManagement": {
 			"Type": "AWS::IAM::Policy",
 			"Properties": {
-				"PolicyName": "ThreatManagementPolicy",
+				"PolicyName": "CoreStack_ThreatManagementPolicy",
 				"PolicyDocument": {
 					"Statement": [{
 						"Sid": "Auth",
@@ -297,7 +302,7 @@
 		"VulnerabilityAssessments": {
 			"Type": "AWS::IAM::Policy",
 			"Properties": {
-				"PolicyName": "VulnerabilityAssessmentPolicy",
+				"PolicyName": "CoreStack_VulnerabilityAssessmentPolicy",
 				"PolicyDocument": {
 					"Statement": [{
 						"Sid": "Auth",
