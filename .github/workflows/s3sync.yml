@@ -30,3 +30,15 @@ jobs:
         aws s3 cp cfn/AWS_Create_IAM_Role_For_CorestackAssessmentandGovernance/AWS_Create_IAM_Role_For_CorestackAssessmentandGovernance_content.json s3://$aws_s3_bucket/
         aws s3api put-object-acl --bucket $aws_s3_bucket --key AWS_Create_IAM_Role_For_CorestackAssessmentandGovernance_content.json  --acl public-read
         
+        aws s3 cp cfn/AWS_Onboarding_Templates/AWS_Onboarding_AllModule_AGTemplate.json s3://$aws_s3_bucket/
+        aws s3api put-object-acl --bucket $aws_s3_bucket --key AWS_Onboarding_AllModule_AGTemplate.json  --acl public-read
+        aws s3 cp cfn/AWS_Onboarding_Templates/AWS_Onboarding_AllModule_Template.json s3://$aws_s3_bucket/
+        aws s3api put-object-acl --bucket $aws_s3_bucket --key AWS_Onboarding_AllModule_Template.json  --acl public-read
+        aws s3 cp cfn/AWS_Onboarding_Templates/AWS_Onboarding_CloudopsBundle_Template.json s3://$aws_s3_bucket/
+        aws s3api put-object-acl --bucket $aws_s3_bucket --key AWS_Onboarding_CloudopsBundle_Template.json  --acl public-read
+        aws s3 cp cfn/AWS_Onboarding_Templates/AWS_Onboarding_FinopsBundle_Template.json s3://$aws_s3_bucket/
+        aws s3api put-object-acl --bucket $aws_s3_bucket --key AWS_Onboarding_FinopsBundle_Template.json  --acl public-read
+        aws s3 cp cfn/AWS_Onboarding_Templates/AWS_Onboarding_FinopsLimitedAccess_Template.json s3://$aws_s3_bucket/
+        aws s3api put-object-acl --bucket $aws_s3_bucket --key AWS_Onboarding_FinopsLimitedAccess_Template.json  --acl public-read
+        aws s3 cp cfn/AWS_Onboarding_Templates/AWS_Onboarding_SecopsBundle_Template.json s3://$aws_s3_bucket/
+        aws s3api put-object-acl --bucket $aws_s3_bucket --key AWS_Onboarding_SecopsBundle_Template.json  --acl public-read
