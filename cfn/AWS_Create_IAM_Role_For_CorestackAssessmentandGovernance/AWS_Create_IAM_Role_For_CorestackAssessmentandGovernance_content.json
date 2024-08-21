@@ -301,11 +301,21 @@
               "Effect": "Allow",
               "Action": [
                 "logs:*",
-                "s3:*",
-                "cloudtrail:*",
-                "cloudwatch:*",
-                "config:*",
-                "lambda:*"
+                "cloudtrail:CreateTrail",
+                "cloudtrail:DeleteTrail",
+                "cloudtrail:PutEventSelectors",
+                "cloudtrail:StartLogging",
+                "cloudtrail:UpdateTrail",
+                "cloudwatch:DeleteAlarms",
+                "cloudwatch:DisableAlarmActions",
+                "cloudwatch:EnableAlarmActions",
+                "cloudwatch:PutMetricAlarm",
+                "config:DeleteConfigRule",
+                "config:PutConfigRule",
+                "config:PutEvaluations",
+                "config:TagResource",
+                "lambda:CreateFunction",
+                "lambda:DeleteFunction"
               ],
               "Resource": "*"
             }]
@@ -401,8 +411,8 @@
               "ec2:CreateSnapshot",
               "ec2:ModifyInstanceAttribute",
               "ec2:AssociateAddress",
-              "ec2:*",
-              "autoscaling:*"
+              "application-autoscaling:DescribeScheduledActions",
+              "autoscaling:Describe*",
             ],
             "Resource": "*"
           }]
@@ -485,7 +495,8 @@
                 "iam:DeleteRolePolicy",
                 "iam:PutRolePolicy",
                 "iam:AttachRolePolicy",
-                "iam:*",
+                "iam:Get*",
+                "iam:SimulatePrincipalPolicy",
                 "iam:CreateInstanceProfile"
               ],
               "Effect": "Allow",
@@ -494,7 +505,18 @@
             {
               "Sid": "ComputeOptimizer",
               "Action": [
-                "compute-optimizer:*"
+              "compute-optimizer:DescribeRecommendationExportJobs",
+              "compute-optimizer:GetAutoScalingGroupRecommendations",
+              "compute-optimizer:GetEBSVolumeRecommendations",
+              "compute-optimizer:GetEC2InstanceRecommendations",
+              "compute-optimizer:GetEC2RecommendationProjectedMetrics",
+              "compute-optimizer:GetECSServiceRecommendationProjectedMetrics",
+              "compute-optimizer:GetECSServiceRecommendations",
+              "compute-optimizer:GetEffectiveRecommendationPreferences",
+              "compute-optimizer:GetEnrollmentStatus",
+              "compute-optimizer:GetLambdaFunctionRecommendations",
+              "compute-optimizer:GetRecommendationPreferences",
+              "compute-optimizer:GetRecommendationSummaries"
               ],
               "Effect": "Allow",
               "Resource": "*"
@@ -615,7 +637,6 @@
             "Sid": "GuardDuty",
             "Effect": "Allow",
             "Action": [
-              "s3:*",
               "guardduty:GetFindings",
               "guardduty:ListDetectors",
               "guardduty:CreateDetector",
