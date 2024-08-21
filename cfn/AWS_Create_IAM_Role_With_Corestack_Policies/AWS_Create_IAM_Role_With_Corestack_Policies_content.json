@@ -12,6 +12,7 @@
     "ExternalId": {
       "Type": "String",
       "Description": "The external ID can be any word or number that is agreed upon between you and the third-party (Corestack - 028811834831) account.",
+      "AllowedPattern":"[a-zA-Z0-9=,.@:\/-]*",
       "MinLength": "1",
       "MaxLength": "64"
     },
@@ -348,7 +349,18 @@
             {
               "Sid": "ComputeOptimizer",
               "Action": [
-                "compute-optimizer:*"
+                                "compute-optimizer:DescribeRecommendationExportJobs",
+                                "compute-optimizer:GetAutoScalingGroupRecommendations",
+                                "compute-optimizer:GetEBSVolumeRecommendations",
+                                "compute-optimizer:GetEC2InstanceRecommendations",
+                                "compute-optimizer:GetEC2RecommendationProjectedMetrics",
+                                "compute-optimizer:GetECSServiceRecommendationProjectedMetrics",
+                                "compute-optimizer:GetECSServiceRecommendations",
+                                "compute-optimizer:GetEffectiveRecommendationPreferences",
+                                "compute-optimizer:GetEnrollmentStatus",
+                                "compute-optimizer:GetLambdaFunctionRecommendations",
+                                "compute-optimizer:GetRecommendationPreferences",
+                                "compute-optimizer:GetRecommendationSummaries"
               ],
               "Effect": "Allow",
               "Resource": "*"
@@ -488,7 +500,6 @@
               "Sid": "GuardDuty",
               "Effect": "Allow",
               "Action": [
-                "s3:*",
                 "guardduty:GetFindings",
                 "guardduty:ListDetectors",
                 "guardduty:CreateDetector",
@@ -659,7 +670,10 @@
             {
               "Sid": "Auth",
               "Action": [
-                "config:*"
+                        "config:DeleteConfigRule",
+                        "config:PutConfigRule",
+                        "config:PutEvaluations",
+                        "config:TagResource"
               ],
               "Effect": "Allow",
               "Resource": "*"
@@ -765,12 +779,22 @@
                 {
                   "Effect": "Allow",
                   "Action": [
-                    "logs:*",
-                    "s3:*",
-                    "cloudtrail:*",
-                    "cloudwatch:*",
-                    "config:*",
-                    "lambda:*"
+                "logs:*",
+                "cloudtrail:CreateTrail",
+                "cloudtrail:DeleteTrail",
+                "cloudtrail:PutEventSelectors",
+                "cloudtrail:StartLogging",
+                "cloudtrail:UpdateTrail",
+                "cloudwatch:DeleteAlarms",
+                "cloudwatch:DisableAlarmActions",
+                "cloudwatch:EnableAlarmActions",
+                "cloudwatch:PutMetricAlarm",
+                "config:DeleteConfigRule",
+                "config:PutConfigRule",
+                "config:PutEvaluations",
+                "config:TagResource",
+                "lambda:CreateFunction",
+                "lambda:DeleteFunction"
                   ],
                   "Resource": "*"
                 }
