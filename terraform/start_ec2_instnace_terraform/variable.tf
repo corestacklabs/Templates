@@ -1,5 +1,6 @@
 variable "instance_id" {
     description = "The instance id to start"
+    type = string
     source= instance.list_instance
     
 }
