@@ -4,7 +4,7 @@ provider "aws" {
 
 resource "null_resource" "clone_github_repo" {
   provisioner "local-exec" {
-    command = "git clone ${var.github_repo_url} temp"
+    command = "git clone ${var.github_repo_url}"
   }
 }
 
