@@ -1,4 +1,4 @@
-resource "null_resource" "delete_old_snapshots" {
+resource "null_resource" "AWS_Start_instance" {
   provisioner "local-exec" {
     interpreter = [ "bash","-c" ]
     command = <<-EOF
